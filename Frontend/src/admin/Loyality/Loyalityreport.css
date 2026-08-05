@@ -1,0 +1,139 @@
+.loyalty-report-loading,
+.loyalty-report-error {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 60px 0;
+  color: #7c8172;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.loyalty-report-error {
+  flex-direction: column;
+  color: #b3312c;
+}
+
+.loyalty-report-error button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 6px;
+  border: 1px solid #f6c9c7;
+  background: #fdecec;
+  color: #b3312c;
+  border-radius: 10px;
+  padding: 7px 14px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.loyalty-report {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.loyalty-report-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.loyalty-report-heading h3 {
+  margin: 0 0 4px;
+  font-size: 17px;
+  font-weight: 700;
+  color: #2b2b28;
+}
+
+.loyalty-report-heading p {
+  margin: 0;
+  font-size: 13.5px;
+  color: #8a8f7e;
+}
+
+.loyalty-report-refresh {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: 1px solid #e3e7da;
+  background: #f6f8f1;
+  color: #3f5537;
+  border-radius: 10px;
+  padding: 8px 14px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.loyalty-report-refresh:hover {
+  background: #eef2e6;
+}
+
+.loyalty-report-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+
+.loyalty-report-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  background: #ffffff;
+  border: 1px solid #ecefe6;
+  border-radius: 16px;
+  padding: 18px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.03);
+}
+
+.loyalty-report-icon {
+  width: 42px;
+  height: 42px;
+  flex-shrink: 0;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.loyalty-report-card-positive .loyalty-report-icon {
+  background: #eaf5e0;
+  color: #3f7a2f;
+}
+
+.loyalty-report-card-negative .loyalty-report-icon {
+  background: #fdecec;
+  color: #b3312c;
+}
+
+.loyalty-report-card-neutral .loyalty-report-icon {
+  background: #eef1fb;
+  color: #3f4f9c;
+}
+
+.loyalty-report-value {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 700;
+  color: #2b2b28;
+}
+
+.loyalty-report-label {
+  margin: 2px 0 0;
+  font-size: 12.5px;
+  color: #8a8f7e;
+  font-weight: 500;
+}
+
+@media (max-width: 768px) {
+  .loyalty-report-grid {
+    grid-template-columns: 1fr;
+  }
+}

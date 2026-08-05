@@ -1,0 +1,165 @@
+/* Custom overrides and extensions mapped exactly to CustomerManagement framework rules */
+
+.cm-workspace-container {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  animation: fadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  padding: 10px;
+}
+
+/* Modal Overlay Styles for Supplier creation workflow forms */
+.cm-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+  animation: fadeIn 0.25s ease-out;
+}
+
+.cm-modal-window {
+  background: white;
+  border-radius: 16px;
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-sm), 0 20px 25px -5px rgba(0,0,0,0.1);
+  width: 100%;
+  max-width: 520px;
+  overflow: hidden;
+  animation: fadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.cm-modal-header {
+  padding: 20px 24px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.cm-modal-header h3 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.cm-modal-close {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--muted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px;
+  border-radius: 6px;
+}
+
+.cm-modal-close:hover {
+  background: #f3f4f6;
+  color: var(--text);
+}
+
+.cm-modal-form {
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.cm-form-element {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.cm-form-element label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.cm-form-element input[type="text"],
+.cm-form-element input[type="email"] {
+  border: 1px solid var(--border);
+  padding: 10px 14px;
+  border-radius: 10px;
+  font-size: 14px;
+  outline: none;
+  background: #f9fafb;
+  transition: all 0.2s;
+}
+
+.cm-form-element input:focus {
+  border-color: var(--primary);
+  background: white;
+  box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.1);
+}
+
+.cm-form-split-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+
+.cm-checkbox-field {
+  flex-direction: row-reverse;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 10px;
+  padding: 4px 0;
+}
+
+.cm-checkbox-field input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--primary);
+  cursor: pointer;
+}
+
+.cm-modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 10px;
+  border-top: 1px solid var(--border);
+  padding-top: 18px;
+}
+
+/* Toast Configuration Layouts */
+.sm-toast-stack {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  z-index: 9999;
+}
+
+.sm-toast {
+  background: white;
+  padding: 12px 18px;
+  border-radius: 10px;
+  box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1);
+  border: 1px solid var(--border);
+  font-size: 13px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  animation: fadeIn 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.sm-toast-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+.sm-toast-success .sm-toast-dot { background: #10b981; }
+.sm-toast-error .sm-toast-dot { background: #ef4444; }

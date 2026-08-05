@@ -1,0 +1,993 @@
+/* KitchenOrder.css - Matches CakeNTake Manual Aesthetic Theme Colors */
+.ko-workspace-container {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  padding: 20px;
+  background-color: #ffffff;
+  color: #2d2d2d;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+
+/* Page Header Title Text */
+.ko-page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid #ececec;
+  padding-bottom: 14px;
+}
+
+.ko-page-header-text h2 {
+  font-size: 26px;
+  font-weight: 700;
+  color: #2d2d2d;
+  margin: 0 0 4px 0;
+}
+
+.ko-page-header-text p {
+  color: #666666;
+  font-size: 14px;
+  margin: 0;
+}
+
+/* Analytics Metric Top Blocks Grid */
+.ko-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 20px;
+}
+
+@media (max-width: 900px) {
+  .ko-stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 550px) {
+  .ko-stats-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.ko-stat-card {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  background-color: #ffffff;
+  border: 1px solid #ececec;
+  border-radius: 14px;
+  padding: 18px;
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.ko-stat-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.05);
+}
+
+.ko-stat-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  border-radius: 10px;
+}
+
+.icon-all { background-color: #f3f4f6; color: #4b5563; }
+.icon-pending { background-color: #fffbeb; color: #d97706; }
+.icon-processing { background-color: #eef3e6; color: #6F8E57; }
+.icon-completed { background-color: #f0fdf4; color: #16a34a; }
+
+.ko-stat-details h3 {
+  font-size: 22px;
+  font-weight: 700;
+  margin: 0;
+}
+
+.ko-stat-details p {
+  font-size: 13px;
+  color: #666666;
+  margin: 2px 0 0 0;
+}
+
+/* Clean Custom Navigation Tab Layout Bar */
+.ko-tabs-navigation-bar {
+  display: flex;
+  gap: 8px;
+  border-bottom: 2px solid #ececec;
+  padding-bottom: 2px;
+  overflow-x: auto;
+}
+
+.ko-tab-nav-item {
+  background: none;
+  border: none;
+  padding: 10px 16px;
+  font-size: 15px;
+  font-weight: 600;
+  color: #666666;
+  cursor: pointer;
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  white-space: nowrap;
+  transition: color 0.2s;
+}
+
+.ko-tab-nav-item:hover {
+  color: #6F8E57;
+}
+
+.ko-tab-nav-item.active {
+  color: #6F8E57;
+}
+
+.ko-tab-nav-item.active::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  right: 0;
+  height: 2.5px;
+  background-color: #6F8E57;
+  border-radius: 10px;
+}
+
+.ko-tab-badge {
+  font-size: 11px;
+  padding: 2px 7px;
+  border-radius: 20px;
+  font-weight: 700;
+}
+
+.bg-all { background-color: #e5e7eb; color: #1f2937; }
+.bg-pending { background-color: #fef3c7; color: #92400e; }
+.bg-processing { background-color: #eef3e6; color: #6F8E57; }
+.bg-completed { background-color: #dcfce7; color: #166534; }
+
+/* Grid Orders List Layout Display Area */
+.ko-orders-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+}
+
+@media (max-width: 1000px) {
+  .ko-orders-grid { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 650px) {
+  .ko-orders-grid { grid-template-columns: 1fr; }
+}
+
+.ko-order-card {
+  background: #ffffff;
+  border: 1px solid #ececec;
+  border-radius: 14px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-height: 220px;
+  cursor: pointer;
+  transition: box-shadow 0.2s;
+}
+
+.ko-order-card:hover {
+  box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+}
+
+.ko-card-upper-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 14px;
+}
+
+.ko-order-title {
+  font-size: 16px;
+  font-weight: 700;
+  margin: 0 0 3px 0;
+}
+
+.ko-order-timestamp {
+  font-size: 12px;
+  color: #666666;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* Operational Status Color Pills */
+.ko-status-pill {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 50px;
+  letter-spacing: 0.3px;
+  text-transform: uppercase;
+}
+
+.pill-pending, .pill-confirmed { background-color: #fef3c7; color: #92400e; }
+.pill-processing { background-color: #eef3e6; color: #6F8E57; }
+.pill-completed, .pill-delivered { background-color: #dcfce7; color: #166534; }
+
+/* Inner Content Card Items Preview Line Lists */
+.ko-card-items-preview {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  border-top: 1px dashed #ececec;
+  border-bottom: 1px dashed #ececec;
+  padding: 12px 0;
+  margin-bottom: 14px;
+}
+
+.ko-preview-item-line {
+  display: flex;
+  gap: 8px;
+  font-size: 14px;
+}
+
+.ko-item-quantity {
+  font-weight: 700;
+  color: #6F8E57;
+}
+
+.ko-item-name {
+  color: #2d2d2d;
+}
+
+/* Card Bottom Trigger Execution Links */
+.ko-card-action-bar {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.ko-action-view-btn {
+  background: none;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  padding: 8px 12px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #2d2d2d;
+}
+
+.ko-action-primary-btn {
+  border: none;
+  border-radius: 6px;
+  padding: 8px 14px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  color: white;
+  flex-grow: 1;
+  transition: opacity 0.2s;
+}
+
+.ko-action-primary-btn:hover {
+  opacity: 0.9;
+}
+
+.bg-prep { background-color: #6F8E57; }
+.bg-complete { background-color: #16a34a; }
+
+/* Loading and State Centers Layout fallbacks */
+.ko-workspace-center-loader {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 40vh;
+  gap: 12px;
+  color: #666666;
+}
+
+.ko-spinner {
+  width: 32px;
+  height: 32px;
+  border: 3px solid #ececec;
+  border-top-color: #6F8E57;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.ko-empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
+  color: #666666;
+  text-align: center;
+  gap: 10px;
+}
+
+.ko-empty-state h3 { margin: 10px 0 0 0; font-size: 18px; }
+.ko-empty-state p { margin: 0; font-size: 14px; }
+
+/* Interactive Overlaid Action Sheet Modal Backdrop Panels */
+.ko-modal-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0,0,0,0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 20px;
+}
+
+.ko-modal-content-card {
+  background: white;
+  border-radius: 16px;
+  width: 100%;
+  max-width: 500px;
+  box-shadow: 0 12px 36px rgba(0,0,0,0.15);
+  overflow: hidden;
+}
+
+.ko-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 20px;
+  background-color: #eef3e6;
+  border-bottom: 1px solid #ececec;
+}
+
+.ko-modal-header h3 { margin: 0; font-size: 18px; color: #6F8E57; }
+
+.ko-modal-close-cross {
+  background: none;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  color: #666666;
+}
+
+.ko-modal-body-area {
+  padding: 20px;
+}
+
+.ko-modal-spinner-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 40px 0;
+  gap: 12px;
+}
+
+.ko-modal-meta-banner {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: #f9f9f9;
+  padding: 12px 16px;
+  border-radius: 10px;
+  margin-bottom: 20px;
+}
+
+.ko-modal-meta-banner h4 { margin: 0 0 2px 0; }
+.ko-modal-meta-banner p { margin: 0; font-size: 13px; color: #666666; }
+
+.ko-modal-section-box {
+  margin-bottom: 20px;
+}
+
+.ko-modal-section-box h5 {
+  font-size: 14px;
+  color: #666666;
+  text-transform: uppercase;
+  margin: 0 0 10px 0;
+  letter-spacing: 0.5px;
+}
+
+.ko-modal-items-table {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.ko-modal-item-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #f5f5f5;
+}
+
+.ko-modal-item-left {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+}
+
+.ko-modal-qty-bubble {
+  background-color: #eef3e6;
+  color: #6F8E57;
+  font-weight: 700;
+  font-size: 13px;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+.item-main-title { font-weight: 600; margin: 0 0 2px 0; font-size: 15px; }
+.item-sub-desc { font-size: 12px; color: #666666; margin: 0; }
+
+.notes-box {
+  background-color: #fffbeb;
+  border: 1px dashed #d97706;
+  padding: 12px;
+  border-radius: 8px;
+}
+
+.notes-text-render {
+  margin: 0;
+  font-size: 13px;
+  color: #92400e;
+  font-style: italic;
+}
+
+.ko-modal-action-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  border-top: 1px solid #ececec;
+  padding-top: 16px;
+}
+
+.ko-modal-cancel-btn {
+  background: none;
+  border: 1px solid #ccc;
+  padding: 8px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 500;
+}
+
+/* ── Detailed item row in the order modal ── */
+.ko-modal-item-row-detailed {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+}
+
+.ko-modal-item-image-wrap {
+  flex-shrink: 0;
+  width: 64px;
+  height: 64px;
+  border-radius: 10px;
+  overflow: hidden;
+  background: #f4f4f4;
+}
+
+.ko-modal-item-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.ko-modal-item-image-fallback {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #b3b3b3;
+  background: #f4f4f4;
+}
+
+.ko-modal-item-title-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+/* ── Variant / flavour / shape / add-on chips ── */
+.ko-item-meta-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 6px 0;
+}
+
+.ko-item-meta-chip {
+  font-size: 11.5px;
+  padding: 3px 9px;
+  border-radius: 20px;
+  background: #f1f1f1;
+  color: #555;
+  white-space: nowrap;
+}
+
+.chip-flavour { background: #fdecef; color: #b3436a; }
+.chip-variant { background: #eaf2ff; color: #3a6fc4; }
+.chip-shape   { background: #fff4e0; color: #c07a17; }
+.chip-addon   { background: #eafaf0; color: #2f9e5e; }
+
+.ko-modal-item-addons {
+  margin: 4px 0;
+}
+
+.ko-addons-label {
+  font-size: 11.5px;
+  font-weight: 600;
+  color: #888;
+  margin-right: 4px;
+}
+
+.ko-item-custom-note {
+  font-style: italic;
+  color: #6b7a63;
+}
+
+.ko-modal-item-price-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 6px;
+  font-size: 12.5px;
+}
+
+.ko-item-unit-price {
+  color: #888;
+}
+
+.ko-item-line-total {
+  font-weight: 700;
+  color: #1a1a1a;
+}
+
+/* ── Expected delivery banner ── */
+.ko-modal-delivery-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  background: #f6f6fb;
+  border-radius: 10px;
+  margin: 12px 0;
+  font-size: 13px;
+}
+
+.ko-delivery-label {
+  font-weight: 600;
+  color: #555;
+}
+
+.ko-delivery-value {
+  color: #1a1a1a;
+  font-weight: 500;
+}
+
+
+/* --- Section Header styling --- */
+.ko-modal-section-box {
+  margin-top: 24px;
+}
+
+.ko-section-title {
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #5c5c5c;
+  margin-bottom: 12px;
+}
+
+/* --- Container List --- */
+.ko-modal-items-table {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* --- Individual Item Row Container --- */
+.ko-modal-item-row-detailed {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  padding: 16px;
+  background-color: #ffffff;
+  border: 1px solid #e6e3da;
+  border-radius: 16px;
+  transition: box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.ko-modal-item-row-detailed:hover {
+  border-color: #cfe0bd;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+/* --- Thumbnail Image Wrapper --- */
+.ko-modal-item-image-wrap {
+  width: 64px;
+  height: 64px;
+  border-radius: 12px;
+  overflow: hidden;
+  flex-shrink: 0;
+  background-color: #eef3e6;
+  border: 1px solid #e6e3da;
+}
+
+.ko-modal-item-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.ko-modal-item-image-fallback {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #8f8f8f;
+}
+
+/* --- Detailed Content Area --- */
+.ko-modal-item-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  text-align: left;
+}
+
+/* --- Header Area: Qty & Title --- */
+.ko-modal-item-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.ko-modal-qty-bubble {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #526A45;
+  background-color: #e4ecd8;
+  padding: 2px 8px;
+  border-radius: 20px;
+  line-height: 1.2;
+}
+
+.item-main-title {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #1a1a1a;
+  margin: 0;
+}
+
+/* --- Description --- */
+.item-sub-desc {
+  font-size: 0.85rem;
+  color: #5c5c5c;
+  margin: 0;
+  line-height: 1.4;
+}
+
+/* --- Metadata Specs & Chips --- */
+.ko-item-meta-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.ko-item-meta-chip {
+  font-size: 0.75rem;
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-weight: 500;
+}
+
+.chip-flavour {
+  background-color: #fef3c7; /* Light Amber */
+  color: #92400e;
+}
+
+.chip-variant {
+  background-color: #e4ecd8;
+  color: #314631;
+}
+
+.chip-shape {
+  background-color: #e0f2fe; /* Soft Blue */
+  color: #0369a1;
+}
+
+.chip-addon {
+  background-color: #f3f4f6;
+  color: #4b5563;
+  font-size: 0.75rem;
+  border-radius: 4px;
+}
+
+/* --- Addons block --- */
+.ko-modal-item-addons {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.ko-addons-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #5c5c5c;
+}
+
+.ko-item-meta-chips-small {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+/* --- Instructions Note Box --- */
+.ko-item-custom-note-box {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  background-color: #fffbeb; /* Warning yellow tint */
+  border-left: 3px solid #f59e0b;
+  padding: 6px 10px;
+  border-radius: 4px 8px 8px 4px;
+}
+
+.note-label {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: #b45309;
+  text-transform: uppercase;
+  letter-spacing: 0.025em;
+}
+
+.item-custom-note-text {
+  font-size: 0.8rem;
+  font-style: italic;
+  color: #78350f;
+  margin: 0;
+}
+
+/* --- Pricing Strip --- */
+.ko-modal-item-price-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-top: 1px dashed #e6e3da;
+  padding-top: 8px;
+  margin-top: 4px;
+}
+
+.op-fd-top-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  align-items: flex-start;
+  margin-bottom: 18px;
+}
+
+.op-fd-top-row .ko-status-pill {
+  flex-shrink: 0;
+}
+
+.op-origin-badges {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(180px, 1fr));
+  gap: 14px;
+  width: 100%;
+}
+
+.op-origin-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.op-origin-item strong {
+  font-size: 0.8rem;
+  color: #64748b;
+}
+
+.op-origin-item div {
+  font-size: 0.95rem;
+  color: #111827;
+  font-weight: 600;
+}
+
+.op-fd-section {
+  background: #fff;
+  border-radius: 14px;
+  padding: 18px;
+  margin-bottom: 18px;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
+}
+
+.op-fd-section h4 {
+  font-size: 1rem;
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.op-fd-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.op-fd-grid .lbl {
+  display: block;
+  color: #64748b;
+  font-size: 0.78rem;
+  margin-bottom: 4px;
+}
+
+.op-fd-grid span {
+  color: #111827;
+  font-weight: 600;
+}
+
+.op-fd-address-block {
+  margin-top: 14px;
+  padding: 14px;
+  background: #f8fafc;
+  border-radius: 12px;
+}
+
+.op-fd-address-list {
+  margin: 10px 0 0;
+  padding-left: 18px;
+  color: #475569;
+}
+
+.op-fd-order-addons {
+  margin-bottom: 18px;
+}
+
+.op-fd-addons-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.op-fd-addon-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  padding: 14px;
+  background: #f8fafc;
+  border-radius: 12px;
+}
+
+.op-fd-addon-thumb-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.op-fd-addon-thumb-placeholder,
+.op-fd-addon-thumb {
+  width: 50px;
+  height: 50px;
+  border-radius: 12px;
+  background: #eef2ff;
+  flex-shrink: 0;
+}
+
+.op-fd-addon-content {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.op-fd-addon-content strong {
+  font-size: 0.95rem;
+  color: #111827;
+}
+
+.op-fd-addon-meta {
+  font-size: 0.8rem;
+  color: #475569;
+}
+
+.op-fd-addon-price-block {
+  text-align: right;
+}
+
+.op-fd-addon-price-block span {
+  display: block;
+  font-weight: 700;
+  color: #111827;
+}
+
+.op-fd-addon-note {
+  font-size: 0.75rem;
+  color: #64748b;
+}
+
+.op-fd-addon-total {
+  display: flex;
+  justify-content: space-between;
+  padding: 12px 14px;
+  background: #eef2ff;
+  border-radius: 10px;
+  font-weight: 700;
+}
+
+.op-fd-highlight-greeting {
+  border: 1px solid #dbeafe;
+  background: #f8fafc;
+}
+
+.op-fd-greeting-message {
+  margin-top: 12px;
+  color: #334155;
+  font-size: 0.95rem;
+}
+
+.drawer-cost-breakdown {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding-top: 10px;
+}
+
+.cost-row {
+  display: flex;
+  justify-content: space-between;
+  color: #334155;
+  font-weight: 600;
+}
+
+.cost-row.discount span:last-child {
+  color: #b91c1c;
+}
+
+.cost-row.total {
+  font-size: 1rem;
+  border-top: 1px solid #e2e8f0;
+  padding-top: 10px;
+  margin-top: 8px;
+}
+
+.ko-modal-item-price-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-top: 1px dashed #e6e3da;
+  padding-top: 8px;
+  margin-top: 4px;
+}
+
+.ko-item-unit-price {
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: #8f8f8f;
+}
+
+.ko-item-line-total {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #1a1a1a;
+}

@@ -1,0 +1,1493 @@
+/* ── Base ── */
+.navbar {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  width: 100%;
+  background-color: #ffffff;
+  box-shadow: 0 2px 16px rgba(139, 26, 66, 0.06);
+  color: #2d1620;
+  font-family: 'Inter', 'Segoe UI', sans-serif;
+}
+
+/* ══════════════════════════════════════════════════════════
+   NEW: TOP INFO BAR — About / Contact / Blog + phone / email
+   Desktop / tablet only (>=768px). Compact, white bg, green accents.
+   ══════════════════════════════════════════════════════════ */
+.navtop-bar {
+  display: none;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 6px 24px;
+  min-height: 36px;
+  background: #FFF8EC;
+  border-bottom: 1px solid #e7efdc;
+  font-family: 'Poppins', 'Segoe UI', sans-serif;
+}
+@media (min-width: 768px) {
+  .navtop-bar { display: flex; }
+}
+
+.navtop-links {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.navtop-link {
+  font-size: 12px;
+  font-weight: 600;
+  color: #3b4a2f;
+  text-decoration: none;
+  padding: 4px 10px;
+  border-radius: 14px;
+  transition: background 0.2s, color 0.2s;
+}
+.navtop-link:hover {
+  background: #d8e4c7;
+  color: #2f4626;
+}
+
+.navtop-contact {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.navtop-contact-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #3b4a2f;
+  text-decoration: none;
+  padding: 4px 10px;
+  border-radius: 14px;
+  transition: background 0.2s, color 0.2s;
+  white-space: nowrap;
+}
+.navtop-contact-item:hover {
+  background: #d8e4c7;
+  color: #2f4626;
+}
+
+/* ── Topbar (legacy — kept in case other markup still references it) ── */
+.navbar-topbar {
+  background: linear-gradient(135deg, #8b1a42 0%, #c23b6a 50%, #d4567a 100%);
+  font-size: 11px;
+  padding: 6px 16px;
+}
+
+.topbar-container {
+  max-width: 1280px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+}
+
+.topbar-left,
+.topbar-right {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  font-size: 10px;
+  color: #ffffff;
+}
+
+@media (min-width: 768px) {
+  .topbar-left, .topbar-right { font-size: 11.5px; }
+}
+
+.topbar-contact {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  color: #ffffff;
+  opacity: 0.92;
+  font-weight: 500;
+}
+
+.topbar-link {
+  text-decoration: none;
+  color: #ffffff;
+  opacity: 0.92;
+  font-weight: 500;
+  transition: opacity 0.2s;
+}
+.topbar-link:hover { opacity: 1; text-decoration: underline; text-underline-offset: 3px; }
+
+.topbar-divider { opacity: 0.45; color: #ffffff; }
+
+.topbar-points {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  background: rgba(255, 255, 255, 0.18);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  padding: 3px 10px;
+  border-radius: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  color: #ffffff;
+  cursor: pointer;
+}
+
+.topbar-points-link {
+  text-decoration: none;
+  color: #ffffff;
+  font-weight: 600;
+}
+
+/* Language / Currency selectors (legacy topbar variant) */
+.header-selectors-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(255, 255, 255, 0.16);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  border: 1px solid rgba(255, 255, 255, 0.32);
+  padding: 2px 8px;
+  border-radius: 20px;
+}
+
+.selector-field {
+  display: flex;
+  align-items: center;
+  position: relative;
+}
+
+.selector-divider {
+  width: 1px;
+  height: 12px;
+  background: rgba(255, 255, 255, 0.4);
+}
+
+.clean-dropdown {
+  appearance: none;
+  -webkit-appearance: none;
+  border: none;
+  background: transparent;
+  outline: none;
+  font-size: 11px;
+  font-weight: 600;
+  color: #ffffff;
+  cursor: pointer;
+  padding: 3px 16px 3px 4px;
+  font-family: 'Poppins', 'Segoe UI', sans-serif;
+}
+
+.clean-dropdown option {
+  background-color: #ffffff;
+  color: #2d1620;
+  font-weight: 500;
+}
+
+.selector-caret {
+  position: absolute;
+  right: 2px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #ffffff;
+  pointer-events: none;
+  opacity: 0.85;
+}
+
+/* ── Main row (legacy — kept for compatibility) ── */
+.navbar-main {
+  background-color: #ffffff;
+  border-bottom: 1px solid #f3dbe3;
+}
+
+.navbar-main-container {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 8px 16px 8px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+/* Left search */
+.navbar-left {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: auto;
+  flex-shrink: 0;
+}
+
+.search-form {
+  display: none;
+  align-items: center;
+  position: relative;
+  width: 100%;
+  max-width: 320px;
+}
+.search-form.show { display: flex; }
+
+.search-input {
+  width: 100%;
+  background: #fdf2f6;
+  border: 1.5px solid #f3dbe3;
+  color: #2d1620;
+  padding: 8px 38px 8px 16px;
+  border-radius: 24px;
+  font-size: 12.5px;
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s, background-color 0.2s;
+  font-family: inherit;
+}
+.search-input:focus {
+  border-color: #c23b6a;
+  background: #ffffff;
+  box-shadow: 0 0 0 4px rgba(194, 59, 106, 0.12);
+}
+.search-input::placeholder { color: #8c6b76; }
+
+.search-button {
+  position: absolute;
+  right: 5px;
+  width: 26px;
+  height: 26px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #8b1a42 0%, #c23b6a 50%, #d4567a 100%);
+  border: none;
+  border-radius: 50%;
+  color: #ffffff;
+  cursor: pointer;
+}
+
+/* Center */
+.navbar-center {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.navbar-center.navbar-links-row {
+  justify-content: center;
+}
+
+.navbar-left-links,
+.navbar-right-links {
+  display: none;
+  align-items: center;
+  gap: 18px;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  font-family: 'Poppins', 'Segoe UI', sans-serif;
+}
+
+@media (min-width: 768px) {
+  .navbar-left-links.show-md,
+  .navbar-right-links.show-md { display: flex; }
+}
+@media (min-width: 1024px) {
+  .navbar-left-links.show-md.show-lg,
+  .navbar-right-links.show-md.show-lg { gap: 32px; }
+}
+
+.nav-link {
+  position: relative;
+  text-decoration: none;
+  color: #2d1620;
+  padding-bottom: 6px;
+  transition: color 0.2s;
+}
+.nav-link:hover { color: #c23b6a; }
+.nav-link.is-active { color: #8b1a42; }
+
+.nav-underline {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 2.5px;
+  border-radius: 2px;
+  background: linear-gradient(135deg, #8b1a42 0%, #c23b6a 50%, #d4567a 100%);
+}
+
+/* ── CIRCULAR LOGO (legacy) ── */
+.logo-container {
+  position: relative;
+  z-index: 40;
+  flex-shrink: 0;
+}
+
+.logo-anchor {
+  text-decoration: none;
+  display: block;
+}
+
+.logo-circle-wrap {
+  width: 84px;
+  height: 84px;
+  border-radius: 50%;
+  background-color: #fdf2f6;
+  border: 2px solid #d4af7a;
+  box-shadow:
+    0 0 0 3px #ffffff,
+    0 0 0 5px #d4af7a,
+    0 5px 16px rgba(139, 26, 66, 0.14);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+  cursor: pointer;
+}
+
+.navbar-logo-img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+}
+
+.logo-circle-wrap::before {
+  content: '';
+  position: absolute;
+  inset: 7px;
+  border-radius: 50%;
+  border: 1px dashed rgba(139, 26, 66, 0.35);
+  pointer-events: none;
+  animation: spin-slow 18s linear infinite;
+}
+
+@keyframes spin-slow {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+.logo-brand-name {
+  font-family: 'Playfair Display', Georgia, serif;
+  font-style: italic;
+  font-weight: 700;
+  font-size: 16px;
+  letter-spacing: -0.01em;
+  line-height: 1.1;
+  background: linear-gradient(135deg, #8b1a42 0%, #c23b6a 50%, #d4567a 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.logo-tagline {
+  font-size: 6.5px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  font-weight: 700;
+  color: #d4af7a;
+  font-family: 'Poppins', sans-serif;
+}
+
+@media (max-width: 639px) {
+  .logo-circle-wrap { width: 76px; height: 76px; }
+  .logo-brand-name { font-size: 13px; }
+  .logo-tagline { font-size: 5.5px; }
+}
+
+/* Right action panel (legacy) */
+.navbar-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.user-dropdown-container { position: relative; }
+
+.user-button {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: #fdf2f6;
+  border: 1px solid #f3dbe3;
+  color: #2d1620;
+  cursor: pointer;
+  padding: 7px 12px;
+  border-radius: 20px;
+  font-family: inherit;
+  transition: border-color 0.2s, color 0.2s;
+}
+.user-button:hover { border-color: #c23b6a; color: #c23b6a; }
+
+.user-name {
+  font-size: 12px;
+  font-weight: 600;
+  display: none;
+}
+@media (min-width: 768px) { .user-name { display: inline; } }
+
+.user-dropdown-menu {
+  position: absolute;
+  top: calc(100% + 10px);
+  right: 0;
+  background: #ffffff;
+  border: 1px solid #f3dbe3;
+  border-radius: 12px;
+  box-shadow: 0 16px 36px rgba(139, 26, 66, 0.16);
+  min-width: 195px;
+  z-index: 100;
+  overflow: hidden;
+}
+
+.dropdown-link {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 11px 16px;
+  text-decoration: none;
+  color: #2d1620;
+  font-size: 13px;
+  font-weight: 500;
+  transition: background 0.15s, color 0.15s;
+  border: none;
+  background: none;
+  cursor: pointer;
+  width: 100%;
+  text-align: left;
+  font-family: inherit;
+}
+.dropdown-link:hover { background: #d8e4c7; color: #2f4626; }
+.dropdown-link.admin    { color: #047857; }
+.dropdown-link.retailer { color: #0d7a66; }
+.dropdown-link.logout   { color: #dc2626; border-top: 1px solid #f3dbe3; }
+.dropdown-link.logout:hover { background: rgba(220, 38, 38, 0.06); }
+
+.action-button {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  background: #fdf2f6;
+  border: 1px solid #f3dbe3;
+  color: #2d1620;
+  cursor: pointer;
+  text-decoration: none;
+  border-radius: 50%;
+  transition: border-color 0.2s, color 0.2s;
+}
+.action-button:hover { border-color: #c23b6a; color: #c23b6a; }
+
+.back-to-top-btn {
+  width: 36px;
+  height: 36px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: #fdf2f6;
+  border: 1px solid #f3dbe3;
+  color: #2d1620;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: border-color 0.2s, color 0.2s, transform 0.2s;
+}
+.back-to-top-btn:hover {
+  border-color: #c23b6a;
+  color: #c23b6a;
+  transform: translateY(-1px);
+}
+
+.badge {
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  background: linear-gradient(135deg, #8b1a42 0%, #c23b6a 50%, #d4567a 100%);
+  color: #ffffff;
+  font-size: 9.5px;
+  padding: 2px 5px;
+  border-radius: 10px;
+  font-weight: 700;
+  min-width: 18px;
+  text-align: center;
+  box-shadow: 0 2px 6px rgba(139, 26, 66, 0.4);
+}
+
+.mobile-menu-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #fdf2f6;
+  border: 1px solid #f3dbe3;
+  color: #2d1620;
+  cursor: pointer;
+  padding: 7px;
+  border-radius: 50%;
+  transition: border-color 0.2s, color 0.2s;
+}
+.mobile-menu-btn:hover { border-color: #c23b6a; color: #c23b6a; }
+@media (min-width: 768px) { .mobile-menu-btn { display: none; } }
+
+/* ── Category bar ── */
+.navbar-categories {
+  display: none;
+  align-items: center;
+  gap: 8px;
+  background: #FFF8EC;
+  padding: 8px 16px;
+  border-top: 1px solid #f3dbe3;
+}
+@media (min-width: 768px) { .navbar-categories { display: flex; } }
+
+.category-scroll-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 5px;
+  border-radius: 20px;
+  background: #ffffff;
+  box-shadow: 0 1px 6px rgba(139, 26, 66, 0.1);
+  border: none;
+  color: #8b1a42;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.categories-scroll-container {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  scroll-behavior: smooth;
+  flex: 1;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.categories-scroll-container::-webkit-scrollbar { display: none; }
+
+.category-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 5px 12px;
+  background: #ffffff;
+  border: 1px solid #f3dbe3;
+  border-radius: 16px;
+  font-size: 11px;
+  font-weight: 600;
+  color: #2d1620;
+  text-decoration: none;
+  white-space: nowrap;
+  flex-shrink: 0;
+  transition: all 0.2s;
+  font-family: 'Poppins', sans-serif;
+  min-height: 34px;
+}
+.category-link:hover {
+  background: linear-gradient(135deg, #8b1a42 0%, #c23b6a 50%, #d4567a 100%);
+  border-color: transparent;
+  color: #ffffff;
+}
+.category-link.active {
+  background: linear-gradient(135deg, #8b1a42 0%, #c23b6a 50%, #d4567a 100%);
+  color: #ffffff;
+  border-color: transparent;
+}
+
+/* ── Mobile drawer ── */
+.mobile-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(45, 22, 32, 0.55);
+  /* Keep overlay just below the drawer which is above the chat FAB */
+  z-index: 1098;
+}
+
+.mobile-drawer {
+  position: fixed;
+  right: 0; top: 0; bottom: 0;
+  width: 320px;
+  max-width: 88vw;
+  background: #ffffff;
+  box-shadow: -10px 0 30px rgba(139, 26, 66, 0.18);
+  /* Place the mobile drawer above the chat FAB (z-index:1000) */
+  z-index: 1100;
+  display: flex;
+  flex-direction: column;
+}
+
+.drawer-header {
+  padding: 16px;
+  border-bottom: 1px solid #f3dbe3;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  /* Was the rose gradient (#8b1a42 → #d4567a) — switched to match the
+     green theme used across the rest of the site (download button,
+     category active states, etc.) */
+  background: linear-gradient(
+    135deg,
+    #8FAF6E 0%,
+    #6F8E57 30%,
+    #526A45 65%,
+    #314631 100%
+  );
+}
+
+.drawer-logo { text-decoration: none; }
+
+.drawer-logo-text {
+  font-family: 'Playfair Display', Georgia, serif;
+  font-style: italic;
+  font-size: 19px;
+  font-weight: 700;
+  color: #ffffff;
+}
+
+.drawer-close-btn {
+  padding: 6px;
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.18);
+  border: none;
+  color: #ffffff;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+}
+
+.drawer-rewards {
+  margin: 14px 16px 0;
+  padding: 12px 16px;
+  background: #fdf2f6;
+  border: 1px solid #f3dbe3;
+  color: #8b1a42;
+  border-radius: 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.drawer-rewards-link {
+  background: linear-gradient(
+    135deg,
+    #8FAF6E 0%,
+    #6F8E57 30%,
+    #526A45 65%,
+    #314631 100%
+  );
+  color: #ffffff;
+  font-weight: 700;
+  font-size: 11px;
+  padding: 5px 12px;
+  border-radius: 20px;
+  text-decoration: none;
+}
+
+.drawer-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.drawer-section {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  border-bottom: 1px solid #f3dbe3;
+  padding-bottom: 16px;
+}
+
+.drawer-section-title {
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #8c6b76;
+  margin-bottom: 6px;
+  font-family: 'Poppins', sans-serif;
+}
+
+.drawer-search-form {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.drawer-search-input {
+  width: 100%;
+  background: #fdf2f6;
+  border: 1.5px solid #f3dbe3;
+  color: #2d1620;
+  padding: 9px 40px 9px 16px;
+  border-radius: 22px;
+  font-size: 12.5px;
+  outline: none;
+  font-family: inherit;
+  transition: border-color 0.2s;
+}
+.drawer-search-input:focus { border-color: #c23b6a; }
+.drawer-search-input::placeholder { color: #8c6b76; }
+
+.drawer-search-btn {
+  position: absolute;
+  right: 5px;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #8b1a42 0%, #c23b6a 50%, #d4567a 100%);
+  border: none;
+  border-radius: 50%;
+  color: #ffffff;
+  cursor: pointer;
+}
+
+/* Mobile-friendly currency option list used in the drawer */
+.drawer-currency-options {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  padding: 8px 0;
+}
+.drawer-currency-option {
+  padding: 8px 12px;
+  background: #fdf2f6;
+  border: 1px solid #f3dbe3;
+  border-radius: 12px;
+  cursor: pointer;
+  font-weight: 700;
+  min-width: 64px;
+  text-align: center;
+}
+.drawer-currency-option.active {
+  background: linear-gradient(135deg, #8FAF6E 0%, #6F8E57 100%);
+  color: #ffffff;
+  border-color: transparent;
+  box-shadow: 0 6px 18px rgba(111,142,87,0.18);
+}
+
+.drawer-link {
+  padding: 6px 0;
+  text-decoration: none;
+  color: #2d1620;
+  font-size: 13.5px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border: none;
+  background: none;
+  cursor: pointer;
+  font-family: inherit;
+  transition: color 0.2s;
+}
+.drawer-link:hover { color: #4a6636; }
+.drawer-link.admin    { color: #047857; font-weight: 600; }
+.drawer-link.retailer { color: #0d7a66; font-weight: 600; }
+
+/* ── Explore section (mobile) — About / Contact / Blog + phone / email ── */
+.drawer-explore .drawer-link {
+  border-radius: 10px;
+  padding: 6px 8px;
+  margin: 0 -8px;
+  transition: background 0.2s, color 0.2s;
+}
+.drawer-explore .drawer-link:hover {
+  background: #d8e4c7;
+  color: #2f4626;
+}
+.drawer-contact-link {
+  font-weight: 600;
+  color: #3b4a2f;
+}
+
+.drawer-account {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 0;
+  font-size: 13.5px;
+  font-weight: 500;
+  color: #2d1620;
+}
+
+.drawer-item-with-badge {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 0;
+  font-size: 13.5px;
+  font-weight: 500;
+  color: #2d1620;
+  text-decoration: none;
+  transition: color 0.2s;
+  font-family: inherit;
+}
+.drawer-item-with-badge:hover { color: #4a6636; }
+
+.drawer-item-badge {
+  background: linear-gradient(
+    135deg,
+    #8FAF6E 0%,
+    #6F8E57 30%,
+    #526A45 65%,
+    #314631 100%
+  );
+  color: #ffffff;
+  font-size: 10px;
+  padding: 2px 8px;
+  border-radius: 20px;
+  font-weight: 700;
+}
+
+.drawer-logout {
+  width: 100%;
+  padding: 10px 0 0;
+  margin-top: 4px;
+  background: none;
+  border: none;
+  border-top: 1px solid #f3dbe3;
+  color: #dc2626;
+  font-weight: 600;
+  font-size: 13.5px;
+  text-align: left;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: inherit;
+}
+.drawer-logout:hover { color: #b91c1c; }
+
+.drawer-categories {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding-bottom: 4px;
+}
+
+.drawer-category-link {
+  padding: 6px 8px;
+  border-left: 2px solid transparent;
+  font-size: 13px;
+  font-weight: 500;
+  color: #8c6b76;
+  text-decoration: none;
+  transition: all 0.2s;
+  font-family: inherit;
+}
+.drawer-category-link:hover {
+  border-left-color: #6f8e57;
+  padding-left: 12px;
+  color: #4a6636;
+}
+
+/* ── Responsive ── */
+@media (max-width: 767px) {
+  .topbar-container { flex-direction: column; gap: 5px; }
+  .topbar-left, .topbar-right { font-size: 9px; gap: 8px; }
+  .navbar-left, .navbar-right { width: auto; }
+  .navbar-main-container { gap: 8px; }
+  .header-selectors-row { padding: 1px 6px; }
+}
+
+/* ── Reduced motion ── */
+@media (prefers-reduced-motion: reduce) {
+  .logo-circle-wrap::before { animation: none; }
+  * { scroll-behavior: auto !important; }
+}
+
+
+/* ══════════════════════════════════════════════════════════
+   NAVBAR UI REFRESH — Flipkart-style layout
+   ══════════════════════════════════════════════════════════ */
+
+/* ── Main bar shell ── */
+.navbar-mainbar {
+  background-color: #ffffff;
+  border-bottom: 1px solid #f3dbe3;
+}
+
+.navbar-mainbar-container {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 10px 16px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+/* ── Logo pill (Flipkart-style rounded chip) ── */
+.mainbar-logo-wrap {
+  flex-shrink: 0;
+}
+
+.mainbar-logo-pill {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  text-decoration: none;
+  border-radius: 999px;
+  box-shadow: 0 4px 14px rgba(139, 26, 66, 0.22);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.mainbar-logo-pill:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 18px rgba(139, 26, 66, 0.3);
+}
+
+.mainbar-logo-img {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background: #ffffff;
+  object-fit: contain;
+  padding: 2px;
+  display: block;
+}
+
+.mainbar-logo-text {
+  color: #ffffff;
+  font-family: 'Playfair Display', Georgia, serif;
+  font-style: italic;
+  font-weight: 700;
+  font-size: 15px;
+  white-space: nowrap;
+}
+
+/* ── Inline nav links next to the logo (desktop only) ── */
+.navbar-mainbar .navbar-center.navbar-links-row {
+  flex: 0 0 auto;
+  justify-content: flex-start;
+  display: none;
+}
+@media (min-width: 1024px) {
+  .navbar-mainbar .navbar-center.navbar-links-row {
+    display: flex;
+  }
+}
+
+/* ── Search bar (center, flexible width) ── */
+.mainbar-search {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  position: relative;
+  max-width: 640px;
+  margin: 0 auto;
+}
+
+.mainbar-search-input {
+  width: 100%;
+  background: #fff8ec;
+  border: 1.5px solid #f3dbe3;
+  color: #2d1620;
+  padding: 9px 42px 9px 16px;
+  border-radius: 24px;
+  font-size: 13px;
+  outline: none;
+  font-family: inherit;
+  transition: border-color 0.2s, box-shadow 0.2s, background-color 0.2s;
+}
+.mainbar-search-input:focus {
+  border-color: #c23b6a;
+  background: #ffffff;
+  box-shadow: 0 0 0 4px rgba(194, 59, 106, 0.12);
+}
+.mainbar-search-input::placeholder { color: #8c6b76; }
+
+.mainbar-search-btn {
+  position: absolute;
+  right: 5px;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(
+    135deg,
+    #8FAF6E 0%,
+    #6F8E57 30%,
+    #526A45 65%,
+    #314631 100%
+  );
+  border: none;
+  border-radius: 50%;
+  color: #ffffff;
+  cursor: pointer;
+}
+
+@media (max-width: 767px) {
+  .mainbar-search { display: none; }
+}
+
+/* ── Right action cluster ── */
+.mainbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+/* Login button + dropdown */
+.mainbar-login-container,
+.mainbar-currency-container {
+  position: relative;
+}
+
+.mainbar-login-btn,
+.mainbar-currency-btn {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  background: none;
+  border: none;
+  color: #2d1620;
+  cursor: pointer;
+  padding: 7px 8px;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  border-radius: 8px;
+  transition: color 0.2s, background 0.2s;
+}
+.mainbar-login-btn:hover {
+  color: #c23b6a;
+  background: #fdf2f6;
+}
+.mainbar-currency-btn:hover {
+  color: #2f4626;
+  background: #d8e4c7;
+}
+
+.mainbar-login-text {
+  display: none;
+}
+@media (min-width: 640px) {
+  .mainbar-login-text { display: inline; }
+}
+
+.mainbar-chevron {
+  display: none;
+}
+@media (min-width: 640px) {
+  .mainbar-chevron { display: inline; opacity: 0.7; }
+}
+
+.mainbar-currency-btn {
+  display: none;
+}
+@media (min-width: 640px) {
+  .mainbar-currency-btn { display: flex; }
+}
+
+/* Dropdown menus opening off the main bar */
+.mainbar-dropdown-menu {
+  position: absolute;
+  top: calc(100% + 10px);
+  right: 0;
+  background: #ffffff;
+  border: 1px solid #f3dbe3;
+  border-radius: 12px;
+  box-shadow: 0 16px 36px rgba(139, 26, 66, 0.16);
+  min-width: 210px;
+  /* Raise above floating widgets like the chat FAB (z-index:1000) so menu
+     items remain tappable on mobile. */
+  z-index: 1101;
+  /* Allow native <select> dropdowns to overflow this container on mobile
+     so their option lists are not clipped. Only the currency menu needs
+     this, but setting it here is fine and keeps behavior consistent. */
+  overflow: visible;
+}
+
+/* Mobile currency modal (opened from globe icon in mobile view) */
+.currency-mobile-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.45);
+  z-index: 1099;
+}
+
+.currency-mobile-modal {
+  /* Full-viewport fixed container so centering is robust even if ancestors
+     use transforms. The visible card is inside .currency-mobile-modal-card. */
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px; /* keep spacing from viewport edges */
+  z-index: 1201;
+}
+
+.currency-mobile-modal-card {
+  width: min(92%, 420px);
+  max-width: 420px;
+  max-height: 80vh;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 24px 48px rgba(10,10,10,0.18);
+  overflow: auto;
+}
+
+.currency-mobile-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  border-bottom: 1px solid #f3dbe3;
+  font-weight: 600;
+}
+
+.currency-mobile-modal-body {
+  padding: 12px 16px 20px 16px;
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.currency-mobile-modal-close {
+  background: transparent;
+  border: none;
+  color: #8b1a42;
+  font-weight: 600;
+}
+
+.mainbar-currency-menu {
+  min-width: 210px;
+  padding: 4px 0;
+}
+
+.mainbar-currency-section {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 16px;
+}
+
+.mainbar-more-label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #8c6b76;
+}
+
+.selector-field-more {
+  background: #d8e4c7;
+  border: 1px solid #c3d4ab;
+  border-radius: 20px;
+  padding: 2px 8px;
+}
+
+.clean-dropdown-more {
+  color: #2f4626;
+  font-size: 12px;
+}
+
+.selector-caret-more {
+  color: #4a6636;
+}
+
+/* Wishlist icon button (reuses .badge from existing CSS) */
+.mainbar-icon-btn {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  color: #2d1620;
+  text-decoration: none;
+  border-radius: 50%;
+  transition: background 0.2s, color 0.2s;
+}
+.mainbar-icon-btn:hover {
+  background: #fdf2f6;
+  color: #c23b6a;
+}
+
+/* Cart button styled like Flipkart's "Cart" pill */
+.mainbar-cart-btn {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  text-decoration: none;
+  color: #2d1620;
+  padding: 8px 14px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  transition: color 0.2s, background 0.2s;
+}
+.mainbar-cart-btn:hover {
+  color: #c23b6a;
+  background: #fdf2f6;
+}
+
+.mainbar-pwa-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: linear-gradient(
+    135deg,
+    #8FAF6E 0%,
+    #6F8E57 30%,
+    #526A45 65%,
+    #314631 100%
+  );
+  color: #ffffff;
+  border: none;
+  border-radius: 10px;
+  padding: 9px 14px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s, opacity 0.2s;
+}
+.mainbar-pwa-btn:hover,
+.mainbar-pwa-btn:focus {
+  transform: translateY(-1px);
+  box-shadow: 0 10px 22px rgba(194, 59, 106, 0.18);
+  opacity: 0.98;
+}
+
+.mainbar-pwa-text {
+  display: none;
+}
+
+@media (min-width: 640px) {
+  .mainbar-pwa-text { display: inline; }
+}
+
+.mainbar-cart-text {
+  display: none;
+}
+@media (min-width: 640px) {
+  .mainbar-cart-text { display: inline; }
+}
+
+.mainbar-cart-badge {
+  position: static;
+  margin-left: 2px;
+  box-shadow: none;
+}
+
+/* ── Category bar — icon-tab style (image/icon above label) ── */
+.navbar-categories {
+  padding: 6px 16px;
+}
+
+.category-tab {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 6px 14px;
+  background: transparent;
+  border: none;
+  border-radius: 10px;
+  font-size: 11px;
+  font-weight: 600;
+  color: #2d1620;
+  text-decoration: none;
+  white-space: nowrap;
+  flex-shrink: 0;
+  transition: background 0.2s, color 0.2s;
+  font-family: 'Poppins', sans-serif;
+  min-width: 68px;
+}
+.category-tab:hover {
+  background: #d8e4c7;
+  color: #2f4626;
+}
+
+.category-tab-icon-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: #fdf2f6;
+  border: 1px solid #f3dbe3;
+  color: #8b1a42;
+  overflow: hidden;
+}
+
+.category-tab-icon-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.category-tab-label {
+  max-width: 84px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ── Small-screen tightening ── */
+@media (max-width: 767px) {
+  .navbar-mainbar-container {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: nowrap;
+    padding: 8px 12px;
+    gap: 8px;
+  }
+
+  /* Logo */
+  .mainbar-logo-wrap {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .mainbar-logo-pill {
+    padding: 6px 10px 6px 6px;
+    max-width: fit-content;
+  }
+
+  .mainbar-logo-text {
+    font-size: 13px;
+  }
+
+  /* Hide desktop-only items (login, wishlist, cart, text+chevron
+     currency button) — the mobile icon-only currency button below
+     has its own class and is NOT part of mainbar-desktop-only, so it
+     stays visible. */
+  .mainbar-search,
+  .navbar-center,
+  .mainbar-desktop-only {
+    display: none !important;
+  }
+
+  /* Right side */
+  .mainbar-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+    width: auto;
+  }
+
+  /* Download button */
+  .mainbar-pwa-btn {
+    width: 38px;
+    height: 38px;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 10px;
+  }
+
+  .mainbar-pwa-text {
+    display: none;
+  }
+
+  /* Menu button */
+  .mobile-menu-btn {
+    display: flex;
+    width: 38px;
+    height: 38px;
+    align-items: center;
+    justify-content: center;
+    margin: 0;
+  }
+}
+
+/* ══════════════════════════════════════════════════════════
+   MOBILE MAINBAR OVERRIDE
+   Login, wishlist, cart, and the text+chevron currency button are
+   hidden below 768px (their mobile equivalents live in the drawer,
+   or — for currency — as the icon button next to Download below).
+   ══════════════════════════════════════════════════════════ */
+@media (max-width: 767px) {
+  .mainbar-desktop-only {
+    display: none !important;
+  }
+
+  .mainbar-actions {
+    gap: 8px;
+  }
+
+  .mainbar-pwa-btn {
+    padding: 8px 10px;
+  }
+}
+
+/* ══════════════════════════════════════════════════════════
+   MOBILE CURRENCY ICON — sits next to the Download App icon
+   at the top of the page. Hidden on desktop/tablet, where the
+   text+chevron .mainbar-currency-container (mainbar-desktop-only)
+   is used instead.
+   ══════════════════════════════════════════════════════════ */
+.mainbar-currency-mobile-wrap {
+  display: none;
+}
+
+@media (max-width: 767px) {
+  .mainbar-currency-mobile-wrap {
+    display: flex;
+    position: relative;
+  }
+
+  .mainbar-currency-container--mobile {
+    position: static;
+  }
+
+  .mainbar-currency-container--mobile .mainbar-currency-btn {
+    display: flex;
+    width: 38px;
+    height: 38px;
+    padding: 0;
+    justify-content: center;
+    align-items: center;
+    border-radius: 10px;
+    background: #d8e4c7;
+    border: 1px solid #c3d4ab;
+    color: #2f4626;
+  }
+
+  .mainbar-currency-container--mobile .mainbar-currency-btn:hover {
+    background: #c3d4ab;
+  }
+
+  /* Hide the text label + chevron on the mobile icon button — icon only */
+  .mainbar-currency-container--mobile .mainbar-login-text,
+  .mainbar-currency-container--mobile .mainbar-chevron {
+    display: none !important;
+  }
+
+  /* Menu needs to open aligned under the icon rather than off a
+     much wider desktop button */
+  .mainbar-currency-container--mobile .mainbar-dropdown-menu {
+    right: -60px;
+    min-width: 180px;
+  }
+}
+
+/* On desktop/tablet, hide the mobile-only wrapper entirely (the
+   text+chevron version above already covers that breakpoint) */
+@media (min-width: 768px) {
+  .mainbar-currency-mobile-wrap {
+    display: none !important;
+  }
+}

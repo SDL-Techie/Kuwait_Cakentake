@@ -1,0 +1,644 @@
+/* ── Palette ──
+   White background, soft sage-green (#d8e4c7) as the accent throughout.
+   A slightly deeper green is derived for text/borders where contrast is
+   needed against the light accent.
+*/
+
+.agent-payment-page {
+  --green-soft: #d8e4c7;
+  --green-mid: #a9c48a;
+  --green-deep: #5f7a45;
+  --green-text: #3f5530;
+  --amber-soft: #fdeecb;
+  --amber-text: #a15c1e;
+  --red-soft: #fbe1e1;
+  --red-text: #b3261e;
+  --ink: #23281f;
+  --muted: #7a8272;
+  --border: #e4e9dc;
+
+  width: 100%;
+  min-height: 100vh;
+  padding: 24px;
+  box-sizing: border-box;
+  background: #ffffff;
+  color: var(--ink);
+}
+
+/* ── Header ── */
+
+.agent-payment-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.agent-payment-title {
+  font-size: 1.6rem;
+  font-weight: 700;
+  margin: 0 0 4px 0;
+}
+
+.agent-payment-subtitle {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.95rem;
+}
+
+.agent-payment-refresh-btn {
+  background: var(--green-soft);
+  color: var(--green-text);
+  border: 1px solid var(--green-mid);
+  border-radius: 10px;
+  padding: 10px 18px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s ease, transform 0.1s ease;
+}
+
+.agent-payment-refresh-btn:hover:not(:disabled) {
+  background: var(--green-mid);
+  color: #fff;
+}
+
+.agent-payment-refresh-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* ── Summary cards ── */
+
+.agent-payment-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.agent-payment-summary-card {
+  background: linear-gradient(145deg, #ffffff, var(--green-soft));
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 18px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  box-shadow: 0 2px 8px rgba(95, 122, 69, 0.08);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.agent-payment-summary-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(95, 122, 69, 0.14);
+}
+
+.agent-payment-summary-card--green {
+  background: linear-gradient(145deg, var(--green-soft), var(--green-mid));
+}
+
+.agent-payment-summary-card--green .agent-payment-summary-value {
+  color: var(--green-text);
+}
+
+.agent-payment-summary-card--amber {
+  background: linear-gradient(145deg, #ffffff, var(--amber-soft));
+}
+
+.agent-payment-summary-card--amber .agent-payment-summary-value {
+  color: var(--amber-text);
+}
+
+.agent-payment-summary-label {
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--muted);
+  font-weight: 600;
+}
+
+.agent-payment-summary-value {
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: var(--ink);
+}
+
+/* ── Filters ── */
+
+.agent-payment-filters {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  background: #ffffff;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 16px 20px;
+  margin-bottom: 24px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+}
+
+.agent-payment-filter-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 150px;
+}
+
+.agent-payment-filter-field--search {
+  flex: 1 1 240px;
+}
+
+.agent-payment-filter-field label {
+  font-size: 0.75rem;
+  color: var(--muted);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.agent-payment-filter-field select,
+.agent-payment-filter-field input {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 9px 12px;
+  font-size: 0.9rem;
+  background: #fff;
+  color: var(--ink);
+}
+
+.agent-payment-filter-field select:focus,
+.agent-payment-filter-field input:focus {
+  outline: none;
+  border-color: var(--green-mid);
+  box-shadow: 0 0 0 3px rgba(169, 196, 138, 0.25);
+}
+
+/* ── Body layout ── */
+
+.agent-payment-body {
+  display: grid;
+  grid-template-columns: 1fr 280px;
+  gap: 24px;
+  align-items: start;
+}
+
+.agent-payment-main {
+  min-width: 0;
+}
+
+/* ── Selected bar ── */
+
+.agent-payment-selected-bar {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 24px;
+  background: var(--green-soft);
+  border: 1px solid var(--green-mid);
+  border-radius: 12px;
+  padding: 14px 20px;
+  margin-bottom: 16px;
+}
+
+.agent-payment-selected-bar > div {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.agent-payment-selected-label {
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  color: var(--green-text);
+  font-weight: 600;
+}
+
+.agent-payment-selected-count {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.agent-payment-selected-actions {
+  margin-left: auto;
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.agent-payment-pay-btn {
+  background: var(--green-deep);
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  padding: 12px 22px;
+  font-weight: 700;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: background 0.15s ease, transform 0.1s ease;
+}
+
+.agent-payment-pay-btn:hover:not(:disabled) {
+  background: #4b6136;
+  transform: translateY(-1px);
+}
+
+.agent-payment-pay-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.agent-payment-link-btn {
+  background: none;
+  border: none;
+  color: var(--green-text);
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: underline;
+  padding: 4px;
+}
+
+/* ── Table ── */
+
+.agent-payment-table-wrapper {
+  overflow-x: auto;
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  margin-bottom: 24px;
+}
+
+.agent-payment-table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+  min-width: 960px;
+}
+
+.agent-payment-table thead th {
+  text-align: left;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--muted);
+  font-weight: 700;
+  padding: 14px 16px;
+  background: var(--green-soft);
+  border-bottom: 1px solid var(--border);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.agent-payment-table tbody td {
+  padding: 12px 16px;
+  border-bottom: 1px solid #f1f3ee;
+  font-size: 0.88rem;
+  color: var(--ink);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Amount column (5th) reads better right-aligned */
+.agent-payment-table thead th:nth-child(5),
+.agent-payment-table tbody td:nth-child(5) {
+  text-align: right;
+}
+
+.agent-payment-group-row {
+  background: #f7faf3;
+}
+
+.agent-payment-group-title {
+  font-weight: 700;
+  color: var(--green-text);
+  padding: 10px 16px !important;
+  white-space: normal;
+  overflow: visible;
+  text-overflow: initial;
+}
+
+.agent-payment-order-row:hover {
+  background: #fbfdf8;
+}
+
+.agent-payment-checkbox-disabled {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+}
+
+/* ── Badges ── */
+
+.agent-payment-badge {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: capitalize;
+}
+
+.badge-payment-pending {
+  background: var(--amber-soft);
+  color: var(--amber-text);
+}
+
+.badge-payment-paid {
+  background: var(--green-soft);
+  color: var(--green-text);
+}
+
+.badge-order-pending {
+  background: var(--amber-soft);
+  color: var(--amber-text);
+}
+
+.badge-order-confirmed,
+.badge-order-preparing {
+  background: #e8f0ff;
+  color: #2255bb;
+}
+
+.badge-order-out {
+  background: #ede4ff;
+  color: #6a3cc4;
+}
+
+.badge-order-delivered {
+  background: var(--green-soft);
+  color: var(--green-text);
+}
+
+.badge-order-cancelled {
+  background: var(--red-soft);
+  color: var(--red-text);
+}
+
+.badge-order-default {
+  background: #eee;
+  color: #555;
+}
+
+.agent-payment-view-btn {
+  background: #fff;
+  border: 1px solid var(--green-mid);
+  color: var(--green-text);
+  border-radius: 8px;
+  width: 32px;
+  height: 32px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.agent-payment-view-btn:hover {
+  background: var(--green-mid);
+  color: #fff;
+}
+
+/* ── Monthly stats ── */
+
+.agent-payment-monthly-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 16px;
+  margin-bottom: 8px;
+}
+
+.agent-payment-stat-block {
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 16px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+/* ── Side panel ── */
+
+.agent-payment-side-panel {
+  background: linear-gradient(160deg, #ffffff, var(--green-soft));
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 20px;
+  position: sticky;
+  top: 100px;
+}
+
+.agent-payment-side-panel h3 {
+  margin: 0 0 4px 0;
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--muted);
+}
+
+.agent-payment-side-agent-name {
+  font-size: 1.1rem;
+  font-weight: 700;
+  margin: 0 0 16px 0;
+}
+
+.agent-payment-side-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+  font-size: 0.85rem;
+}
+
+.agent-payment-side-row:last-child {
+  border-bottom: none;
+}
+
+/* ── Empty / error / skeleton states ── */
+
+.agent-payment-empty {
+  padding: 48px 24px;
+  text-align: center;
+  color: var(--muted);
+  background: #fafcf8;
+  border: 1px dashed var(--border);
+  border-radius: 14px;
+  margin-bottom: 24px;
+}
+
+.agent-payment-empty--error {
+  color: var(--red-text);
+}
+
+.agent-payment-skeleton-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 24px;
+}
+
+.agent-payment-skeleton-row {
+  height: 48px;
+  border-radius: 10px;
+  background: linear-gradient(90deg, #f2f4ee 25%, #e9ede3 37%, #f2f4ee 63%);
+  background-size: 400% 100%;
+  animation: agent-payment-shimmer 1.4s ease infinite;
+}
+
+@keyframes agent-payment-shimmer {
+  0% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0 50%;
+  }
+}
+
+/* ── Modals ── */
+
+.agent-payment-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(35, 40, 31, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 50;
+  padding: 20px;
+}
+
+.agent-payment-modal {
+  background: #fff;
+  border-radius: 16px;
+  padding: 28px;
+  width: 100%;
+  max-width: 420px;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.2);
+  animation: agent-payment-modal-in 0.18s ease;
+}
+
+.agent-payment-modal--wide {
+  max-width: 640px;
+  max-height: 85vh;
+  overflow-y: auto;
+}
+
+@keyframes agent-payment-modal-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.agent-payment-modal h2 {
+  margin: 0 0 20px 0;
+  font-size: 1.2rem;
+}
+
+.agent-payment-modal-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 8px 0;
+  border-bottom: 1px solid #f1f3ee;
+  font-size: 0.9rem;
+}
+
+.agent-payment-modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 20px;
+}
+
+/* View order modal specifics */
+
+.agent-payment-view-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 14px;
+  margin-bottom: 18px;
+}
+
+.agent-payment-view-grid p {
+  margin: 2px 0 0 0;
+  font-size: 0.9rem;
+  color: var(--ink);
+}
+
+.agent-payment-view-items {
+  margin-bottom: 18px;
+}
+
+.agent-payment-items-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 8px;
+}
+
+.agent-payment-items-table th,
+.agent-payment-items-table td {
+  text-align: left;
+  padding: 8px 10px;
+  font-size: 0.85rem;
+  border-bottom: 1px solid #f1f3ee;
+}
+
+.agent-payment-view-totals {
+  background: var(--green-soft);
+  border-radius: 12px;
+  padding: 14px 18px;
+}
+
+.agent-payment-view-totals > div {
+  display: flex;
+  justify-content: space-between;
+  padding: 4px 0;
+  font-size: 0.88rem;
+}
+
+.agent-payment-view-grand-total {
+  border-top: 1px solid var(--green-mid);
+  margin-top: 6px;
+  padding-top: 10px !important;
+  font-size: 1rem !important;
+  font-weight: 700;
+  color: var(--green-text);
+}
+
+/* ── Responsive ── */
+
+@media (max-width: 900px) {
+  .agent-payment-body {
+    grid-template-columns: 1fr;
+  }
+
+  .agent-payment-side-panel {
+    position: static;
+  }
+}
+
+@media (max-width: 600px) {
+  .agent-payment-page {
+    padding: 16px;
+  }
+
+  .agent-payment-filters {
+    position: static;
+  }
+
+  .agent-payment-view-grid {
+    grid-template-columns: 1fr;
+  }
+}

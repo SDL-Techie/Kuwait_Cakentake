@@ -1,0 +1,868 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   StaffManagement.css  –  Sage Kitchen Admin Theme
+   All CSS variables, fonts, animations, and component styles are self-contained
+   in this single file. No other CSS imports required.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;600;700&display=swap');
+
+/* ── 1. Design Tokens ──────────────────────────────────────────────────────── */
+:root {
+  --sm-bg:           #F4F3EF;
+  --sm-card:         #FFFFFF;
+  --sm-green-1:      #D8E4C7;
+  --sm-green-2:      #C7D7AE;
+  --sm-green-3:      #B7C89A;
+  --sm-text:         #111111;
+  --sm-muted:        #666666;
+  --sm-border:       #ECEBE7;
+  --sm-radius:       28px;
+  --sm-shadow:       0 10px 30px rgba(0,0,0,0.03);
+  --sm-success:      #7FB069;
+  --sm-warning:      #F2C94C;
+  --sm-danger:       #EB5757;
+  --sm-font-sans:    'Inter', system-ui, -apple-system, sans-serif;
+  --sm-font-display: 'Space Grotesk', 'Inter', sans-serif;
+}
+
+/* ── 2. Base resets scoped to component ────────────────────────────────────── */
+.staff-workspace-container *,
+.sage-modal-overlay * {
+  box-sizing: border-box;
+  /* avoid forcing padding on all elements (breaks SVGs/icons) */
+  padding: 0;
+
+}
+
+.staff-workspace-container,
+.sage-modal-overlay {
+  font-family: var(--sm-font-sans);
+  color: var(--sm-text);
+  -webkit-font-smoothing: antialiased;
+}
+
+.staff-workspace-container h1,
+.staff-workspace-container h2,
+.staff-workspace-container h3,
+.staff-workspace-container h4,
+.staff-workspace-container h5,
+.staff-workspace-container h6,
+.sage-modal-content h3 {
+  font-family: var(--sm-font-display);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+
+/* ── 3. Animations ─────────────────────────────────────────────────────────── */
+@keyframes sm-fadeIn {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes sm-fadeInOverlay {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes sm-scaleDownIn {
+  from { opacity: 0; transform: scale(0.95) translateY(10px); }
+  to   { opacity: 1; transform: scale(1)    translateY(0); }
+}
+
+/* ── 4. Staff Workspace Container ──────────────────────────────────────────── */
+.staff-workspace-container {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  animation: sm-fadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* ── 5. Stats Grid ─────────────────────────────────────────────────────────── */
+.staff-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+}
+
+.staff-stat-card {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  background-color: var(--sm-card);
+  border-radius: 20px;
+  padding: 16px 24px;
+  border: 1px solid var(--sm-border);
+  box-shadow: var(--sm-shadow);
+}
+
+.staff-stat-card .meta-icon {
+  width: 36px;
+  height: 36px;
+  flex-shrink: 0;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #FAF9F6;
+}
+
+.staff-stat-card .meta-icon.light-green  { color: var(--sm-green-3); background-color: #F7FEE7; }
+.staff-stat-card .meta-icon.bright-green { color: var(--sm-success);  background-color: #EBF8E3; }
+.staff-stat-card .meta-icon.gold         { color: #D97706;             background-color: #FEF3C7; }
+
+.staff-stat-card .details h3 {
+  font-size: 24px;
+  font-family: var(--sm-font-display);
+  font-weight: 700;
+  line-height: 1.2;
+  color: var(--sm-text);
+}
+
+.staff-stat-card .details span {
+  font-size: 11px;
+  color: var(--sm-muted);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+/* ── 6. Table Section ──────────────────────────────────────────────────────── */
+.staff-table-section {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.staff-table-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background-color: var(--sm-card);
+  padding: 16px 20px;
+  border-radius: 20px;
+  border: 1px solid var(--sm-border);
+}
+
+.staff-table-header h4 {
+  font-size: 16px;
+  color: var(--sm-text);
+  font-weight: 600;
+}
+
+/* ── 7. DataTable Card ─────────────────────────────────────────────────────── */
+.sage-table-card {
+  background-color: var(--sm-card);
+  border-radius: var(--sm-radius);
+  box-shadow: var(--sm-shadow);
+  border: 1px solid var(--sm-border);
+  overflow: hidden;
+  width: 100%;
+}
+
+.sage-table-container {
+  overflow-x: auto;
+  width: 100%;
+}
+
+.sage-data-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+  font-family: var(--sm-font-sans);
+}
+
+.sage-data-table th {
+  background-color: #FAF9F6;
+  padding: 18px 20px;
+  font-weight: 600;
+  color: var(--sm-muted);
+  text-transform: uppercase;
+  font-size: 11px;
+  letter-spacing: 0.05em;
+  border-bottom: 1px solid var(--sm-border);
+}
+
+.sage-data-table td {
+  padding: 18px 20px;
+  color: var(--sm-text);
+  border-bottom: 1px solid var(--sm-border);
+  vertical-align: middle;
+}
+
+.sage-data-table tr:last-child td {
+  border-bottom: none;
+}
+
+.sage-data-table tbody tr {
+  transition: background-color 0.15s ease;
+}
+
+.sage-data-table tbody tr:hover {
+  background-color: #FAF9F6;
+}
+
+.empty-table-cell {
+  text-align: center !important;
+  padding: 60px 20px !important;
+  color: var(--sm-muted);
+  font-size: 14px;
+}
+
+/* ── 8. Role Tag ───────────────────────────────────────────────────────────── */
+.role-tag-caps {
+  background-color: #F3F4F6;
+  color: #374151;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+/* ── 9. Status Dot Label ───────────────────────────────────────────────────── */
+.roster-status-dot-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.roster-status-dot-label .bullet-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.roster-status-dot-label.on            { color: #3F6212; }
+.roster-status-dot-label.on .bullet-dot {
+  background-color: var(--sm-success);
+  box-shadow: 0 0 8px var(--sm-success);
+}
+
+.roster-status-dot-label.off            { color: var(--sm-muted); }
+.roster-status-dot-label.off .bullet-dot { background-color: #888888; }
+
+/* ── 10. Action Buttons ────────────────────────────────────────────────────── */
+.sage-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border-radius: 10px;
+  font-weight: 500;
+  font-size: 13px;
+  letter-spacing: -0.01em;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  border: 1px solid transparent;
+  outline: none;
+  font-family: var(--sm-font-sans);
+}
+
+.sage-btn:active { transform: scale(0.97) !important; }
+
+.btn-primary {
+  background-color: var(--sm-green-3);
+  color: var(--sm-text);
+  box-shadow: 0 4px 12px rgba(183, 200, 154, 0.3);
+}
+.btn-primary:hover:not(:disabled) {
+  background-color: var(--sm-green-2);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(183, 200, 154, 0.45);
+}
+
+.btn-secondary {
+  background-color: var(--sm-card);
+  border-color: var(--sm-border);
+  color: var(--sm-text);
+}
+.btn-secondary:hover:not(:disabled) {
+  background-color: #F8F7F4;
+  transform: translateY(-1px);
+}
+
+.btn-success {
+  background-color: var(--sm-success);
+  color: white;
+  box-shadow: 0 4px 12px rgba(127, 176, 105, 0.2);
+}
+.btn-success:hover:not(:disabled) {
+  background-color: #6EA157;
+  transform: translateY(-1px);
+}
+
+.btn-danger {
+  background-color: var(--sm-danger);
+  color: white;
+  box-shadow: 0 4px 12px rgba(235, 87, 87, 0.15);
+}
+.btn-danger:hover:not(:disabled) {
+  background-color: #D64E4E;
+  transform: translateY(-1px);
+}
+
+.sage-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.btn-sm { padding: 14px;  font-size: 12px; }
+.btn-md { padding: 10px 20px; font-size: 13px; }
+.btn-lg { padding: 14px 28px; font-size: 15px; }
+
+/* ── 11. Table Actions Cell ────────────────────────────────────────────────── */
+.tbl-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+/* ── 12. Modal Overlay ─────────────────────────────────────────────────────── */
+.sage-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.25);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  animation: sm-fadeInOverlay 0.2s ease-out;
+}
+
+.sage-modal-content {
+  background-color: var(--sm-card);
+  border-radius: var(--sm-radius);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.1);
+  border: 1px solid var(--sm-border);
+  width: 90%;
+  max-width: 500px;
+  overflow: hidden;
+  animation: sm-scaleDownIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.sage-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 24px;
+  border-bottom: 1px solid var(--sm-border);
+}
+
+.sage-modal-header h3 {
+  font-size: 18px;
+  color: var(--sm-text);
+}
+
+.sage-modal-close {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: var(--sm-muted);
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+.sage-modal-close:hover {
+  background-color: #F3F2EE;
+  color: var(--sm-text);
+}
+
+.sage-modal-body {
+  padding: 24px;
+  max-height: 80vh;
+  overflow-y: auto;
+}
+
+/* ── 13. Form Styles ───────────────────────────────────────────────────────── */
+.admin-form-container {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.form-group-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.form-group-field label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--sm-text);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.form-group-field input[type="text"],
+.form-group-field input[type="number"],
+.form-group-field input[type="email"],
+.form-group-field select,
+.form-group-field textarea {
+  padding: 10px 14px;
+  border-radius: 12px;
+  border: 1px solid var(--sm-border);
+  background-color: #FAF9F6;
+  color: var(--sm-text);
+  font-size: 13px;
+  font-family: var(--sm-font-sans);
+  outline: none;
+  transition: all 0.2s;
+  width: 100%;
+}
+
+.form-group-field input:focus,
+.form-group-field select:focus,
+.form-group-field textarea:focus {
+  border-color: var(--sm-green-2);
+  background-color: white;
+  box-shadow: 0 0 0 3px rgba(183, 200, 154, 0.2);
+}
+
+.form-group-split {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+
+.form-dialog-buttons {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--sm-border);
+}
+
+.footer-gap {
+  margin-top: 8px;
+}
+
+/* ── 14. Scrollbar ─────────────────────────────────────────────────────────── */
+.sage-modal-body::-webkit-scrollbar,
+.sage-table-container::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+.sage-modal-body::-webkit-scrollbar-track,
+.sage-table-container::-webkit-scrollbar-track {
+  background: transparent;
+}
+.sage-modal-body::-webkit-scrollbar-thumb,
+.sage-table-container::-webkit-scrollbar-thumb {
+  background: rgba(183, 200, 154, 0.3);
+  border-radius: 99px;
+}
+.sage-modal-body::-webkit-scrollbar-thumb:hover,
+.sage-table-container::-webkit-scrollbar-thumb:hover {
+  background: rgba(183, 200, 154, 0.6);
+}
+
+/* ── 15. Responsive ────────────────────────────────────────────────────────── */
+@media (max-width: 768px) {
+  .staff-stats-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .staff-table-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .form-group-split {
+    grid-template-columns: 1fr;
+  }
+
+  .sage-data-table th,
+  .sage-data-table td {
+    padding: 12px 14px;
+  }
+}
+
+
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   StaffManagement.css  –  ADDITIONS for User & Permission Management
+   Append these styles to the existing StaffManagement.css file.
+   All class names are prefixed with sm- to avoid collision.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* ── Stats: 6-column grid ──────────────────────────────────────────────────── */
+.sm-stats-6 {
+  grid-template-columns: repeat(6, 1fr);
+}
+
+@media (max-width: 1200px) {
+  .sm-stats-6 { grid-template-columns: repeat(3, 1fr); }
+}
+@media (max-width: 768px) {
+  .sm-stats-6 { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 480px) {
+  .sm-stats-6 { grid-template-columns: 1fr; }
+}
+
+/* ── Table header row with chips + button ──────────────────────────────────── */
+.sm-table-header-row {
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.sm-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+/* ── Role filter chips ─────────────────────────────────────────────────────── */
+.sm-role-chips {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.sm-chip {
+  padding: 6px 14px;
+  border-radius: 99px;
+  border: 1px solid var(--sm-border);
+  background: var(--sm-card);
+  color: var(--sm-muted);
+  font-size: 11px;
+  font-weight: 600;
+  font-family: var(--sm-font-sans);
+  cursor: pointer;
+  transition: all 0.18s ease;
+  letter-spacing: 0.02em;
+}
+
+.sm-chip:hover {
+  background: #F3F2EE;
+  color: var(--sm-text);
+}
+
+.sm-chip-active {
+  background: var(--sm-green-3);
+  color: var(--sm-text);
+  border-color: var(--sm-green-3);
+  box-shadow: 0 2px 8px rgba(183, 200, 154, 0.35);
+}
+
+/* ── Loading states ────────────────────────────────────────────────────────── */
+.sm-table-loader {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  padding: 60px 20px;
+  color: var(--sm-muted);
+  font-size: 13px;
+}
+
+.sm-modal-loader {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 0;
+}
+
+.sm-spinner {
+  width: 28px;
+  height: 28px;
+  border: 3px solid var(--sm-border);
+  border-top-color: var(--sm-green-3);
+  border-radius: 50%;
+  animation: sm-spin 0.75s linear infinite;
+}
+
+@keyframes sm-spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ── Toast notifications ───────────────────────────────────────────────────── */
+.sm-toast-stack {
+  position: fixed;
+  top: 24px;
+  right: 24px;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  pointer-events: none;
+}
+
+.sm-toast {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 20px;
+  border-radius: 14px;
+  font-size: 13px;
+  font-weight: 500;
+  font-family: var(--sm-font-sans);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+  animation: sm-toastIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  pointer-events: all;
+  min-width: 240px;
+  max-width: 360px;
+}
+
+@keyframes sm-toastIn {
+  from { opacity: 0; transform: translateX(40px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+.sm-toast-success {
+  background: #EBF8E3;
+  color: #3F6212;
+  border: 1px solid #C6E89A;
+}
+
+.sm-toast-error {
+  background: #FEE2E2;
+  color: #991B1B;
+  border: 1px solid #FCA5A5;
+}
+
+.sm-toast-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.sm-toast-success .sm-toast-dot { background: var(--sm-success); }
+.sm-toast-error   .sm-toast-dot { background: var(--sm-danger); }
+
+/* ── ID badge ──────────────────────────────────────────────────────────────── */
+.sm-id-badge {
+  font-size: 11px;
+  font-weight: 700;
+  font-family: 'SF Mono', 'Fira Code', monospace;
+  background: #F3F4F6;
+  color: #374151;
+  padding: 3px 8px;
+  border-radius: 6px;
+  letter-spacing: 0.02em;
+}
+
+/* ── Muted text ────────────────────────────────────────────────────────────── */
+.sm-muted-text {
+  color: var(--sm-muted);
+  font-size: 12px;
+}
+
+/* ── Icon-only action buttons ──────────────────────────────────────────────── */
+.sm-icon-btn {
+  width: 32px;
+  height: 32px;
+  padding: 0 !important;
+  flex-shrink: 0;
+}
+
+/* ── Role badges ───────────────────────────────────────────────────────────── */
+.sm-role-badge {
+  display: inline-block;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 3px 9px;
+  border-radius: 8px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.sm-role-shop_manager    { background: #FEF3C7; color: #92400E; }
+.sm-role-kitchen_staff   { background: #EBF8E3; color: #3F6212; }
+.sm-role-delivery_agent  { background: #DBEAFE; color: #1E3A8A; }
+.sm-role-sales_agent     { background: #F3E8FF; color: #6B21A8; }
+.sm-role-driver          { background: #FFE4E6; color: #9F1239; }
+.sm-role-admin           { background: #111111; color: #FFFFFF; }
+
+/* ── View modal grid ───────────────────────────────────────────────────────── */
+.sm-view-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.sm-view-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--sm-border);
+}
+
+.sm-view-row:last-child { border-bottom: none; }
+
+.sm-view-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--sm-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.sm-view-value {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--sm-text);
+}
+
+/* ── Delete modal ──────────────────────────────────────────────────────────── */
+.sm-modal-narrow {
+  max-width: 420px !important;
+}
+
+.sm-delete-body {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 12px 0 20px;
+  gap: 12px;
+}
+
+.sm-delete-icon-wrap {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: #FEE2E2;
+  color: var(--sm-danger);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.sm-delete-title {
+  font-size: 18px;
+  font-weight: 700;
+  font-family: var(--sm-font-display);
+  color: var(--sm-text);
+  margin: 0;
+}
+
+.sm-delete-sub {
+  font-size: 13px;
+  color: var(--sm-muted);
+  line-height: 1.6;
+  margin: 0;
+}
+
+/* ── Wide modal for permissions ────────────────────────────────────────────── */
+.sm-modal-wide {
+  max-width: 720px !important;
+}
+
+/* ── Permission modal subheader ────────────────────────────────────────────── */
+.sm-perm-subheader {
+  font-size: 12px;
+  color: var(--sm-muted);
+  margin: 4px 0 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+/* ── Permission list header ────────────────────────────────────────────────── */
+.sm-perm-list-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.sm-perm-count {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--sm-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+/* ── Permission badges ─────────────────────────────────────────────────────── */
+.sm-perm-badge {
+  display: inline-block;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 6px;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+.sm-perm-on  { background: #EBF8E3; color: #3F6212; }
+.sm-perm-off { background: #F3F4F6; color: #9CA3AF; }
+
+/* ── Permission empty state ────────────────────────────────────────────────── */
+.sm-perm-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 48px 0;
+  color: var(--sm-muted);
+  font-size: 13px;
+}
+
+/* ── Permission form ───────────────────────────────────────────────────────── */
+.sm-perm-form-title {
+  font-size: 14px;
+  font-weight: 600;
+  font-family: var(--sm-font-display);
+  color: var(--sm-text);
+  margin-bottom: 4px;
+}
+
+.sm-perm-checks {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+}
+
+.sm-check-label {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--sm-text);
+  cursor: pointer;
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1px solid var(--sm-border);
+  background: #FAF9F6;
+  transition: all 0.15s ease;
+}
+
+.sm-check-label:hover {
+  background: #F3F2EE;
+  border-color: var(--sm-green-2);
+}
+
+.sm-check-label input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--sm-success);
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+@media (max-width: 480px) {
+  .sm-perm-checks { grid-template-columns: 1fr; }
+  .sm-modal-wide { max-width: 96vw !important; }
+}

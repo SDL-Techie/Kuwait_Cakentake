@@ -1,0 +1,226 @@
+.rasi-login-page {
+  min-height: calc(100vh - 104px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--bg-light);
+  padding: 40px 20px;
+}
+
+.rasi-login-card {
+  background-color: var(--white);
+  width: 100%;
+  max-width: 450px;
+  padding: 40px;
+  border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+}
+
+.rasi-login-header {
+  text-align: center;
+  margin-bottom: 40px;
+}
+
+.rasi-login-header h2 {
+  font-size: 28px;
+  color: var(--primary);
+  margin-bottom: 10px;
+}
+
+.rasi-login-header p {
+  color: #666;
+}
+
+.rasi-form-group {
+  position: relative;
+  margin-bottom: 25px;
+}
+
+.rasi-form-group input {
+  width: 100%;
+  padding: 12px 0;
+  font-size: 16px;
+  color: var(--primary);
+  border: none;
+  border-bottom: 2px solid #ddd;
+  background: transparent;
+  outline: none;
+  transition: var(--transition);
+}
+
+.rasi-form-group label {
+  position: absolute;
+  top: 12px;
+  left: 0;
+  color: #999;
+  pointer-events: none;
+  transition: var(--transition);
+}
+
+.rasi-form-group input:focus ~ label,
+.rasi-form-group input:not(:placeholder-shown) ~ label {
+  top: -15px;
+  font-size: 12px;
+  color: var(--highlight);
+  font-weight: 700;
+}
+
+.rasi-form-group input:focus {
+  border-bottom-color: var(--highlight);
+}
+
+.rasi-form-options {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30px;
+  font-size: 14px;
+}
+
+.rasi-error-message {
+  color: #e74c3c;
+  font-size: 14px;
+  margin-bottom: 15px;
+  text-align: center;
+}
+
+.rasi-success-message {
+  color: #27ae60;
+  font-size: 14px;
+  margin-bottom: 15px;
+  text-align: center;
+}
+
+.rasi-password-toggle {
+  position: absolute;
+  right: 0;
+  bottom: 12px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  transition: var(--transition);
+}
+
+.rasi-password-toggle:hover {
+  color: var(--highlight);
+}
+
+.rasi-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+}
+
+.rasi-forgot-password {
+  color: var(--highlight);
+  font-weight: 600;
+}
+
+.rasi-login-submit-btn {
+  width: 100%;
+  background-color: var(--primary);
+  color: var(--white);
+  padding: 14px;
+  border-radius: 4px;
+  font-size: 16px;
+  font-weight: 700;
+  text-transform: uppercase;
+  transition: var(--transition);
+}
+
+.rasi-login-submit-btn:hover {
+  background-color: var(--highlight);
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(210, 105, 30, 0.3);
+}
+
+.rasi-login-footer {
+  margin-top: 30px;
+  text-align: center;
+  font-size: 14px;
+}
+
+.rasi-login-footer a {
+  color: var(--highlight);
+  font-weight: 700;
+}
+
+
+.code-input {
+    letter-spacing: 2px;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: var(--highlight) !important;
+}
+
+/* Ensure the Lucide icons align nicely inside the floating labels */
+.rasi-form-group label {
+    display: flex;
+    align-items: center;
+}
+
+/* Spinner Animation for the button */
+.spinner {
+    animation: rotate 2s linear infinite;
+    margin: 0 auto;
+}
+
+@keyframes rotate {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+/* Responsive adjustment */
+@media (max-width: 480px) {
+    .rasi-login-card {
+        padding: 25px;
+    }
+}
+/* Add these to your existing CSS */
+
+.brand-icon-wrapper {
+    width: 70px;
+    height: 70px;
+    background-color: rgba(210, 105, 30, 0.1); /* Subtle version of your highlight */
+    color: var(--highlight);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 20px;
+}
+
+.rasi-login-card {
+    /* Adding a slightly more professional shadow */
+    box-shadow: 0 20px 40px rgba(0,0,0,0.08), 0 1px 3px rgba(0,0,0,0.02);
+    border: 1px solid #f0f0f0;
+}
+
+.rasi-form-group input:focus {
+    /* A subtle glow matching your highlight color */
+    box-shadow: 0 4px 0 -2px var(--highlight);
+    border-bottom-color: var(--highlight);
+}
+
+.rasi-form-options span {
+    color: #999;
+    font-style: italic;
+    font-size: 13px;
+}
+
+/* Ensure icons in labels don't jitter during animation */
+.rasi-form-group label svg {
+    flex-shrink: 0;
+}
+
+.code-input {
+    /* Extra emphasis on the security code */
+    font-family: 'Courier New', Courier, monospace;
+    letter-spacing: 3px !important;
+}

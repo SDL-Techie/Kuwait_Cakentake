@@ -1,0 +1,5 @@
+{
+  "name": "Rasi Bakery",
+  "description": "Premium Online Bakery E-commerce Platform",
+  "requestFramePermissions": ["geolocation"]
+}

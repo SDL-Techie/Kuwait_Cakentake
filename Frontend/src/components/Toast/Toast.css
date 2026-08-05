@@ -1,0 +1,67 @@
+.rasi-toast {
+  position: fixed;
+  bottom: 100px;
+  left: 50%;
+  background: linear-gradient(135deg, var(--primary) 0%, var(--primary) 100%);
+  color: var(--white);
+  padding: 16px 28px;
+  border-radius: 50px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  box-shadow: 0 10px 35px rgba(139, 69, 19, 0.3);
+  z-index: 10000;
+  font-weight: 600;
+  font-size: 15px;
+  border: 2px solid var(--white);
+  backdrop-filter: blur(10px);
+  animation: slideInUp 0.4s ease-out;
+}
+
+<<<<<<< HEAD
+/* .rasi-toast svg {
+  flex-shrink: 0;
+  stroke-width: 2.5;
+  animation: scaleIn 0.5s ease-out;
+} */
+=======
+.rasi-toast svg {
+  flex-shrink: 0;
+  stroke-width: 2.5;
+  animation: scaleIn 0.5s ease-out;
+}
+>>>>>>> 9829dbb7f696e3469664a187d26864f5a7322597
+
+@keyframes slideInUp {
+  from {
+    transform: translateY(100px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes scaleIn {
+  from {
+    transform: scale(0.8);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@media (max-width: 768px) {
+  .rasi-toast {
+    bottom: 80px;
+    width: 85%;
+    left: 50%;
+    transform: translateX(-50%);
+    justify-content: center;
+    padding: 14px 24px;
+    font-size: 14px;
+  }
+}

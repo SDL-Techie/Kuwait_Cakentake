@@ -1,0 +1,524 @@
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500&display=swap');
+
+:root {
+  --sidebar-width: 272px;
+  --header-height: 76px;
+  --transition: all 0.2s ease;
+
+  /* ── PALETTE : WHITE + GREEN ── */
+  --white: #ffffff;
+  --green-900: #2f4a2f;   /* headings / logo text */
+  --green-700: #4b6b3f;
+  --green-600: #5f7d4b;
+  --green-500: #6a7c50;   /* base accent (matches your original sage/olive) */
+  --green-200: #d8e4c7;   /* soft active/hover tint */
+  --green-100: #eef3e6;
+  --green-50:  #f6f9f2;   /* page background tint */
+
+  --ink-900: #263021;
+  --ink-600: #5c6b52;
+  --ink-400: #93a186;
+
+  --danger-500: #c1443f;
+
+  /* role accent — overridden inline per logged-in role, stays in the green family */
+  --role-accent: #d8e4c7;
+
+  --font-display: 'Fraunces', Georgia, serif;
+  --font-body: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+
+  --shadow-sm: 0 1px 2px rgba(47, 74, 47, 0.06);
+  --shadow-md: 0 8px 24px rgba(47, 74, 47, 0.08);
+  --shadow-lg: 0 16px 40px rgba(47, 74, 47, 0.12);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  font-family: var(--font-body);
+}
+
+/* ══════════════════════ LAYOUT SHELL ══════════════════════ */
+.rasi-admin-layout {
+  display: flex;
+  min-height: 100vh;
+  background-color: var(--green-50);
+  color: var(--ink-900);
+}
+
+/* ══════════════════════ SIDEBAR ══════════════════════ */
+.rasi-admin-sidebar {
+  width: var(--sidebar-width);
+  height: 100vh;
+  background: var(--white);
+  color: var(--ink-900);
+  position: fixed;
+  left: 0;
+  top: 0;
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  box-shadow: var(--shadow-lg);
+  transition: var(--transition);
+  border-right: 1px solid var(--green-100);
+}
+
+.rasi-admin-sidebar.closed {
+  transform: translateX(-100%);
+}
+
+.rasi-admin-sidebar-header {
+  padding: 26px 22px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--green-100);
+}
+
+.admin-logo-box {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.logo-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--role-accent);
+  box-shadow: 0 0 0 4px var(--green-100);
+}
+
+.rasi-admin-sidebar-header h3 {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 20px;
+  letter-spacing: 0.2px;
+  color: var(--green-900);
+  margin: 0;
+}
+
+.rasi-sidebar-close-btn {
+  background: var(--green-100);
+  border: none;
+  color: var(--green-900);
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+/* ── NAV BODY ── */
+.rasi-admin-menu-container {
+  flex: 1;
+  overflow-y: auto;
+  padding: 18px 14px 10px;
+}
+.rasi-admin-menu-container::-webkit-scrollbar { width: 5px; }
+.rasi-admin-menu-container::-webkit-scrollbar-thumb {
+  background: var(--green-200);
+  border-radius: 10px;
+}
+
+.rasi-nav-section {
+  margin-bottom: 22px;
+}
+
+.rasi-nav-eyebrow {
+  display: block;
+  font-size: 10.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1.4px;
+  color: var(--ink-400);
+  padding: 0 10px 10px;
+}
+
+.rasi-admin-menu {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.rasi-admin-menu li a,
+.rasi-nav-group-trigger,
+.rasi-sub-link {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  border-radius: var(--radius-sm);
+  color: var(--ink-600);
+  text-decoration: none;
+  font-size: 13.5px;
+  font-weight: 500;
+  transition: var(--transition);
+  cursor: pointer;
+}
+
+.rasi-admin-menu li a:hover,
+.rasi-nav-group-trigger:hover {
+  background: var(--green-100);
+  color: var(--green-900);
+}
+
+.rasi-admin-menu li.active > a {
+  background: var(--role-accent);
+  color: #fff;
+  font-weight: 600;
+  box-shadow: var(--shadow-sm);
+}
+
+.menu-icon {
+  font-size: 15px;
+  display: flex;
+  color: inherit;
+  opacity: 0.9;
+  width: 18px;
+  justify-content: center;
+}
+
+.menu-text {
+  flex: 1;
+  white-space: nowrap;
+}
+
+/* ── COLLAPSIBLE GROUPS (Kitchen / Sales / Delivery / Driver / Stock) ── */
+.rasi-nav-group-trigger {
+  width: 100%;
+  border: none;
+  background: transparent;
+  text-align: left;
+}
+
+.rasi-nav-group.active > .rasi-nav-group-trigger {
+  background: var(--green-100);
+  color: var(--green-900);
+}
+
+.rasi-chevron {
+  font-size: 10px;
+  opacity: 0.6;
+  transition: transform 0.25s ease;
+}
+.rasi-chevron.open {
+  transform: rotate(180deg);
+}
+
+.rasi-nav-subgroup {
+  list-style: none;
+  margin: 4px 0 2px;
+  padding: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  position: relative;
+}
+
+.rasi-nav-subgroup li {
+  position: relative;
+  margin-left: 22px;
+  padding-left: 14px;
+  border-left: 1px solid var(--green-200);
+}
+
+.rasi-sub-link {
+  font-size: 13px;
+  padding: 8px 10px;
+  color: var(--ink-600);
+}
+
+.rasi-sub-link:hover {
+  background: var(--green-100);
+  color: var(--green-900);
+}
+
+.menu-icon.sub {
+  font-size: 12px;
+  opacity: 0.8;
+}
+
+/* current sub-route gets the accent treatment too */
+.rasi-nav-subgroup li a[aria-current='page'],
+.rasi-sub-link.router-active {
+  background: var(--role-accent);
+  color: #fff;
+}
+
+/* ── FOOTER ── */
+.rasi-sidebar-footer {
+  padding: 16px;
+  border-top: 1px solid var(--green-100);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.rasi-role-chip {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+  color: var(--green-700);
+  padding: 6px 10px;
+  border-radius: 20px;
+  background: var(--green-100);
+  width: fit-content;
+}
+
+.rasi-role-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--role-accent);
+}
+
+.rasi-logout-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 11px 12px;
+  color: var(--danger-500);
+  background: rgba(193, 68, 63, 0.08);
+  border: none;
+  border-radius: var(--radius-sm);
+  font-size: 13.5px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.rasi-logout-btn:hover {
+  background: var(--danger-500);
+  color: #fff;
+}
+
+.rasi-sidebar-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(47, 74, 47, 0.35);
+  backdrop-filter: blur(2px);
+  z-index: 999;
+}
+
+/* ══════════════════════ MAIN CONTENT ══════════════════════ */
+.rasi-admin-main {
+  flex: 1;
+  margin-left: var(--sidebar-width);
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  transition: var(--transition);
+}
+
+.rasi-admin-main.expanded {
+  margin-left: 0;
+}
+
+.rasi-admin-header {
+  height: var(--header-height);
+  background: var(--white);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 28px;
+  position: sticky;
+  top: 0;
+  z-index: 900;
+  border-bottom: 1px solid var(--green-100);
+}
+
+.header-left-group,
+.header-right-group {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
+
+.rasi-sidebar-toggle {
+  background: var(--green-50);
+  border: none;
+  width: 38px;
+  height: 38px;
+  border-radius: var(--radius-sm);
+  font-size: 15px;
+  cursor: pointer;
+  color: var(--green-900);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: var(--transition);
+}
+.rasi-sidebar-toggle:hover {
+  background: var(--green-100);
+}
+
+.header-title-block {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.header-eyebrow {
+  font-size: 10.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--ink-400);
+}
+
+.header-page-title {
+  font-family: var(--font-display);
+  font-size: 19px;
+  font-weight: 600;
+  color: var(--green-900);
+  margin: 0;
+}
+
+.header-search-box {
+  background: var(--green-50);
+  padding: 9px 16px;
+  border-radius: 999px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--ink-400);
+  border: 1px solid transparent;
+  transition: var(--transition);
+}
+.header-search-box:focus-within {
+  border-color: var(--role-accent);
+  background: #fff;
+}
+
+.header-search-box input {
+  border: none;
+  background: none;
+  outline: none;
+  font-size: 13px;
+  width: 180px;
+  color: var(--ink-900);
+  font-family: var(--font-body);
+}
+
+.header-icon-btn {
+  position: relative;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  border: none;
+  background: var(--green-50);
+  color: var(--ink-600);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: var(--transition);
+}
+.header-icon-btn:hover {
+  background: var(--green-100);
+}
+
+.header-icon-dot {
+  position: absolute;
+  top: 9px;
+  right: 9px;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--role-accent);
+  border: 2px solid #fff;
+}
+
+.admin-profile-pill {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 14px 6px 6px;
+  border-radius: 999px;
+  background: var(--green-50);
+}
+
+.admin-profile-pill img {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid #fff;
+  box-shadow: 0 0 0 2px var(--role-accent);
+}
+
+.admin-info {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.25;
+}
+
+.admin-name {
+  font-weight: 700;
+  font-size: 12.5px;
+  color: var(--green-900);
+}
+
+.admin-role {
+  font-size: 11px;
+  color: var(--role-accent);
+  font-weight: 600;
+}
+
+/* ── CONTENT WRAPPER ── */
+.rasi-admin-content-wrapper {
+  min-height: calc(100vh - var(--header-height));
+  width: 100%;
+  max-width: 100%;
+  overflow-x: auto;
+}
+
+.rasi-admin-content-inner {
+  padding: 28px 32px 48px;
+}
+
+/* ══════════════════════ RESPONSIVE ══════════════════════ */
+@media (max-width: 1024px) {
+  .rasi-admin-main {
+    margin-left: 0;
+  }
+  .mobile-only { display: flex; }
+  .desktop-only { display: none; }
+}
+
+@media (min-width: 1025px) {
+  .mobile-only { display: none; }
+}
+
+@media (max-width: 640px) {
+  .rasi-admin-header {
+    padding: 0 16px;
+  }
+  .header-page-title {
+    font-size: 16px;
+  }
+  .rasi-admin-content-inner {
+    padding: 18px;
+  }
+  .admin-info {
+    display: none;
+  }
+}

@@ -1,0 +1,533 @@
+/* ═══════════════════════════════════════════
+   DELIVERY DASHBOARD — CakeNTake theme
+   Palette: white surfaces + sage green (#d8e4c7) accent
+═══════════════════════════════════════════ */
+
+.dd-root {
+  --dd-green: #d8e4c7;
+  --dd-green-dark: #8fae6a;
+  --dd-green-text: #4c6b32;
+  --dd-bg: #f7f8f5;
+  --dd-surface: #ffffff;
+  --dd-border: #eceee7;
+  --dd-text: #232520;
+  --dd-text-soft: #6b7166;
+  --dd-text-faint: #9aa093;
+  --dd-radius: 16px;
+  --dd-radius-sm: 10px;
+  --dd-shadow: 0 1px 2px rgba(30, 33, 24, 0.04), 0 8px 24px -12px rgba(30, 33, 24, 0.08);
+
+  --dd-amber-bg: #fdf1d8;
+  --dd-amber-text: #97650f;
+  --dd-blue-bg: #e2e9fb;
+  --dd-blue-text: #33509e;
+  --dd-purple-bg: #ece2fb;
+  --dd-purple-text: #6d3fa8;
+  --dd-red-bg: #fce3e3;
+  --dd-red-text: #b23a3a;
+  --dd-grey-bg: #eef0ea;
+  --dd-grey-text: #6b7166;
+
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  background: var(--dd-bg);
+  color: var(--dd-text);
+  padding: 28px 32px 48px;
+  min-height: 100%;
+  box-sizing: border-box;
+}
+
+.dd-root * { box-sizing: border-box; }
+
+/* ── Topbar ── */
+.dd-topbar {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  margin-bottom: 24px;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.dd-eyebrow {
+  margin: 0 0 4px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--dd-green-text);
+}
+
+.dd-title {
+  margin: 0;
+  font-family: Georgia, 'Iowan Old Style', 'Playfair Display', serif;
+  font-size: 26px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--dd-text);
+}
+
+.dd-refresh-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 9px 16px;
+  border-radius: 999px;
+  border: 1px solid var(--dd-border);
+  background: var(--dd-surface);
+  color: var(--dd-text);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s, transform 0.1s;
+}
+.dd-refresh-btn:hover:not(:disabled) {
+  background: var(--dd-green);
+  border-color: var(--dd-green-dark);
+}
+.dd-refresh-btn:active:not(:disabled) { transform: scale(0.97); }
+.dd-refresh-btn:disabled { opacity: 0.6; cursor: default; }
+
+/* ── Error banner ── */
+.dd-error-banner {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--dd-red-bg);
+  color: var(--dd-red-text);
+  padding: 10px 14px;
+  border-radius: var(--dd-radius-sm);
+  font-size: 13px;
+  font-weight: 500;
+  margin-bottom: 20px;
+}
+
+/* ── Stat cards ── */
+.dd-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.dd-stat-card {
+  background: var(--dd-surface);
+  border: 1px solid var(--dd-border);
+  border-radius: var(--dd-radius);
+  padding: 18px 18px 16px;
+  box-shadow: var(--dd-shadow);
+}
+
+.dd-stat-highlight {
+  background: var(--dd-green);
+  border-color: var(--dd-green-dark);
+}
+
+.dd-stat-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.dd-stat-label {
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--dd-text-soft);
+}
+
+.dd-stat-highlight .dd-stat-label { color: var(--dd-green-text); }
+
+.dd-stat-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 8px;
+  background: var(--dd-bg);
+  color: var(--dd-green-text);
+}
+.dd-stat-highlight .dd-stat-icon { background: rgba(255,255,255,0.55); }
+
+.dd-stat-value {
+  font-family: Georgia, 'Iowan Old Style', 'Playfair Display', serif;
+  font-size: 30px;
+  font-weight: 700;
+  line-height: 1;
+  margin-bottom: 6px;
+  min-height: 30px;
+  display: flex;
+  align-items: center;
+}
+
+.dd-stat-sub {
+  font-size: 12px;
+  color: var(--dd-text-soft);
+}
+.dd-stat-highlight .dd-stat-sub { color: var(--dd-green-text); }
+
+/* ── Main grid layout ── */
+.dd-main-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.dd-main-grid-bottom { margin-bottom: 0; }
+
+.dd-panel {
+  background: var(--dd-surface);
+  border: 1px solid var(--dd-border);
+  border-radius: var(--dd-radius);
+  box-shadow: var(--dd-shadow);
+  padding: 20px 20px 8px;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.dd-panel-hdr {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.dd-panel-hdr h3 {
+  margin: 0 0 3px;
+  font-family: Georgia, 'Iowan Old Style', 'Playfair Display', serif;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--dd-text);
+}
+
+.dd-panel-sub {
+  margin: 0;
+  font-size: 11.5px;
+  color: var(--dd-text-faint);
+  letter-spacing: 0.01em;
+}
+
+.dd-live-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--dd-green-text);
+  background: var(--dd-green);
+  padding: 5px 10px;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+
+.dd-live-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--dd-green-dark);
+  box-shadow: 0 0 0 3px rgba(143, 174, 106, 0.25);
+}
+
+/* ── Tabs ── */
+.dd-tabs {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+  border-bottom: 1px solid var(--dd-border);
+  padding-bottom: 12px;
+}
+
+.dd-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--dd-border);
+  background: var(--dd-bg);
+  color: var(--dd-text-soft);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+  white-space: nowrap;
+}
+
+.dd-tab:hover { border-color: var(--dd-green-dark); }
+
+.dd-tab.active {
+  background: var(--dd-green);
+  border-color: var(--dd-green-dark);
+  color: var(--dd-green-text);
+}
+
+.dd-tab-count {
+  background: rgba(0,0,0,0.06);
+  border-radius: 999px;
+  padding: 1px 6px;
+  font-size: 10.5px;
+  font-weight: 700;
+}
+.dd-tab.active .dd-tab-count { background: rgba(255,255,255,0.6); }
+
+/* ── Order list ── */
+.dd-order-list, .dd-activity-list, .dd-slot-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-bottom: 12px;
+  max-height: 420px;
+  overflow-y: auto;
+}
+
+.dd-order-row {
+  display: grid;
+  grid-template-columns: 1.6fr 1fr auto auto;
+  align-items: center;
+  gap: 12px;
+  background: var(--dd-bg);
+  border: 1px solid var(--dd-border);
+  border-radius: var(--dd-radius-sm);
+  padding: 11px 12px;
+}
+
+.dd-order-main {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.dd-order-code {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--dd-text);
+}
+
+.dd-order-cust {
+  font-size: 12px;
+  color: var(--dd-text-soft);
+}
+
+.dd-order-addr {
+  font-size: 11px;
+  color: var(--dd-text-faint);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.dd-order-meta {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+}
+
+.dd-order-items {
+  font-size: 11px;
+  color: var(--dd-text-faint);
+}
+
+.dd-order-total {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--dd-text);
+}
+
+.dd-view-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  border: 1px solid var(--dd-border);
+  background: var(--dd-surface);
+  color: var(--dd-text-soft);
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+.dd-view-btn:hover { background: var(--dd-green); color: var(--dd-green-text); }
+
+/* ── Badges ── */
+.dd-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+}
+.dd-badge-amber  { background: var(--dd-amber-bg);  color: var(--dd-amber-text); }
+.dd-badge-blue   { background: var(--dd-blue-bg);   color: var(--dd-blue-text); }
+.dd-badge-purple { background: var(--dd-purple-bg); color: var(--dd-purple-text); }
+.dd-badge-red    { background: var(--dd-red-bg);    color: var(--dd-red-text); }
+.dd-badge-green  { background: var(--dd-green);     color: var(--dd-green-text); }
+.dd-badge-grey   { background: var(--dd-grey-bg);   color: var(--dd-grey-text); }
+
+/* ── Slots panel ── */
+.dd-slot-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--dd-bg);
+  border: 1px solid var(--dd-border);
+  border-radius: var(--dd-radius-sm);
+  padding: 10px 12px;
+}
+
+.dd-slot-time-box {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  background: var(--dd-green);
+  color: var(--dd-green-text);
+  flex-shrink: 0;
+}
+
+.dd-slot-info {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  flex: 1;
+  min-width: 0;
+}
+
+.dd-slot-label {
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--dd-text);
+}
+
+.dd-slot-range {
+  font-size: 11px;
+  color: var(--dd-text-faint);
+}
+
+/* ── Activity list ── */
+.dd-activity-row {
+  display: grid;
+  grid-template-columns: 1.6fr auto auto auto;
+  align-items: center;
+  gap: 12px;
+  background: var(--dd-bg);
+  border: 1px solid var(--dd-border);
+  border-radius: var(--dd-radius-sm);
+  padding: 10px 12px;
+}
+
+.dd-activity-left {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.dd-activity-sub {
+  font-size: 11.5px;
+  color: var(--dd-text-soft);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.dd-activity-total {
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--dd-text);
+}
+
+.dd-activity-chevron { color: var(--dd-text-faint); }
+
+/* ── Snapshot panel ── */
+.dd-snapshot {
+  display: flex;
+  flex-direction: column;
+  padding-bottom: 12px;
+}
+
+.dd-snapshot-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 2px;
+  border-bottom: 1px dashed var(--dd-border);
+}
+.dd-snapshot-row:last-child { border-bottom: none; }
+
+.dd-snapshot-label {
+  font-size: 12.5px;
+  color: var(--dd-text-soft);
+}
+
+.dd-snapshot-value {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--dd-text);
+  font-family: Georgia, 'Iowan Old Style', 'Playfair Display', serif;
+}
+
+.dd-snapshot-extra {
+  margin-top: 4px;
+  padding-top: 4px;
+  border-top: 1px solid var(--dd-border);
+}
+
+/* ── Loading / empty states ── */
+.dd-loading-block, .dd-empty-block {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 36px 12px;
+  color: var(--dd-text-faint);
+  font-size: 12.5px;
+  text-align: center;
+}
+
+.dd-empty-block-sm { padding: 24px 12px; }
+
+.dd-empty-block svg, .dd-loading-block svg { color: var(--dd-green-dark); opacity: 0.7; }
+
+.dd-spin { animation: dd-spin 0.8s linear infinite; }
+@keyframes dd-spin { to { transform: rotate(360deg); } }
+
+/* ── Scrollbars (webkit) ── */
+.dd-order-list::-webkit-scrollbar,
+.dd-activity-list::-webkit-scrollbar,
+.dd-slot-list::-webkit-scrollbar {
+  width: 6px;
+}
+.dd-order-list::-webkit-scrollbar-thumb,
+.dd-activity-list::-webkit-scrollbar-thumb,
+.dd-slot-list::-webkit-scrollbar-thumb {
+  background: var(--dd-border);
+  border-radius: 999px;
+}
+
+/* ── Responsive ── */
+@media (max-width: 1080px) {
+  .dd-stats-grid { grid-template-columns: repeat(2, 1fr); }
+  .dd-main-grid, .dd-main-grid-bottom { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 560px) {
+  .dd-root { padding: 20px 16px 36px; }
+  .dd-stats-grid { grid-template-columns: 1fr; }
+  .dd-order-row { grid-template-columns: 1fr; }
+  .dd-order-meta { flex-direction: row; align-items: center; justify-content: space-between; }
+  .dd-activity-row { grid-template-columns: 1fr; }
+}

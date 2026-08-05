@@ -1,0 +1,262 @@
+/* Import fonts from Google Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400..900;1,400..900&display=swap');
+
+/* Import existing variables */
+@import "./styles/variables.css";
+
+/* Global Styles */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+  overflow-y: auto !important;
+  height: auto !important;
+}
+
+body {
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  color: var(--color-text, #4e3629);
+  background-color: var(--bg-light, #fdfbf7);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  overflow-y: auto !important;
+  height: auto !important;
+  line-height: 1.6;
+}
+
+/* Headings with Playfair Display */
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'Playfair Display', Georgia, serif;
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+h1 {
+  font-size: 48px;
+}
+
+h2 {
+  font-size: 36px;
+}
+
+h3 {
+  font-size: 28px;
+}
+
+h4 {
+  font-size: 24px;
+}
+
+h5 {
+  font-size: 20px;
+}
+
+h6 {
+  font-size: 16px;
+}
+
+/* Links */
+a {
+  text-decoration: none;
+  color: inherit;
+  transition: color 0.3s ease;
+}
+
+a:hover {
+  color: #df9595;
+}
+
+/* Buttons */
+button {
+  cursor: pointer;
+  border: none;
+  outline: none;
+  background: none;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+}
+
+button:hover {
+  opacity: 0.8;
+  transition: opacity 0.3s ease;
+}
+
+/* Lists */
+ul, ol {
+  list-style: none;
+}
+
+/* Inputs and Textareas */
+input, textarea, select {
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+}
+
+input:focus, textarea:focus, select:focus {
+  outline: none;
+  border-color: #df9595;
+}
+
+/* Selection */
+::selection {
+  background-color: #4e3629;
+  color: white;
+}
+
+::-moz-selection {
+  background-color: #4e3629;
+  color: white;
+}
+
+/* Scrollbar Styling */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #fdfbf7;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #c1d5c6;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #a2bba9;
+}
+
+/* Custom scrollbar hiding utility */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* ==========================================
+   COLOR PALETTE (Cake_demo theme)
+   ========================================== */
+
+:root {
+  /* Background Colors */
+  --color-cream: #FDFBF7;
+  --color-cream-light: #faf7f0;
+  --color-cream-pale: #FAF6F0;
+  
+  /* Text Colors */
+  --color-brown: #4e3629;
+  --color-brown-light: #a69185;
+  
+  /* Accent Colors */
+  --color-sage: #C1D5C6;
+  --color-sage-dark: #a2bba9;
+  --color-rose: #df9595;
+  --color-tan: #ebdcc4;
+  
+  /* Utility Colors */
+  --color-white: #ffffff;
+  --color-black: #000000;
+  --color-emerald-dark: #539e71;
+  
+  /* Typography */
+  --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+  --font-serif: 'Playfair Display', Georgia, serif;
+  
+  /* Transitions */
+  --transition: all 0.3s ease;
+  --transition-fast: all 0.15s ease;
+  --transition-slow: all 0.5s ease;
+}
+
+/* ==========================================
+   UTILITY CLASSES
+   ========================================== */
+
+.text-center {
+  text-align: center;
+}
+
+.text-left {
+  text-align: left;
+}
+
+.text-right {
+  text-align: right;
+}
+
+.flex {
+  display: flex;
+}
+
+.flex-col {
+  display: flex;
+  flex-direction: column;
+}
+
+.items-center {
+  align-items: center;
+}
+
+.justify-center {
+  justify-content: center;
+}
+
+.gap-4 {
+  gap: 16px;
+}
+
+.p-4 {
+  padding: 16px;
+}
+
+.m-0 {
+  margin: 0;
+}
+
+.mt-4 {
+  margin-top: 16px;
+}
+
+.mb-4 {
+  margin-bottom: 16px;
+}
+
+.hidden {
+  display: none;
+}
+
+.opacity-50 {
+  opacity: 0.5;
+}
+
+.opacity-75 {
+  opacity: 0.75;
+}
+
+.transition-all {
+  transition: all 0.3s ease;
+}
+
+.cursor-pointer {
+  cursor: pointer;
+}
+
+/* Responsive Classes */
+@media (max-width: 640px) {
+  h1 {
+    font-size: 32px;
+  }
+  
+  h2 {
+    font-size: 24px;
+  }
+  
+  h3 {
+    font-size: 20px;
+  }
+}

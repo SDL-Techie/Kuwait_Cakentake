@@ -1,0 +1,706 @@
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&display=swap');
+
+/* ─── Reset / Base ─────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+/* ─── Main page container ───────────────────────────────── */
+.slider-page-container {
+  font-family: 'Inter', sans-serif;
+  position: relative;
+  width: 100%;
+  height: 68vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  transition: background-color 1s cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+/* ─── Typography helpers ────────────────────────────────── */
+.font-editorial { font-family: 'Cormorant Garamond', serif; }
+.font-display   { font-family: 'Playfair Display', serif; }
+.font-mono      { font-family: 'Courier New', Courier, monospace; }
+
+/* ─── Background radial overlay ────────────────────────── */
+.bg-radial-overlay {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.25;
+  background: radial-gradient(circle at 50% 120%, white 0%, transparent 60%);
+}
+
+/* ─── Floating ambient particles ───────────────────────── */
+.ambient-layer {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  width: 100%;
+  height: 100%;
+}
+.drifting-particle {
+  position: absolute;
+  pointer-events: none;
+  z-index: 5;
+  filter: drop-shadow(0 15px 15px rgba(0,0,0,0.12));
+}
+.natural-float {
+  animation: naturalHover 6s ease-in-out infinite;
+}
+@keyframes naturalHover {
+  0%   { transform: translateY(0px) rotate(0deg); }
+  50%  { transform: translateY(-12px) rotate(3deg); }
+  100% { transform: translateY(0px) rotate(0deg); }
+}
+
+/* ─── SVG drop shadows (replacing Tailwind drop-shadow-*) ─ */
+.drop-shadow-sm  { filter: drop-shadow(0 1px 2px rgba(0,0,0,0.18)); }
+.drop-shadow-md  { filter: drop-shadow(0 3px 6px rgba(0,0,0,0.22)); }
+.drop-shadow-xs  { filter: drop-shadow(0 1px 1px rgba(0,0,0,0.12)); }
+.drop-shadow-2xl { filter: drop-shadow(0 25px 50px rgba(0,0,0,0.28)); }
+
+/* ─── HEADER ────────────────────────────────────────────── */
+.rs-header {
+  position: relative;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 48px;
+  backdrop-filter: blur(2px);
+  width: 100%;
+}
+
+/* Logo */
+.rs-logo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+}
+.rs-logo-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+}
+.rs-logo-icon svg {
+  color: #44403c;
+  animation: pulse 2s cubic-bezier(0.4,0,0.6,1) infinite;
+}
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.5; }
+}
+.rs-logo-name {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  color: #1c1917;
+  line-height: 1;
+}
+.rs-logo-sub {
+  font-family: 'Courier New', monospace;
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.2em;
+  color: #78716c;
+  text-transform: uppercase;
+  display: block;
+}
+
+/* Nav links */
+.rs-nav {
+  display: flex;
+  align-items: center;
+  gap: 32px;
+  font-family: 'Courier New', monospace;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  color: #292524;
+  text-transform: uppercase;
+}
+.rs-nav span {
+  padding: 4px 12px;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+.rs-nav span:first-child {
+  border-bottom: 2px solid #292524;
+}
+.rs-nav span:hover { color: #0c0a09; }
+
+/* Header CTA */
+.rs-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+.rs-heart-btn {
+  padding: 10px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.6);
+  border: none;
+  color: #292524;
+  cursor: pointer;
+  transition: background 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.rs-heart-btn:hover { background: white; }
+.rs-order-btn {
+  font-family: 'Courier New', monospace;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  background: #1c1917;
+  color: white;
+  border: none;
+  padding: 12px 20px;
+  border-radius: 9999px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.18);
+  transition: background 0.2s, box-shadow 0.2s;
+}
+.rs-order-btn:hover {
+  background: #292524;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.22);
+}
+
+/* ─── MAIN BODY GRID ────────────────────────────────────── */
+.rs-main {
+  width: 100%;
+  max-width: 1280px;
+  margin: 0 auto;
+  flex: 1;
+  display: grid;
+  grid-template-columns: 5fr 7fr;
+  padding: 0 48px;
+  align-items: center;
+  position: relative;
+  z-index: 40;
+}
+
+/* ─── LEFT COLUMN ───────────────────────────────────────── */
+.rs-left {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  text-align: left;
+  position: relative;
+  z-index: 10;
+}
+
+/* Category label row */
+.rs-category-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+.rs-category-line {
+  width: 32px;
+  height: 1px;
+  background: rgba(87,83,78,0.5);
+  display: block;
+}
+.rs-category-label {
+  font-family: 'Courier New', monospace;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+  color: #57534e;
+}
+.rs-rating-badge {
+  font-size: 10px;
+  background: rgba(255,255,255,0.7);
+  backdrop-filter: blur(4px);
+  color: #292524;
+  font-weight: 700;
+  padding: 2px 10px;
+  border-radius: 9999px;
+  text-transform: uppercase;
+  font-family: 'Courier New', monospace;
+  border: 1px solid #e7e5e4;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+}
+
+/* Title */
+.rs-title {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(32px, 4vw, 56px);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: #1c1917;
+  margin-bottom: 8px;
+  filter: drop-shadow(0 1px 2px rgba(0,0,0,0.08));
+}
+.rs-subtitle {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 18px;
+  font-style: italic;
+  color: #44403c;
+  font-weight: 500;
+  margin-bottom: 20px;
+}
+.rs-description {
+  color: #57534e;
+  font-size: 14px;
+  line-height: 1.7;
+  margin-bottom: 24px;
+  max-width: 420px;
+  font-family: 'Inter', sans-serif;
+}
+
+/* Stats cards row */
+.rs-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  max-width: 420px;
+  margin-bottom: 32px;
+}
+.rs-stat-card {
+  background: rgba(255,255,255,0.4);
+  border: 1px solid rgba(255,255,255,0.6);
+  padding: 12px;
+  border-radius: 16px;
+  backdrop-filter: blur(4px);
+  box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+}
+.rs-stat-label {
+  display: block;
+  font-family: 'Courier New', monospace;
+  font-size: 9px;
+  color: #78716c;
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+  margin-bottom: 4px;
+}
+.rs-stat-value {
+  font-family: 'Courier New', monospace;
+  font-size: 13px;
+  font-weight: 700;
+  color: #292524;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.rs-stat-value svg { color: #78716c; }
+.rs-sparkle-spin {
+  animation: spin 4s linear infinite;
+}
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+/* Price + CTA */
+.rs-price-row {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+.rs-price-label {
+  display: block;
+  font-family: 'Inter', sans-serif;
+  font-size: 11px;
+  color: #78716c;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin-bottom: 2px;
+}
+.rs-price-value {
+  font-family: 'Courier New', monospace;
+  font-size: 30px;
+  font-weight: 700;
+  color: #1c1917;
+}
+.rs-add-btn {
+  padding: 14px 32px;
+  color: white;
+  border: none;
+  font-family: 'Courier New', monospace;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  border-radius: 9999px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  transition: box-shadow 0.3s, transform 0.3s;
+}
+.rs-add-btn:hover {
+  box-shadow: 0 8px 24px rgba(0,0,0,0.22);
+  transform: translateY(-2px);
+}
+
+/* ─── RIGHT COLUMN ──────────────────────────────────────── */
+.rs-right {
+  height: 650px;
+  position: relative;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+
+/* Size selector */
+.rs-size-selector {
+  position: absolute;
+  left: 5%;
+  top: 10%;
+  z-index: 50;
+  background: rgba(255,255,255,0.3);
+  border: 1px solid rgba(255,255,255,0.6);
+  padding: 6px;
+  border-radius: 9999px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  backdrop-filter: blur(8px);
+}
+.rs-size-title {
+  font-size: 8px;
+  font-family: 'Courier New', monospace;
+  font-weight: 700;
+  color: #57534e;
+  text-align: center;
+  margin-top: 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+}
+.rs-size-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  font-family: 'Courier New', monospace;
+  font-size: 11px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid transparent;
+  background: transparent;
+  color: #44403c;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.rs-size-btn:hover { background: rgba(255,255,255,0.4); }
+.rs-size-btn.active {
+  background: white;
+  color: #1c1917;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+  transform: scale(1.1);
+}
+
+/* ─── Circular track (flavor wheel) ────────────────────── */
+.circular-track-container {
+  position: absolute;
+  bottom: -430px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 1000px;
+  height: 1000px;
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Concentric ring lines */
+.ring-800 {
+  position: absolute;
+  width: 800px; height: 800px;
+  border-radius: 50%;
+  border: 1px solid rgba(28,25,23,0.10);
+  pointer-events: none;
+}
+.ring-950 {
+  position: absolute;
+  width: 950px; height: 950px;
+  border-radius: 50%;
+  border: 1px solid rgba(28,25,23,0.15);
+  pointer-events: none;
+}
+.ring-1100 {
+  position: absolute;
+  width: 1100px; height: 1100px;
+  border-radius: 50%;
+  border: 1px solid rgba(28,25,23,0.20);
+  pointer-events: none;
+}
+
+/* Individual node on the wheel */
+.rotatable-node-wrapper {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 1px;
+  height: 1px;
+  transform-origin: center center;
+}
+.node-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Flavor text labels */
+.flavor-dot-label {
+  position: absolute;
+  cursor: pointer;
+  font-family: 'Inter', sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: rgba(0,0,0,0.6);
+  white-space: nowrap;
+  pointer-events: auto;
+  transition: all 0.4s ease;
+  user-select: none;
+  transform: translateY(-18px);
+}
+.flavor-dot-label:hover {
+  color: #000;
+  letter-spacing: 0.22em;
+}
+.flavor-dot-label.active {
+  color: #000;
+  font-weight: 700;
+  text-shadow: 0 1px 2px rgba(255,255,255,0.8);
+}
+
+/* Flavor dot buttons */
+.flavor-dot-button {
+  pointer-events: auto;
+  position: absolute;
+  background: white;
+  border: 2px solid rgba(255,255,255,0.4);
+  border-radius: 50%;
+  width: 16px;
+  height: 16px;
+  transform: translate(-50%, -50%);
+  cursor: pointer;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+  transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.flavor-dot-button:hover {
+  transform: translate(-50%, -50%) scale(1.4);
+  box-shadow: 0 0 15px rgba(255,255,255,0.8);
+}
+.flavor-dot-button.active {
+  background: #ffffff;
+  border: 4px solid var(--accent, #ff7b93);
+  box-shadow: 0 0 16px var(--accent, #ff7b93), 0 0 0 4px rgba(255,255,255,0.5);
+  width: 20px;
+  height: 20px;
+}
+
+/* ─── Cake stage ────────────────────────────────────────── */
+.cake-viewing-stage {
+  position: absolute;
+  bottom: -220px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 600px;
+  height: 600px;
+  border-radius: 50%;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.cake-circular-frame {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  border: 2px solid rgba(255,255,255,0.61);
+  box-shadow:
+    0 10px 40px rgba(0,0,0,0.08),
+    inset 0 0 50px rgba(255,255,255,0.4),
+    inset 0 0 20px rgba(0,0,0,0.02);
+  pointer-events: none;
+  z-index: 21;
+}
+.cake-inner-accent-ring {
+  position: absolute;
+  top: 15px; left: 15px; right: 15px; bottom: 15px;
+  border-radius: 50%;
+  border: 1px dashed rgba(255,255,255,0.45);
+  pointer-events: none;
+}
+.cake-glow-halo {
+  position: absolute;
+  width: 500px;
+  height: 500px;
+  border-radius: 50%;
+  filter: blur(60px);
+  opacity: 0.3;
+  transition: background-color 1s;
+}
+.rotating-cake-assembly {
+  position: absolute;
+  width: 530px;
+  height: 530px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: grab;
+  z-index: 22;
+  filter: drop-shadow(0 25px 50px rgba(0,0,0,0.28));
+}
+.rotating-cake-assembly:active { cursor: grabbing; }
+.cake-size-wrapper {
+  width: 100%;
+  height: 100%;
+  position: relative;
+}
+.cake-base-img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
+  border: 1px solid rgba(120,72,0,0.1);
+  pointer-events: none;
+  user-select: none;
+  filter: brightness(1.02) contrast(1.05) drop-shadow(0 10px 20px rgba(0,0,0,0.15));
+}
+.cake-shade-overlay {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: radial-gradient(ellipse at center, transparent 35%, rgba(0,0,0,0.06) 100%);
+  pointer-events: none;
+}
+.topping-wrapper {
+  position: absolute;
+  cursor: pointer;
+}
+.topping-wrapper:active { transform: scale(0.95); }
+
+/* ─── Nav buttons ───────────────────────────────────────── */
+.rs-nav-buttons {
+  position: absolute;
+  bottom: 80px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  gap: 48px;
+}
+.rs-nav-btn {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: white;
+  color: #292524;
+  border: 1px solid rgba(231,229,228,0.5);
+  box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background 0.2s, box-shadow 0.2s, transform 0.1s;
+}
+.rs-nav-btn:hover {
+  background: #fafaf9;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+  transform: scale(1.08);
+}
+.rs-nav-btn:active { transform: scale(0.92); }
+.rs-counter {
+  font-family: 'Courier New', monospace;
+  font-size: 11px;
+  font-weight: 700;
+  color: #292524;
+  letter-spacing: 0.18em;
+  background: rgba(255,255,255,0.8);
+  backdrop-filter: blur(8px);
+  padding: 10px 20px;
+  border-radius: 9999px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+  border: 1px solid rgba(255,255,255,0.6);
+  user-select: none;
+}
+.rs-counter-num {
+  font-size: 14px;
+}
+.rs-counter-sep {
+  color: #a8a29e;
+  margin: 0 6px;
+}
+
+/* ─── FOOTER ────────────────────────────────────────────── */
+.rs-footer {
+  position: relative;
+  z-index: 40;
+  padding: 24px 48px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-top: 1px solid rgba(0,0,0,0.05);
+  backdrop-filter: blur(1px);
+  gap: 16px;
+}
+.rs-footer-tip {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
+  font-weight: 600;
+  color: rgba(87,83,78,0.9);
+  font-family: 'Courier New', monospace;
+}
+.rs-footer-dots {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.rs-footer-dot {
+  height: 6px;
+  border-radius: 9999px;
+  border: none;
+  cursor: pointer;
+  transition: all 0.5s;
+}
+.rs-footer-tag {
+  font-family: 'Courier New', monospace;
+  font-size: 10px;
+  color: rgba(87,83,78,0.8);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+}
+
+/* ─── Scrollbar hide ────────────────────────────────────── */
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }

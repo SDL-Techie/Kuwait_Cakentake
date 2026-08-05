@@ -1,0 +1,419 @@
+.loyalty-container {
+    display: flex;
+    justify-content: center;
+    padding: 20px;
+    font-family: 'Inter', -apple-system, sans-serif;
+}
+
+.loyalty-card {
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 16px;
+    padding: 24px;
+    width: 100%;
+    max-width: 400px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+}
+
+.card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 24px;
+}
+
+.points-badge {
+    display: flex;
+    flex-direction: column;
+}
+
+.points-value {
+    font-size: 32px;
+    font-weight: 800;
+    color: #111827;
+    line-height: 1;
+}
+
+.points-label {
+    font-size: 12px;
+    color: #6b7280;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-top: 4px;
+}
+
+.status-tag {
+    background: #f3f4f6;
+    color: #374151;
+    padding: 4px 12px;
+    border-radius: 99px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.icon-gold {
+    color: #f59e0b;
+    margin-bottom: 8px;
+}
+
+/* Progress Bar Styles */
+.progress-section {
+    margin-bottom: 24px;
+}
+
+.progress-text {
+    display: flex;
+    justify-content: space-between;
+    font-size: 14px;
+    font-weight: 500;
+    margin-bottom: 8px;
+}
+
+.progress-bar-bg {
+    height: 8px;
+    background: #e5e7eb;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.progress-bar-fill {
+    height: 100%;
+    background: #10b981; /* Green Progress */
+    transition: width 0.5s ease-in-out;
+}
+
+.hint-text {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    color: #059669;
+    margin-top: 8px;
+    font-weight: 500;
+}
+
+/* Stats Grid Styles */
+.stats-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    border-top: 1px solid #f3f4f6;
+    padding-top: 20px;
+    margin-bottom: 20px;
+}
+
+.stat-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: #4b5563;
+}
+
+.stat-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.stat-label {
+    font-size: 11px;
+    color: #9ca3af;
+}
+
+.stat-value {
+    font-size: 14px;
+    font-weight: 600;
+    color: #1f2937;
+}
+
+.card-footer {
+    text-align: center;
+    border-top: 1px solid #f3f4f6;
+    padding-top: 16px;
+}
+
+.card-footer p {
+    font-size: 13px;
+    color: #6b7280;
+    margin: 0;
+}
+
+.card-footer small {
+    display: block;
+    margin-top: 4px;
+    color: #9ca3af;
+    font-size: 11px;
+}
+
+/* Container Layout */
+.rasi-category-page {
+  /* padding: 80px 0;  */
+  min-height: 100vh;
+  background-color: #fdfaf7; /* Soft creamy background */
+}
+
+.rasi-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+/* Header Section */
+.rasi-section-header {
+  margin-bottom: 40px;
+  text-align: left;
+}
+
+.rasi-section-header h2 {
+  font-size: 29px;
+  color: #2d1e17; /* Deep cocoa brown */
+  font-weight: 700;
+  margin-top: 15px;
+}
+@media screen and (max-width: 768px) {
+  .rasi-section-header h2{
+    font-size: 20px;
+  }
+}
+
+.rasi-section-header p {
+  color: #7a6e67;
+  font-size: 1.1rem;
+}
+
+/* Back Button */
+.rasi-back-btn {
+  background: transparent;
+  border: 1px solid #dcd3cc;
+  padding: 8px 16px;
+  border-radius: 50px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  color: #5d4037;
+  font-weight: 500;
+}
+
+.rasi-back-btn:hover {
+  background-color: #e67e22;
+  color: white;
+  border-color: #e67e22;
+  transform: translateX(-5px);
+}
+
+/* Grid for "Box Box Box" Layout */
+.rasi-products-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 25px;
+  margin-top: 20px;
+}
+
+/* Individual Boxes */
+.loyalty-box {
+  background: white;
+  border-radius: 15px;
+  padding: 30px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+  border: 1px solid #f1ece8;
+  transition: transform 0.3s ease;
+}
+
+.loyalty-box:hover {
+    transform: translateY(-5px);
+}
+
+.box-icon {
+  color: #e67e22;
+  margin-bottom: 15px;
+}
+
+.box-label {
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: #8d817a;
+  font-weight: 600;
+  margin-bottom: 5px;
+}
+
+.box-value {
+  font-size: 1.8rem;
+  color: #2d1e17;
+  font-weight: 800;
+  margin: 0;
+}
+
+.box-sub-value {
+    font-weight: 700;
+    color: #5d4037;
+    margin-top: 10px;
+}
+
+.box-text {
+  font-size: 0.9rem;
+  color: #7a6e67;
+  margin-top: 10px;
+  line-height: 1.4;
+}
+
+.box-text-small {
+    font-size: 0.8rem;
+    color: #a3948c;
+    margin-top: 10px;
+}
+
+/* Progress Bar within Box */
+.rasi-progress-container {
+  width: 100%;
+  height: 8px;
+  background: #f1ece8;
+  border-radius: 10px;
+  margin-top: 15px;
+  overflow: hidden;
+}
+
+.progress-bar-fill {
+  height: 100%;
+  background: #e67e22;
+  border-radius: 10px;
+  transition: width 1s ease-in-out;
+}
+
+/* Special Highlighting */
+.highlight-box {
+    border-bottom: 4px solid #e67e22;
+}
+
+.status-pill {
+    margin-top: 15px;
+    background: #fdf2e9;
+    color: #e67e22;
+    padding: 4px 12px;
+    border-radius: 50px;
+    font-size: 0.75rem;
+    font-weight: 700;
+}
+
+.points-added {
+    color: #27ae60;
+    font-weight: 600;
+    font-size: 0.9rem;
+    margin-top: 5px;
+}
+
+/* Rule Box */
+.loyalty-rule-box {
+    margin-top: 30px;
+    background: #2d1e17;
+    color: #fdfaf7;
+    padding: 20px;
+    border-radius: 12px;
+    text-align: center;
+    font-weight: 500;
+}
+
+/* Primary Button */
+.rasi-btn-primary {
+  background-color: #e67e22;
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  width: 100%;
+  margin-top: 15px;
+  transition: background 0.3s ease;
+}
+
+.rasi-btn-primary:hover {
+  background-color: #d35400;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .rasi-products-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Coupon Display in Box */
+.coupon-display {
+    width: 100%;
+    margin-top: 10px;
+}
+
+.coupon-code-wrap {
+    background: #fdfaf7;
+    border: 2px dashed #e67e22;
+    padding: 10px;
+    border-radius: 8px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.coupon-code-wrap:hover {
+    background: #fff;
+    border-color: #d35400;
+}
+
+.actual-code {
+    font-family: 'Courier New', Courier, monospace;
+    font-weight: 800;
+    font-size: 1.2rem;
+    color: #2d1e17;
+}
+
+.expiry-tag {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 0.75rem;
+    color: #7a6e67;
+    margin-top: 8px;
+    font-weight: 500;
+}
+
+/* Success Banner */
+.success-banner {
+    margin-top: 25px;
+    background: #27ae60;
+    color: white;
+    padding: 15px 20px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    animation: slideUp 0.4s ease-out;
+}
+
+@keyframes slideUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Rule Box Adjustment */
+.loyalty-rule-box {
+    margin-top: 30px;
+    background: #2d1e17;
+    color: #fdfaf7;
+    padding: 20px;
+    border-radius: 12px;
+    text-align: center;
+    font-size: 0.95rem;
+    border: 1px solid #3d2b22;
+}
+
+/* Redefining Button for active state */
+.rasi-btn-primary:active {
+    transform: scale(0.98);
+}

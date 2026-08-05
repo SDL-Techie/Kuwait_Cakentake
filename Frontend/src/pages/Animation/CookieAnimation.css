@@ -1,0 +1,269 @@
+/* @import url("https://fonts.googleapis.com/css2?family=Montserrat:wght@900&display=swap"); */
+
+/* Reset/Sizing helper for the container to work cleanly backdropped or full screen */
+.cookie-animation-fullscreen-box {
+  width: 100%;
+  height: 100%;
+  min-height: 65vh;
+  position: relative;
+  overflow: hidden;
+  background-color: #000000;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+/* Individual Slide viewports */
+.cookie-animation-slide {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+  padding: 3rem 0; /* py-12 */
+  transition: background-color 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+  box-sizing: border-box;
+}
+
+/* Background repeating typography styles */
+.cookie-text-wall {
+  position: absolute;
+  inset-x: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  user-select: none;
+  pointer-events: none;
+  z-index: 0;
+  width: 100%;
+}
+
+.cookie-text-stack {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  line-height: 0.82;
+  text-align: center;
+}
+
+.cookie-text-row {
+  font-family: 'Montserrat', 'Helvetica Neue', Arial, sans-serif;
+  font-weight: 900;
+  letter-spacing: -0.06em;
+  color: #ffffff;
+  font-size: 12.5vw;
+  opacity: 0.35;
+  text-transform: uppercase;
+  margin: 0;
+  padding: 0;
+}
+
+@media (min-width: 768px) {
+  .cookie-text-row {
+    font-size: 13.5vh; /* Standard aspect ratio support on desktop screens */
+  }
+}
+
+/* Row 6 is fully opaque *exactly* matching the Crumbl website video layout */
+.cookie-text-row.opaque-row {
+  opacity: 1.0;
+}
+
+/* Golden floating cookie stage and boundaries */
+.cookie-stage-wrapper {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  position: relative;
+  z-index: 10;
+}
+
+.cookie-pie-container {
+  width: 280px;
+  height: 280px;
+  position: relative;
+}
+
+@media (min-width: 640px) {
+  .cookie-pie-container {
+    width: 350px;
+    height: 350px;
+  }
+}
+
+@media (min-width: 768px) {
+  .cookie-pie-container {
+    width: 420px;
+    height: 420px;
+  }
+}
+
+.cookie-floater {
+  width: 100%;
+  height: 100%;
+  position: relative;
+}
+
+/* Drop-shadow below the floating cookie to produce realistic levitation */
+.cookie-shadow {
+  position: absolute;
+  inset: 15px;
+  border-radius: 50%;
+  background-color: rgba(27, 14, 3, 0.18);
+  filter: blur(20px);
+  transform: translateY(28px);
+  pointer-events: none;
+  mix-blend-mode: multiply;
+}
+
+/* The circular cropped gourmet image */
+.cookie-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  user-select: none;
+  pointer-events: none;
+  clip-path: circle(46.2% at 50% 50%);
+  -webkit-clip-path: circle(46.2% at 50% 50%);
+}
+
+/* Dot Navigation panel classes */
+.cookie-dots-pagination {
+  position: absolute;
+  bottom: 2rem;
+  right: 2rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  z-index: 30;
+  background-color: rgba(0, 0, 0, 0.12);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  padding: 0.6rem 0.8rem;
+  border-radius: 9999px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.cookie-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: rgba(255, 255, 255, 0.45);
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  box-sizing: border-box;
+}
+
+.cookie-dot:hover {
+  background-color: rgba(255, 255, 255, 0.75);
+}
+
+.cookie-dot.active-dot {
+  background-color: #ffffff;
+  width: 22px; /* Expanding slide pills */
+  border-radius: 6px;
+}
+
+/* Swiple/Scroll instructions panel */
+.cookie-instructions {
+  position: absolute;
+  bottom: 2rem;
+  left: 2rem;
+  z-index: 30;
+  pointer-events: none;
+}
+
+.cookie-instructions span {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  font-size: 10px;
+  text-transform: uppercase;
+  font-weight: 900;
+  letter-spacing: 0.15em;
+  color: rgba(255, 255, 255, 0.55);
+  background-color: rgba(0, 0, 0, 0.12);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  padding: 0.6rem 1rem;
+  border-radius: 9999px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  display: inline-block;
+}
+
+/* ===== RESPONSIVE ADJUSTMENTS ===== */
+
+/* Mobile devices (extra small) */
+@media (max-width: 640px) {
+  .cookie-animation-slide {
+    padding: 2rem 0;
+  }
+
+  .cookie-text-row {
+    font-size: 10vw;
+  }
+
+  .cookie-pie-container {
+    width: 200px;
+    height: 200px;
+  }
+
+  .cookie-dots-pagination {
+    bottom: 1.5rem;
+    right: 1.5rem;
+    gap: 0.3rem;
+    padding: 0.5rem 0.6rem;
+  }
+
+  .cookie-instructions {
+    bottom: 1.5rem;
+    left: 1.5rem;
+  }
+
+  .cookie-instructions span {
+    font-size: 9px;
+    padding: 0.5rem 0.8rem;
+  }
+}
+
+/* Tablet devices */
+@media (min-width: 768px) and (max-width: 1024px) {
+  .cookie-animation-slide {
+    padding: 2.5rem 0;
+  }
+
+  .cookie-pie-container {
+    width: 380px;
+    height: 380px;
+  }
+}
+
+/* Large screens */
+@media (min-width: 1024px) {
+  .cookie-animation-slide {
+    padding: 4rem 0;
+  }
+
+  .cookie-pie-container {
+    width: 420px;
+    height: 420px;
+  }
+}
+
+/* Accessibility: Reduce motion for users who prefer it */
+@media (prefers-reduced-motion: reduce) {
+  .cookie-text-row,
+  .cookie-floater,
+  .cookie-dot,
+  .cookie-animation-slide {
+    animation: none !important;
+    transition: none !important;
+  }
+}

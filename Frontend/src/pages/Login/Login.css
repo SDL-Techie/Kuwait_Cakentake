@@ -1,0 +1,339 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  background: #fdf8f4;
+}
+
+.login-page {
+  display: flex;
+  height: 100vh;
+  width: 100%;
+  overflow: hidden;
+}
+
+/* ─── LEFT: Form Panel ─── */
+.login-form-panel {
+  width: 46%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 3rem 4rem;
+  background: #fff;
+  position: relative;
+  z-index: 1;
+}
+
+.login-form-panel h1 {
+  font-family: 'Playfair Display', serif;
+  font-size: 2.2rem;
+  font-weight: 600;
+  color: #1a1a1a;
+  margin-bottom: 0.4rem;
+}
+
+.login-form-panel .subtitle {
+  font-size: 0.92rem;
+  color: #888;
+  margin-bottom: 2rem;
+  font-weight: 300;
+}
+
+.form-group {
+  margin-bottom: 1.2rem;
+}
+
+.form-group label {
+  display: block;
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: #333;
+  margin-bottom: 0.45rem;
+}
+
+.input-wrapper {
+  display: flex;
+  align-items: center;
+  background: #f7f5f2;
+  border: 1.5px solid #ece8e2;
+  border-radius: 10px;
+  padding: 0 1rem;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.input-wrapper:focus-within {
+  border-color: #d97657;
+  box-shadow: 0 0 0 3px rgba(217, 118, 87, 0.1);
+}
+
+.input-wrapper svg {
+  color: #aaa;
+  flex-shrink: 0;
+  width: 17px;
+  height: 17px;
+}
+
+.input-wrapper input {
+  flex: 1;
+  border: none;
+  background: transparent;
+  padding: 0.78rem 0.6rem;
+  font-size: 0.9rem;
+  color: #333;
+  font-family: 'DM Sans', sans-serif;
+  outline: none;
+}
+
+.input-wrapper input::placeholder {
+  color: #bbb;
+  font-weight: 300;
+}
+
+.toggle-password {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #aaa;
+  display: flex;
+  align-items: center;
+  padding: 0;
+  transition: color 0.2s;
+}
+
+.toggle-password:hover {
+  color: #d97657;
+}
+
+.forgot-row {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 0.3rem;
+}
+
+.forgot-link {
+  font-size: 0.8rem;
+  color: #d97657;
+  text-decoration: none;
+  font-weight: 500;
+  transition: color 0.2s;
+}
+
+.forgot-link:hover {
+  color: #b85e3c;
+}
+
+.btn-login {
+  width: 100%;
+  padding: 0.88rem;
+  background: linear-gradient(
+    135deg,
+    #8FAF6E 0%,
+    #6F8E57 30%,
+    #526A45 65%,
+    #314631 100%
+);
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  font-size: 0.95rem;
+  font-weight: 500;
+  font-family: 'DM Sans', sans-serif;
+  cursor: pointer;
+  margin-top: 1.5rem;
+  letter-spacing: 0.02em;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  transition: opacity 0.2s, transform 0.15s;
+}
+
+.btn-login:hover {
+  opacity: 0.92;
+  transform: translateY(-1px);
+}
+
+.btn-login:active {
+  transform: translateY(0);
+}
+
+.divider {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin: 1.3rem 0 0.8rem;
+  color: #bbb;
+  font-size: 0.82rem;
+}
+
+.divider::before,
+.divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: #ece8e2;
+}
+
+.signup-row {
+  text-align: center;
+  font-size: 0.88rem;
+  color: #888;
+}
+
+.signup-row a {
+  color: #d97657;
+  font-weight: 500;
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.signup-row a:hover {
+  color: #b85e3c;
+}
+
+/* ─── RIGHT: Image Panel ─── */
+.login-image-panel {
+  width: 54%;
+  position: relative;
+  overflow: hidden;
+}
+
+.login-image-panel img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.image-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to bottom right,
+    rgba(30, 15, 5, 0.42) 0%,
+    rgba(30, 15, 5, 0.15) 50%,
+    rgba(30, 15, 5, 0.38) 100%
+  );
+}
+
+.brand-badge {
+  position: absolute;
+  top: 2.5rem;
+  left: 2.5rem;
+  background: rgba(255, 255, 255, 0.14);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  border-radius: 30px;
+  padding: 0.45rem 1.1rem;
+  color: #fff;
+  font-family: 'Playfair Display', serif;
+  font-size: 0.82rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
+.image-text {
+  position: absolute;
+  bottom: 3rem;
+  left: 2.5rem;
+  right: 2.5rem;
+  color: #fff;
+  
+}
+
+.image-text h2 {
+  font-family: 'Playfair Display', serif;
+  font-size: 2.6rem;
+  font-weight: 400;
+  font-style: italic;
+  line-height: 1.2;
+  margin-bottom: 0.7rem;
+  text-shadow: 0 2px 12px rgba(0,0,0,0.25);
+  font-weight: 800px;
+   font-size: 60px;
+}
+
+.image-text p {
+  font-size: 0.9rem;
+  opacity: 0.85;
+  font-weight: 300;
+  letter-spacing: 0.02em;
+}
+
+/* ─── Responsive ─── */
+@media (max-width: 768px) {
+  .login-page {
+    flex-direction: column;
+    height: auto;
+    min-height: 100vh;
+  }
+
+  .login-image-panel {
+    width: 100%;
+    height: 260px;
+    order: -1;
+  }
+
+  .login-form-panel {
+    width: 100%;
+    padding: 2rem 1.5rem;
+  }
+}
+/* Overlay animation */
+.fade-in {
+  opacity: 0;
+  animation: fadeIn 1s ease forwards;
+}
+
+/* Top slide (brand badge) */
+.slide-down {
+  opacity: 0;
+  transform: translateY(-30px);
+  animation: slideDown 0.8s ease forwards;
+  animation-delay: 0.3s;
+}
+
+/* Bottom slide (text) */
+.slide-up {
+  opacity: 0;
+  transform: translateY(40px);
+  animation: slideUp 1s ease forwards;
+  animation-delay: 0.6s;
+}
+.login-video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 3px;
+}
+.login-image-panel {
+  position: relative;
+}
+
+.login-image-panel::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  /* background: rgba(0,0,0,0.3); dark overlay */
+}
+/* Keyframes */
+@keyframes fadeIn {
+  to { opacity: 1; }
+}
+
+@keyframes slideDown {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideUp {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

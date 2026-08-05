@@ -1,0 +1,409 @@
+:root {
+  --primary-color: #6F8E57;
+  --primary-hover: #526A45;
+  --primary-light: #C7D1A0;
+  --primary-light-hover: #DCE5C4;
+  --danger-color: #c0504d;
+  --danger-hover: #a5423f;
+  --success-color: #5E7A49;
+  --secondary-bg: #F5EFD6;
+  --border-color: #E3DBB0;
+  --text-dark: #2B3324;
+  --text-muted: #6E7A5E;
+}
+
+.area-container {
+  padding: 18px;
+}
+
+/* Header Section */
+.area-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+}
+
+.area-header h2 {
+  margin: 0 0 0.5rem 0;
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: var(--text-dark);
+}
+
+.area-header p {
+  margin: 0;
+  color: var(--text-muted);
+}
+
+/* Buttons */
+button {
+  cursor: pointer;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  border: none;
+  transition: all 0.2s ease;
+}
+
+.btn-primary-area {
+  background-color: var(--primary-color);
+  color: #FFF8EC;
+  font-weight: bolder;
+}
+
+.btn-primary-area:hover {
+  background-color: var(--primary-hover);
+}
+
+.btn-primary {
+  background-color: var(--primary-color);
+  color: #FFF8EC;
+  font-weight: 600;
+}
+
+.btn-primary:hover {
+  background-color: var(--primary-hover);
+}
+
+.btn-secondary {
+  background-color: var(--secondary-bg);
+  color: var(--text-dark);
+}
+
+.btn-secondary:hover {
+  background-color: var(--border-color);
+}
+
+.btn-edit {
+  background-color: var(--primary-light);
+  color: var(--text-dark);
+  border: 1px solid #8FAF6E;
+  font-weight: 600;
+}
+
+.btn-edit:hover {
+  background-color: var(--primary-light-hover);
+}
+
+.btn-delete {
+  background-color: var(--danger-color);
+  color: white;
+  border: 1px solid var(--danger-color);
+  font-weight: 600;
+}
+
+.btn-delete:hover {
+  background-color: var(--danger-hover);
+  border-color: var(--danger-hover);
+}
+
+/* Responsive Table layout */
+.table-responsive {
+  width: 100%;
+  overflow-x: auto;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px -1px rgba(49, 70, 49, 0.1), 0 2px 4px -1px rgba(49, 70, 49, 0.06);
+  border: 1px solid var(--border-color);
+}
+
+.area-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+.area-table th, 
+.area-table td {
+  padding: 1rem;
+  border-bottom: 1px solid var(--border-color);
+  color: var(--text-dark);
+}
+
+.area-table th {
+  background-color: var(--secondary-bg);
+  color: var(--text-muted);
+  font-weight: 600;
+  text-transform: uppercase;
+  font-size: 0.75rem;
+  letter-spacing: 0.05em;
+}
+
+.area-table tbody tr:hover {
+  background-color: #FFF8EC;
+}
+
+.inactive-row {
+  opacity: 0.6;
+}
+
+.font-bold {
+  font-weight: 600;
+}
+
+.no-data {
+  padding: 3rem !important;
+  color: var(--text-muted);
+}
+
+.text-center {
+  text-align: center;
+}
+
+/* Action block spacing */
+.action-buttons {
+  display: flex;
+  gap: 0.5rem;
+}
+
+/* Badges styling */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  user-select: none;
+}
+
+.badge-success {
+  background-color: #DCE9CC;
+  color: #314631;
+}
+
+.badge-secondary {
+  background-color: var(--border-color);
+  color: var(--text-dark);
+}
+
+/* Status toggle badge (used as a button in AreaManagement.tsx) */
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.status-badge.active {
+  background-color: #DCE9CC;
+  color: #314631;
+  border-color: #8FAF6E;
+}
+
+.status-badge.active:hover {
+  background-color: #C7D1A0;
+}
+
+.status-badge.inactive {
+  background-color: var(--secondary-bg);
+  color: var(--text-muted);
+  border-color: var(--border-color);
+}
+
+.status-badge.inactive:hover {
+  background-color: var(--border-color);
+}
+
+/* Error / Success Banner Layout */
+.alert-error {
+  background-color: #fdf0ee;
+  border-left: 4px solid var(--danger-color);
+  color: #7a3230;
+  padding: 1rem;
+  margin-bottom: 1.5rem;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.alert-success {
+  background-color: #EEF3E2;
+  border-left: 4px solid var(--primary-color);
+  color: #314631;
+  padding: 1rem;
+  margin-bottom: 1.5rem;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.alert-close {
+  background: transparent;
+  color: inherit;
+  font-size: 1.1rem;
+  line-height: 1;
+  padding: 0;
+}
+
+.loading-state {
+  text-align: center;
+  padding: 3rem;
+  color: var(--text-muted);
+  font-size: 1.125rem;
+}
+
+.spinner {
+  width: 32px;
+  height: 32px;
+  margin: 0 auto 1rem;
+  border-radius: 50%;
+  border: 3px solid var(--border-color);
+  border-top-color: var(--primary-color);
+  animation: spin 0.8s linear infinite;
+}
+
+.spinner-small {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  margin-right: 6px;
+  border-radius: 50%;
+  border: 2px solid rgba(255, 248, 236, 0.4);
+  border-top-color: #FFF8EC;
+  animation: spin 0.8s linear infinite;
+  vertical-align: middle;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Custom Modal Popup styles */
+.modal-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(43, 51, 36, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modal-content {
+  background: white;
+  border-radius: 8px;
+  width: 100%;
+  max-width: 550px;
+  padding: 1.5rem;
+  box-shadow: 0 20px 25px -5px rgba(49, 70, 49, 0.15);
+  animation: modalFadeIn 0.2s ease-out;
+}
+
+@keyframes modalFadeIn {
+  from { transform: translateY(-15px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: 0.75rem;
+}
+
+.modal-header h3 {
+  margin: 0;
+  font-size: 1.25rem;
+  color: var(--text-dark);
+}
+
+.close-btn {
+  background: transparent;
+  font-size: 1.5rem;
+  padding: 0;
+  color: var(--text-muted);
+}
+
+.close-btn:hover {
+  color: var(--text-dark);
+}
+
+/* Forms layout inside modal */
+.form-group {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 1.25rem;
+}
+
+.form-group label {
+  font-size: 0.875rem;
+  font-weight: 500;
+  margin-bottom: 0.375rem;
+  color: var(--text-dark);
+}
+
+.required {
+  color: var(--danger-color);
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+input, select {
+  padding: 0.625rem;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  font-size: 0.95rem;
+  outline: none;
+  transition: border-color 0.15s ease;
+  color: var(--text-dark);
+  background: #FFF8EC;
+}
+
+input:focus, select:focus {
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px rgba(111, 142, 87, 0.15);
+}
+
+.modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  margin-top: 1.5rem;
+  border-top: 1px solid var(--border-color);
+  padding-top: 1rem;
+}
+
+/* ── Additions for the simplified Area form ── */
+
+.form-group-inline {
+  display: flex;
+  align-items: center;
+  margin-top: 4px;
+}
+
+.form-group-inline label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 500;
+  cursor: pointer;
+  color: var(--text-dark);
+}
+
+.form-group-inline input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+  accent-color: var(--primary-color);
+}
