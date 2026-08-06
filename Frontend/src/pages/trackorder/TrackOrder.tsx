@@ -328,6 +328,13 @@ const computedGrandTotal = Number(order.total ?? (itemSubtotal + addonsTotal - N
               <div className="to-receipt-print-area" ref={receiptRef}>
                 <div className="receipt-paper">
                   <div className="receipt-center">
+                                <div className="receipt-crown-title">
+  <img
+    src="/assets/logo.png"
+    alt="Cake N Take"
+    className="receipt-logo"
+  />
+</div>
                     <h2 className="receipt-brand">CAKENTAKE</h2>
                     <p className="receipt-address">No.8, Mezzanine Floor, Al Musallam Complex, Al Othman Street, Hawally, Kuwait</p>
                     <p className="receipt-customer">Customer: {order.customer.first_name} {order.customer.last_name}</p>

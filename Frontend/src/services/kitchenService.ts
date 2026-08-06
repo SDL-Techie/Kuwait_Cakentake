@@ -154,3 +154,39 @@ export const getMyCompletedKitchenOrders = async (): Promise<KitchenOrder[]> => 
   const res = await api.get("/kitchen/my-completed-orders");
   return res.data.orders;
 };
+
+/** POST /orders/:id/pickup — kitchen marks a PICKUP order as delivered/collected */
+export const markOrderPickedUp = async (orderId: number): Promise<any> => {
+  const res = await api.post(`/orders/${orderId}/pickup`);
+  return res.data.order ?? res.data;
+};
+
+/** POST /orders/:id/mark-cod-paid — kitchen marks COD payment as collected */
+export const markCodPaidByKitchen = async (orderId: number): Promise<any> => {
+  const res = await api.post(`/orders/${orderId}/mark-cod-paid`);
+  return res.data.order ?? res.data;
+};
+
+/** POST /orders/:id/mark-payment-paid — kitchen confirms payment collected (COD or Online) */
+export const markOrderPaymentPaid = async (
+  orderId: number,
+  method: 'COD' | 'UPI'
+): Promise<any> => {
+  const res = await api.post(`/orders/${orderId}/mark-payment-paid`, {
+    payment_method: method,
+  });
+  return res.data.order ?? res.data;
+};
+
+
+/** POST /orders/:id/pickup-complete — kitchen confirms payment (COD/Online)
+ *  AND marks a pickup order DELIVERED, in one call. */
+export const completePickupOrder = async (
+  orderId: number,
+  method: 'COD' | 'UPI'
+): Promise<any> => {
+  const res = await api.post(`/orders/${orderId}/pickup-complete`, {
+    payment_method: method,
+  });
+  return res.data.order ?? res.data;
+};

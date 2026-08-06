@@ -2310,6 +2310,17 @@ export const OrderManagement: React.FC = () => {
               <h2>ORDER RECEIPT</h2>
               <p className="divider">- - - - - - - - - - - - - - - - - - -</p>
             </div>
+
+            <div className="receipt-crown-title">
+  <img
+    src="/assets/logo.png"
+    alt="Cake N Take"
+    className="receipt-logo"
+  />
+
+  {/* <h2>ORDER RECEIPT</h2>
+  <p className="divider">- - - - - - - - - - - - - - - - - - -</p> */}
+</div>
             <div className="receipt-basics">
               <p><strong>Order No:</strong> {selectedOrder.orderNumber ?? selectedOrder.id}</p>
               <p><strong>Date:</strong> {new Date(selectedOrder.createdAt).toLocaleDateString()}</p>

@@ -188,6 +188,75 @@ def kitchen_assigned_orders():
     
 
 
+# @kitchen_bp.route("/kitchen/<int:order_id>/complete", methods=["POST"])
+# @jwt_required()
+# @role_required(["KITCHEN_STAFF"])
+# def complete_kitchen(order_id):
+
+#     order = Order.query.get_or_404(order_id)
+#     current_user = User.query.get(get_jwt_identity())
+
+#     # Only the kitchen staff who started preparation can complete it
+#     if order.preparation_started_by != current_user.id:
+#         return jsonify({
+#             "error": "Only the kitchen staff who started this order can mark it ready."
+#         }), 403
+
+#     if order.status != "PREPARING":
+#         return jsonify({
+#             "error": "Order must be PREPARING"
+#         }), 400
+
+#     old_status = order.status
+
+#     # stamp completion
+#     order.completed_by_kitchen_at = datetime.utcnow()
+
+#     # Try to auto-assign a delivery agent. Prefer ONLINE agents, fallback to any active agent.
+#     delivery_agent = User.query.filter_by(role="DELIVERY_AGENT", availability_status="ONLINE", is_active=True).order_by(User.id).first()
+#     if not delivery_agent:
+#         delivery_agent = User.query.filter_by(role="DELIVERY_AGENT", is_active=True).order_by(User.id).first()
+
+#     if not delivery_agent:
+#         # No agent available — leave as READY and log
+#         order.status = "READY"
+#         log_order_status(
+#             order,
+#             old_status,
+#             "READY",
+#             current_user.id,
+#             "Order marked READY — no delivery agent available for auto-assignment"
+#         )
+#         db.session.commit()
+#         return jsonify({
+#             "message": "Order marked as READY",
+#             "order": order.to_dict(),
+#             "note": "No delivery agent available for automatic assignment"
+#         }), 200
+
+#     # Assign to found delivery agent and move to ASSIGNED_TO_AGENT
+#     order.delivery_agent_id = delivery_agent.id
+#     order.delivery_agent_assigned_by = current_user.id
+#     order.delivery_agent_assigned_at = datetime.utcnow()
+#     order.status = "ASSIGNED_TO_AGENT"
+
+#     log_order_status(
+#         order,
+#         old_status,
+#         "ASSIGNED_TO_AGENT",
+#         current_user.id,
+#         f"Automatically assigned to delivery agent {delivery_agent.first_name} {delivery_agent.last_name}"
+#     )
+
+#     db.session.commit()
+
+#     return jsonify({
+#         "message": "Order ready and assigned to delivery agent",
+#         "order": order.to_dict()
+#     }), 200
+
+
+
 @kitchen_bp.route("/kitchen/<int:order_id>/complete", methods=["POST"])
 @jwt_required()
 @role_required(["KITCHEN_STAFF"])
@@ -211,6 +280,26 @@ def complete_kitchen(order_id):
 
     # stamp completion
     order.completed_by_kitchen_at = datetime.utcnow()
+
+    # ── NEW: PICKUP orders skip the delivery-agent flow entirely ──────────
+    if (order.delivery_method or "").upper() == "PICKUP":
+        order.status = "READY_FOR_PICKUP"
+
+        log_order_status(
+            order,
+            old_status,
+            "READY_FOR_PICKUP",
+            current_user.id,
+            "Order ready for customer pickup"
+        )
+
+        db.session.commit()
+
+        return jsonify({
+            "message": "Order marked as READY_FOR_PICKUP",
+            "order": order.to_dict()
+        }), 200
+    # ────────────────────────────────────────────────────────────────────
 
     # Try to auto-assign a delivery agent. Prefer ONLINE agents, fallback to any active agent.
     delivery_agent = User.query.filter_by(role="DELIVERY_AGENT", availability_status="ONLINE", is_active=True).order_by(User.id).first()

@@ -63,7 +63,7 @@ const NAV_SECTIONS = [
       {
         type: 'group', name: 'Kitchen', icon: <FaUtensils />, roles: ['ADMIN', 'KITCHEN_STAFF'],
         children: [
-          { name: 'Kitchen Dashboard', icon: <FaTachometerAlt />, path: '/admin/kitchen', roles: ['ADMIN', 'KITCHEN_STAFF'] },
+          // { name: 'Kitchen Dashboard', icon: <FaTachometerAlt />, path: '/admin/kitchen', roles: ['ADMIN', 'KITCHEN_STAFF'] },
           { name: 'Kitchen Order', icon: <FaReceipt />, path: '/admin/kitchen-order', roles: ['ADMIN', 'KITCHEN_STAFF'] },
           { name: 'Kitchen Inventory', icon: <FaBoxes />, path: '/admin/kitcheninventory', roles: ['ADMIN', 'KITCHEN_STAFF'] },
         ],
@@ -305,10 +305,10 @@ const AdminSidebar = ({ isOpen, onClose, onLogout, userRole, theme }) => {
             <span className="rasi-role-dot" />
             {theme.label}
           </div>
-          <button onClick={onLogout} className="rasi-logout-btn">
+          {/* <button onClick={onLogout} className="rasi-logout-btn">
             <FaSignOutAlt />
             <span>Logout</span>
-          </button>
+          </button> */}
         </div>
       </motion.div>
     </>
@@ -380,10 +380,16 @@ const AdminLayout = () => {
               <FaSearch />
               <input type="text" placeholder="Quick search..." />
             </div>
-            <button className="header-icon-btn" aria-label="Notifications">
+            {/* <button className="header-icon-btn" aria-label="Notifications">
               <FaBell />
               <span className="header-icon-dot" />
+            </button> */}
+
+            <button onClick={handleLogout} className="rasi-logout-btn">
+              <FaSignOutAlt />
+              <span>Logout</span>
             </button>
+
             <div className="admin-profile-pill">
               <img src="https://cakentake.com/wp-content/uploads/2024/05/cakentake-logo.png" alt="Admin" />
               <div className="admin-info desktop-only">

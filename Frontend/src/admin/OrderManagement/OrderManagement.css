@@ -1967,3 +1967,29 @@
   gap: 8px;
   padding-top: 4px;
 }
+
+.receipt-crown-title {
+  text-align: center;
+  margin-bottom: 8px;
+}
+
+.receipt-logo {
+  width: 90px;
+  height: auto;
+  display: block;
+  margin: 0 auto 8px;
+  object-fit: contain;
+}
+
+.receipt-crown-title h2 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: 1px;
+}
+
+.divider {
+  margin: 6px 0;
+  font-size: 12px;
+  white-space: nowrap;
+}
