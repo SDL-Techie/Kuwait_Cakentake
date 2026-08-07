@@ -557,7 +557,7 @@ const Cart: React.FC = () => {
                     <Link to={`/product/${item.product_id}`} className="rasi-cart-item-title">
                       {item.name}
                     </Link>
-                    <p className="rasi-cart-item-seller">Rasi Bakery</p>
+                    <p className="rasi-cart-item-seller">Cakentake</p>
                   </div>
 
                   {/* Customization summary — variant, flavor, shape, addons */}

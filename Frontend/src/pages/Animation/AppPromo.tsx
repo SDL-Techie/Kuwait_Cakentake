@@ -47,7 +47,7 @@ export function AppPromo() {
     <section className="lp-app">
       <div className="lp-app-text">
         <span className="lp-app-eyebrow">GET THE APP</span>
-        <h2>Order cakes on the go with the Cake and Take app</h2>
+        <h2>Order cakes on the go with the CakenTake app</h2>
         <p>
           Track deliveries in real time, save your favourites, unlock app-only
           offers and reorder with a single tap.
