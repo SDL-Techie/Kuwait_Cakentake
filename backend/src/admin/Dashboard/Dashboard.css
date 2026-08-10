@@ -1,0 +1,696 @@
+/* ─── Base Styles ─── */
+body {
+  background-color: #f6f5f0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  color: #1a1a1a;
+  margin: 0;
+  padding: 0;
+}
+
+.db-container {
+  padding: 24px;
+  max-width: 1600px;
+  width: 100%;
+  margin: 0 auto;
+  box-sizing: border-box;
+  min-width: 0;
+  overflow-x: hidden;
+}
+
+.db-metrics-grid,
+.db-main-content,
+.db-dual-grid,
+.db-column-left,
+.db-column-right,
+.db-activity-list,
+.db-leaderboard-list {
+  min-width: 0;
+}
+
+.db-card,
+.db-metric-card,
+.db-promo-item,
+.db-activity-item,
+.db-dispatch-item,
+.db-leaderboard-item {
+  width: 100%;
+  min-width: 0;
+}
+
+.db-toggle-buttons,
+.db-revenue-meta,
+.db-promo-meta,
+.db-dispatch-row-top,
+.db-promo-item-top,
+.db-activity-right {
+  min-width: 0;
+}
+
+
+/* ─── Top Row Metrics Layout Grid ─── */
+.db-metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.db-metric-card {
+  background-color: #ffffff;
+  border-radius: 16px;
+  padding: 20px;
+  border: 1px solid #ecebe6;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+}
+
+.db-metric-card.bg-sage {
+  background-color: #dce5ce;
+  border-color: transparent;
+}
+
+.db-metric-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.db-metric-title {
+  font-size: 11px;
+  font-weight: 700;
+  color: #737373;
+  letter-spacing: 0.05em;
+}
+
+.db-metric-icon {
+  opacity: 0.4;
+  font-size: 16px;
+}
+
+.db-metric-value {
+  font-size: 32px;
+  font-weight: 800;
+  margin: 0 0 8px 0;
+  letter-spacing: -0.02em;
+}
+
+.db-trend {
+  font-size: 11px;
+  font-weight: 500;
+}
+
+.text-success { 
+  color: #437d3f; 
+}
+
+.text-danger { 
+  color: #b73b3b; 
+}
+
+.text-right { 
+  text-align: right; 
+  display: block; 
+}
+
+.text-uppercase { 
+  letter-spacing: 0.05em; 
+  font-weight: 700; 
+  margin-bottom: 6px; 
+  display: block;
+}
+
+/* ─── Core Columns Framework Structure ─── */
+.db-main-content {
+  display: grid;
+  grid-template-columns: 1.8fr 1.2fr;
+  gap: 20px;
+}
+
+.db-column-left, 
+.db-column-right {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.db-dual-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+/* ─── Card Canvas Reusables ─── */
+.db-card {
+  background-color: #ffffff;
+  border-radius: 16px;
+  border: 1px solid #ecebe6;
+  padding: 24px;
+}
+
+.db-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 20px;
+}
+
+.db-card-heading {
+  font-size: 15px;
+  font-weight: 700;
+  margin: 0 0 4px 0;
+}
+
+.db-card-subheading {
+  font-size: 10px;
+  color: #737373;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  margin: 0;
+}
+
+/* ─── Left Side Analytics & Charts elements ─── */
+.db-toggle-buttons {
+  background-color: #f1f0ea;
+  border-radius: 8px;
+  padding: 3px;
+  display: flex;
+  gap: 2px;
+}
+
+.db-btn-toggle {
+  background: transparent;
+  border: none;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 6px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  color: #737373;
+}
+
+.db-btn-toggle.active {
+  background-color: #ffffff;
+  color: #1a1a1a;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.db-revenue-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  margin-bottom: 24px;
+}
+
+.db-meta-label {
+  font-size: 10px;
+  font-weight: 700;
+  color: #737373;
+}
+
+.db-grand-total {
+  font-size: 28px;
+  font-weight: 800;
+  margin: 4px 0 0 0;
+}
+
+/* ─── Bar Chart Columns Layout ─── */
+.db-chart-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  height: 140px;
+  padding-top: 10px;
+  border-bottom: 1px solid #ecebe6;
+}
+
+.db-chart-column {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex: 1;
+  height: 100%;
+  justify-content: flex-end;
+}
+
+.db-bar {
+  width: 14px;
+  background-color: #cbd5b9;
+  border-radius: 4px 4px 0 0;
+  transition: background-color 0.3s ease;
+}
+
+.db-chart-column:hover .db-bar {
+  background-color: #a4b48d;
+}
+
+.db-bar-label {
+  font-size: 10px;
+  color: #737373;
+  margin-top: 8px;
+  font-weight: 600;
+}
+
+/* ─── Couriers Dispatch ─── */
+.db-section-tag {
+  font-size: 10px;
+  color: #737373;
+}
+
+.db-badge-row {
+  display: flex;
+  gap: 8px;
+  margin: 8px 0 16px 0;
+}
+
+.db-courier-badge {
+  font-size: 11px;
+  background-color: #f1f0ea;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-weight: 600;
+}
+
+.db-dispatch-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.db-dispatch-item {
+  background-color: #faf9f6;
+  border-radius: 12px;
+  padding: 14px;
+  border: 1px solid #ecebe6;
+}
+
+.db-dispatch-row-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+}
+
+.db-order-number {
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.db-dispatch-address {
+  font-size: 11px;
+  color: #737373;
+  margin: 0 0 10px 0;
+}
+
+.db-btn-assign {
+  background-color: #ffffff;
+  border: 1px solid #d4d2c9;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 6px 12px;
+  cursor: pointer;
+}
+
+.db-assigned-driver {
+  font-size: 11px;
+  font-weight: 600;
+  color: #437d3f;
+  margin: 0;
+}
+
+/* ─── Loyalty Leaderboard ─── */
+.db-leaderboard-list {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin-top: 12px;
+}
+
+.db-leaderboard-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.db-rank-num {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.db-rank-num.gold { background-color: #fef08a; color: #a16207; }
+.db-rank-num.silver { background-color: #e2e8f0; color: #475569; }
+.db-rank-num.bronze { background-color: #ffedd5; color: #c2410c; }
+
+.db-user-info {
+  flex: 1;
+}
+
+.db-user-info h4 {
+  margin: 0 0 2px 0;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.db-user-info p {
+  margin: 0 0 2px 0;
+  font-size: 11px;
+  color: #737373;
+}
+
+.db-user-info span {
+  font-size: 9px;
+  color: #a3a3a3;
+}
+
+.db-points-badge {
+  font-size: 11px;
+  font-weight: 700;
+  color: #525252;
+  background-color: #f5f5f5;
+  padding: 4px 8px;
+  border-radius: 6px;
+}
+
+/* ─── Right Column Pipeline & Streams ─── */
+.db-badge-pipeline, 
+.db-activity-pulse {
+  font-size: 10px;
+  font-weight: 700;
+  border: 1px solid #ecebe6;
+  padding: 4px 10px;
+  border-radius: 20px;
+}
+
+.db-empty-pipeline {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background-color: #ffffff;
+  padding: 6px 0;
+}
+
+.db-check-icon {
+  border: 1.5px solid #1a1a1a;
+  border-radius: 50%;
+  width: 18px;
+  height: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.db-empty-pipeline p {
+  font-size: 13px;
+  font-weight: 600;
+  margin: 0;
+}
+
+/* Live Activity Stream Registry */
+.db-activity-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.db-activity-item {
+  display: grid;
+  grid-template-columns: 1.2fr 1fr 1.2fr;
+  align-items: center;
+  background-color: #faf9f6;
+  border-radius: 12px;
+  padding: 12px 16px;
+  border: 1px solid #ecebe6;
+}
+
+.db-customer-name {
+  font-size: 11px;
+  color: #737373;
+  margin: 2px 0 0 0;
+}
+
+.db-activity-center span {
+  font-size: 11px;
+  color: #737373;
+}
+
+.db-item-price {
+  font-size: 12px;
+  font-weight: 600;
+  margin: 2px 0 0 0;
+}
+
+.db-activity-right {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 12px;
+}
+
+.db-btn-view {
+  background: transparent;
+  border: 1px solid #d4d2c9;
+  border-radius: 6px;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 13px;
+}
+
+/* ─── Custom UI Status Badges / Pills ─── */
+.status-pill {
+  font-size: 9px;
+  font-weight: 800;
+  padding: 4px 8px;
+  border-radius: 6px;
+  letter-spacing: 0.04em;
+  display: inline-block;
+}
+
+.status-pill::before {
+  content: "• ";
+  font-size: 12px;
+  vertical-align: middle;
+  margin-right: 2px;
+}
+
+.status-pill.pending { 
+  color: #dfa535; 
+  background-color: #fef8ec; 
+}
+
+.status-pill.ready { 
+  color: #48809a; 
+  background-color: #edf7fc; 
+}
+
+.status-pill.cancelled { 
+  color: #bc4c4c; 
+  background-color: #fdf2f2; 
+}
+
+.status-pill.ontheway { 
+  color: #b2416b; 
+  background-color: #fdf2f7; 
+}
+
+
+.db-promo-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.db-promo-item {
+  border: 1px dashed var(--color-rose, #e11d48);
+  background: rgba(225, 29, 72, 0.04);
+  border-radius: 10px;
+  padding: 10px 14px;
+}
+
+.db-promo-item-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.db-promo-name {
+  font-weight: 700;
+  font-size: 14px;
+}
+
+.db-promo-badge {
+  background: var(--color-rose, #e11d48);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 6px;
+}
+
+.db-promo-desc {
+  margin: 4px 0 0;
+  font-size: 12px;
+  color: #64748b;
+}
+
+.db-promo-meta {
+  display: flex;
+  gap: 12px;
+  margin-top: 6px;
+  font-size: 11px;
+  color: #475569;
+}
+
+@media (max-width: 1100px) {
+  .db-main-content {
+    grid-template-columns: 1fr;
+  }
+
+  .db-dual-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .db-card-header {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .db-toggle-buttons {
+    align-self: flex-start;
+  }
+
+  .db-activity-item {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+
+  .db-activity-right {
+    justify-content: flex-start;
+  }
+}
+
+@media (max-width: 900px) {
+  .db-main-content,
+  .db-dual-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .db-card-header {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .db-toggle-buttons {
+    flex-wrap: wrap;
+    justify-content: flex-start;
+  }
+
+  .db-activity-item {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+
+  .db-activity-right {
+    justify-content: flex-start;
+  }
+}
+
+@media (max-width: 768px) {
+  .db-container {
+    padding: 16px;
+    width: 100%;
+  }
+
+  .db-metrics-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .db-card {
+    padding: 18px;
+  }
+
+  .db-metric-value {
+    font-size: 28px;
+  }
+
+  .db-revenue-meta {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .db-badge-row,
+  .db-promo-meta,
+  .db-dispatch-row-top,
+  .db-promo-item-top {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .db-leaderboard-item {
+    flex-wrap: wrap;
+  }
+
+  .db-points-badge {
+    margin-left: auto;
+  }
+
+  .db-chart-container {
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  .db-chart-column {
+    min-width: 28px;
+  }
+}
+
+@media (max-width: 560px) {
+  .db-metrics-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .db-chart-column {
+    min-width: 24px;
+  }
+
+  .db-btn-toggle {
+    padding: 6px 10px;
+  }
+
+  .db-bar {
+    width: 10px;
+  }
+
+  .db-dispatch-row-top,
+  .db-promo-item-top,
+  .db-promo-meta {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+  }
+
+  .db-card {
+    padding: 16px;
+  }
+
+  .db-order-number,
+  .db-user-info h4,
+  .db-user-info p,
+  .db-item-price,
+  .db-customer-name {
+    font-size: 12px;
+  }
+}

@@ -1,0 +1,188 @@
+/* ===================== Loyalty.css ===================== */
+/* CakeNTake — Loyalty Management page
+   Theme: white background, sage-green accent (#d8e4c7), soft shadows,
+   glassmorphism cards, rounded corners. */
+
+.loyalty-page {
+  width: 100%;
+  padding: 28px clamp(16px, 3vw, 32px) 48px;
+  background: #f8f9f6;
+  min-height: 100%;
+  box-sizing: border-box;
+  font-family: "Inter", "Segoe UI", -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+/* ---------- Header ---------- */
+.loyalty-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 26px;
+}
+
+.loyalty-header-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 52px;
+  height: 52px;
+  flex-shrink: 0;
+  border-radius: 16px;
+  background: linear-gradient(135deg, #d8e4c7 0%, #c3d6ab 100%);
+  color: #3f5537;
+  box-shadow: 0 6px 16px rgba(163, 189, 128, 0.35);
+}
+
+.loyalty-header-text {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.loyalty-title {
+  margin: 0;
+  font-size: clamp(22px, 2.4vw, 28px);
+  font-weight: 700;
+  color: #2b2b28;
+  letter-spacing: -0.02em;
+}
+
+.loyalty-subtitle {
+  margin: 0;
+  font-size: 14px;
+  color: #7c8172;
+  font-weight: 400;
+}
+
+/* ---------- Tabs ---------- */
+.loyalty-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 6px;
+  margin-bottom: 22px;
+  background: #ffffff;
+  border: 1px solid #ecefe6;
+  border-radius: 16px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.03);
+  width: fit-content;
+  max-width: 100%;
+}
+
+.loyalty-tab {
+  position: relative;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  padding: 10px 18px;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #6b6f62;
+  transition: color 0.25s ease, background 0.25s ease, transform 0.15s ease;
+  white-space: nowrap;
+}
+
+.loyalty-tab:hover:not(.loyalty-tab-active) {
+  background: #f2f5ec;
+  color: #3f5537;
+  transform: translateY(-1px);
+}
+
+.loyalty-tab-active {
+  color: #2f4227;
+}
+
+.loyalty-tab-highlight {
+  position: absolute;
+  inset: 0;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #d8e4c7 0%, #b9d19b 100%);
+  box-shadow: 0 4px 14px rgba(140, 172, 100, 0.35);
+  z-index: 0;
+}
+
+.loyalty-tab-content {
+  position: relative;
+  z-index: 1;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* ---------- Content Card ---------- */
+.loyalty-content-card {
+  background: rgba(255, 255, 255, 0.75);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid rgba(216, 228, 199, 0.5);
+  border-radius: 22px;
+  box-shadow: 0 8px 28px rgba(70, 90, 50, 0.07);
+  padding: clamp(18px, 2.4vw, 30px);
+  min-height: 420px;
+  overflow: hidden;
+}
+
+.loyalty-content-inner {
+  width: 100%;
+  height: 100%;
+}
+
+/* ---------- Responsive ---------- */
+@media (max-width: 1024px) {
+  .loyalty-tabs {
+    width: 100%;
+    overflow-x: auto;
+  }
+}
+
+@media (max-width: 768px) {
+  .loyalty-page {
+    padding: 20px 14px 36px;
+  }
+
+  .loyalty-header {
+    gap: 12px;
+    margin-bottom: 18px;
+  }
+
+  .loyalty-header-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 14px;
+  }
+
+  .loyalty-tab {
+    padding: 9px 14px;
+    font-size: 13px;
+  }
+
+  .loyalty-content-card {
+    border-radius: 18px;
+    min-height: 320px;
+  }
+}
+
+@media (max-width: 480px) {
+  .loyalty-tabs {
+    flex-wrap: nowrap;
+    gap: 6px;
+  }
+
+  .loyalty-tab-content {
+    gap: 6px;
+  }
+
+  .loyalty-tab-content svg {
+    width: 15px;
+    height: 15px;
+  }
+
+  .loyalty-title {
+    font-size: 20px;
+  }
+
+  .loyalty-subtitle {
+    font-size: 13px;
+  }
+}

@@ -1,0 +1,178 @@
+.loyalty-ledger {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.loyalty-ledger-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.loyalty-ledger-heading h3 {
+  margin: 0 0 4px;
+  font-size: 17px;
+  font-weight: 700;
+  color: #2b2b28;
+}
+
+.loyalty-ledger-heading p {
+  margin: 0;
+  font-size: 13.5px;
+  color: #8a8f7e;
+}
+
+.loyalty-ledger-refresh {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: 1px solid #e3e7da;
+  background: #f6f8f1;
+  color: #3f5537;
+  border-radius: 10px;
+  padding: 8px 14px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.loyalty-ledger-refresh:hover {
+  background: #eef2e6;
+}
+
+.loyalty-alert {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  border-radius: 12px;
+  font-size: 13.5px;
+  font-weight: 500;
+}
+
+.loyalty-alert-error {
+  background: #fdecec;
+  color: #b3312c;
+  border: 1px solid #f6c9c7;
+}
+
+.loyalty-ledger-table-wrap {
+  border: 1px solid #ecefe6;
+  border-radius: 16px;
+  overflow: hidden;
+  background: #ffffff;
+}
+
+.loyalty-ledger-loading,
+.loyalty-ledger-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 46px 0;
+  color: #7c8172;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.loyalty-ledger-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13.5px;
+}
+
+.loyalty-ledger-table thead {
+  background: #f6f8f1;
+}
+
+.loyalty-ledger-table th {
+  text-align: left;
+  padding: 12px 16px;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #7c8172;
+  font-weight: 700;
+}
+
+.loyalty-ledger-table td {
+  padding: 12px 16px;
+  border-top: 1px solid #f0f2ea;
+  color: #3a3d33;
+}
+
+.loyalty-ledger-table tbody tr:hover {
+  background: #fafbf7;
+}
+
+.loyalty-ledger-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.loyalty-ledger-badge-earn {
+  background: #eaf5e0;
+  color: #3f7a2f;
+}
+
+.loyalty-ledger-badge-redeem {
+  background: #fdecec;
+  color: #b3312c;
+}
+
+.loyalty-ledger-points {
+  font-weight: 700;
+  color: #2b2b28;
+}
+
+.loyalty-ledger-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  font-size: 13.5px;
+  color: #6b6f62;
+  font-weight: 600;
+}
+
+.loyalty-ledger-pagination button {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  border: 1px solid #e3e7da;
+  background: #ffffff;
+  border-radius: 10px;
+  padding: 8px 14px;
+  cursor: pointer;
+  color: #3f5537;
+  transition: background 0.2s ease;
+}
+
+.loyalty-ledger-pagination button:hover:not(:disabled) {
+  background: #f2f5ec;
+}
+
+.loyalty-ledger-pagination button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+@media (max-width: 768px) {
+  .loyalty-ledger-table-wrap {
+    overflow-x: auto;
+  }
+
+  .loyalty-ledger-table {
+    min-width: 640px;
+  }
+}

@@ -1,0 +1,374 @@
+/* ─── Promocode.css ────────────────────────────────────────────────────────── */
+
+.cpn-page {
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: 28px 24px 40px;
+  font-family: "Inter", "Segoe UI", system-ui, -apple-system, sans-serif;
+}
+
+/* ─── Header ───────────────────────────────────────────────────────────────── */
+
+.cpn-header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 24px;
+}
+
+.cpn-header-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 46px;
+  height: 46px;
+  border-radius: 12px;
+  flex-shrink: 0;
+  background: linear-gradient(135deg, #8b1a42, #c23b6a, #d4567a);
+  color: #fff;
+  box-shadow: 0 4px 12px rgba(139, 26, 66, 0.28);
+}
+
+.cpn-header-text {
+  flex: 1;
+  min-width: 0;
+}
+
+.cpn-header-text h2 {
+  margin: 0;
+  font-size: 21px;
+  font-weight: 700;
+  color: #1f1a1d;
+  letter-spacing: -0.01em;
+}
+
+.cpn-header-text p {
+  margin: 3px 0 0;
+  font-size: 13px;
+  color: #7a7176;
+}
+
+.cpn-refresh-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  border: 1px solid #ecdfe4;
+  background: #fff;
+  color: #8b1a42;
+  cursor: pointer;
+  transition: background 0.2s, border-color 0.2s, transform 0.15s;
+  flex-shrink: 0;
+}
+
+.cpn-refresh-btn:hover:not(:disabled) {
+  background: #fdf1f5;
+  border-color: #d4567a;
+}
+
+.cpn-refresh-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.cpn-spin {
+  animation: cpn-rotate 0.9s linear infinite;
+}
+
+@keyframes cpn-rotate {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* ─── Error banner ─────────────────────────────────────────────────────────── */
+
+.cpn-error-banner {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: #fdecec;
+  border: 1px solid #f6c9c9;
+  color: #b3261e;
+  padding: 12px 16px;
+  border-radius: 10px;
+  font-size: 13px;
+  margin-bottom: 20px;
+}
+
+.cpn-error-banner span {
+  flex: 1;
+}
+
+.cpn-error-retry {
+  border: none;
+  background: #b3261e;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 6px 14px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.cpn-error-retry:hover {
+  background: #8f1e18;
+}
+
+/* ─── Loading state ────────────────────────────────────────────────────────── */
+
+.cpn-loading-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  padding: 70px 20px;
+  color: #8a7f84;
+}
+
+.cpn-loading-spinner {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  border: 3px solid #f1e2e8;
+  border-top-color: #c23b6a;
+  animation: cpn-rotate 0.8s linear infinite;
+}
+
+.cpn-loading-state p {
+  margin: 0;
+  font-size: 13px;
+}
+
+/* ─── Empty state ──────────────────────────────────────────────────────────── */
+
+.cpn-empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 70px 20px;
+  color: #a89aa0;
+  text-align: center;
+}
+
+.cpn-empty-state svg {
+  color: #d4567a;
+  margin-bottom: 6px;
+  opacity: 0.7;
+}
+
+.cpn-empty-state h3 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: #4a3f43;
+}
+
+.cpn-empty-state p {
+  margin: 0;
+  font-size: 13px;
+  max-width: 280px;
+}
+
+/* ─── Grid ─────────────────────────────────────────────────────────────────── */
+
+.cpn-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 20px;
+}
+
+/* ─── Card ─────────────────────────────────────────────────────────────────── */
+
+.cpn-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  background: #ffffff;
+  border-radius: 16px;
+  overflow: hidden;
+  border: 1px solid #f0e4e8;
+  box-shadow: 0 3px 14px rgba(139, 26, 66, 0.07);
+  transition: transform 0.22s ease, box-shadow 0.22s ease;
+}
+
+.cpn-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 26px rgba(139, 26, 66, 0.14);
+}
+
+.cpn-card-accent {
+  height: 5px;
+  width: 100%;
+  background: linear-gradient(135deg, #8b1a42, #c23b6a, #d4567a);
+}
+
+.cpn-card-body {
+  padding: 18px 20px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.cpn-card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.cpn-discount-badge {
+  display: inline-block;
+  font-size: 15px;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  color: #8b1a42;
+  background: linear-gradient(135deg, rgba(139, 26, 66, 0.1), rgba(212, 86, 122, 0.12));
+  padding: 5px 12px;
+  border-radius: 8px;
+}
+
+.cpn-expiring-badge {
+  font-size: 10.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: #b3261e;
+  background: #fdecec;
+  padding: 4px 9px;
+  border-radius: 20px;
+}
+
+.cpn-code-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.cpn-code-icon {
+  color: #c23b6a;
+  flex-shrink: 0;
+}
+
+.cpn-code-text {
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  color: #1f1a1d;
+  font-family: "Courier New", monospace;
+}
+
+.cpn-meta-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.cpn-meta-chip {
+  font-size: 11.5px;
+  font-weight: 600;
+  color: #7a5a63;
+  background: #faf3f5;
+  border: 1px solid #f0e0e5;
+  padding: 4px 10px;
+  border-radius: 20px;
+}
+
+.cpn-expiry-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: #9a8b90;
+}
+
+/* ─── Divider (ticket notch) ───────────────────────────────────────────────── */
+
+.cpn-card-divider {
+  position: relative;
+  display: flex;
+  align-items: center;
+  height: 0;
+  margin: 0 0 0;
+}
+
+.cpn-notch {
+  position: absolute;
+  width: 18px;
+  height: 18px;
+  background: #f7f5f6;
+  border-radius: 50%;
+  top: -9px;
+  z-index: 2;
+}
+
+.cpn-notch-left {
+  left: -9px;
+}
+
+.cpn-notch-right {
+  right: -9px;
+}
+
+.cpn-dashed-line {
+  width: 100%;
+  border-top: 1.5px dashed #eadbe0;
+}
+
+/* ─── Copy button ──────────────────────────────────────────────────────────── */
+
+.cpn-copy-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  border: none;
+  padding: 13px 16px;
+  font-size: 13.5px;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  color: #fff;
+  background: linear-gradient(135deg, #8b1a42, #c23b6a, #d4567a);
+  cursor: pointer;
+  transition: filter 0.2s, transform 0.15s, box-shadow 0.2s;
+}
+
+.cpn-copy-btn:hover {
+  filter: brightness(1.08);
+  box-shadow: 0 -2px 14px rgba(139, 26, 66, 0.25) inset;
+}
+
+.cpn-copy-btn:active {
+  transform: scale(0.98);
+}
+
+.cpn-copy-btn.copied {
+  background: linear-gradient(135deg, #1e8e5a, #2fa872);
+}
+
+.cpn-copy-btn svg {
+  flex-shrink: 0;
+}
+
+/* ─── Responsive ───────────────────────────────────────────────────────────── */
+
+@media (max-width: 480px) {
+  .cpn-page {
+    padding: 20px 16px 32px;
+  }
+
+  .cpn-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .cpn-header-text h2 {
+    font-size: 18px;
+  }
+}

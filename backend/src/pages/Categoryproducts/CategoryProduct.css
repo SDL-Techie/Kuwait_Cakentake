@@ -1,0 +1,124 @@
+/* Container Layout */
+.rasi-category-page {
+  padding: 8px 0; 
+  min-height: 100vh;
+  background-color: #fdfaf7; 
+}
+
+/* .rasi-category-page{
+  padding:0px;
+} */
+
+.rasi-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+/* Header Section */
+.rasi-section-header {
+  margin-bottom: 40px;
+  text-align: left;
+}
+
+.rasi-section-header h2 {
+  font-size: 20px;
+  /* margin-bottom: 8px; */
+  font-weight: 700;
+  text-align: center;
+  color:#526A45;
+  position: relative;
+  /* display: inline-block; */
+}
+
+
+
+.rasi-section-header p {
+  color: #7a6e67;
+  font-size: 1.1rem;
+}
+
+/* Back Button Styling */
+.rasi-back-btn {
+  background: transparent;
+  border: 1px solid #dcd3cc;
+  padding:10px;
+  border-radius: 50px;
+  align-items: center;
+  display: flex;
+  margin:30px;
+  gap:1px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  color: #5d4037;
+  font-weight: 500;
+  font-family: inherit;
+}
+
+.rasi-back-btn:hover {
+  background-color: #e67e22; /* Primary bakery color */
+  color: white;
+  border-color: #e67e22;
+  transform: translateX(-5px);
+}
+
+/* Products Grid */
+.rasi-products-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 30px;
+  margin-top: 20px;
+  margin-bottom: 120px; /* Added margin to prevent overlap with footer */
+}
+
+/* No Products Found State */
+.rasi-no-products {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 100px 20px;
+  background: white;
+  margin-top: 20px;
+  margin-bottom: 120px;
+  border-radius: 15px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+}
+
+.rasi-no-products p {
+  font-size: 1.2rem;
+  color: #8d817a;
+  margin-bottom: 20px;
+
+}
+
+/* Reusable Primary Button */
+.rasi-btn-primary {
+  background-color: var(--primary);
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+.rasi-btn-primary:hover {
+  background-color: var(--primary);
+}
+
+/* Mobile Responsive Adjustments */
+@media (max-width: 768px) {
+  .rasi-category-page {
+    /* padding: 60px 0; */
+  }
+
+   {
+    font-size: 2rem;
+  }
+
+  .rasi-products-grid {
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 15px;
+  }
+}

@@ -1,0 +1,253 @@
+.agent-dashboard-page {
+  width: 100%;
+  min-height: 60vh;
+  padding: 24px;
+  box-sizing: border-box;
+}
+
+/* ── Header ── */
+
+.agent-dashboard-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 28px;
+}
+
+.agent-dashboard-heading {
+  font-size: 1.6rem;
+  font-weight: 700;
+  margin: 0 0 4px 0;
+}
+
+.agent-dashboard-subheading {
+  margin: 0;
+  color: #6b6b6b;
+  font-size: 0.95rem;
+}
+
+.agent-dashboard-discount-badge {
+  background: #fff4e8;
+  color: #a15c1e;
+  border: 1px solid #f0d3ac;
+  border-radius: 999px;
+  padding: 8px 16px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+/* ── Sections ── */
+
+.agent-dashboard-section {
+  margin-bottom: 32px;
+}
+
+.agent-dashboard-section-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin: 0 0 12px 0;
+}
+
+/* ── Stat cards ── */
+
+.agent-dashboard-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 16px;
+}
+
+.agent-dashboard-stat-card {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  background: #ffffff;
+  border: 1px solid #ececec;
+  border-radius: 12px;
+  padding: 18px 20px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+.agent-dashboard-stat-label {
+  font-size: 0.8rem;
+  color: #888;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.agent-dashboard-stat-value {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #222;
+}
+
+.agent-dashboard-stat-card--positive .agent-dashboard-stat-value {
+  color: #1f8b4c;
+}
+
+.agent-dashboard-stat-card--warning .agent-dashboard-stat-value {
+  color: #b8860b;
+}
+
+.agent-dashboard-stat-card--negative .agent-dashboard-stat-value {
+  color: #c0392b;
+}
+
+/* ── Recent orders table ── */
+
+.agent-dashboard-table-wrapper {
+  overflow-x: auto;
+  background: #ffffff;
+  border: 1px solid #ececec;
+  border-radius: 12px;
+}
+
+.agent-dashboard-table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 560px;
+}
+
+.agent-dashboard-table thead th {
+  text-align: left;
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: #888;
+  font-weight: 600;
+  padding: 14px 16px;
+  border-bottom: 1px solid #ececec;
+  background: #fafafa;
+}
+
+.agent-dashboard-table tbody td {
+  padding: 14px 16px;
+  border-bottom: 1px solid #f2f2f2;
+  font-size: 0.9rem;
+  color: #333;
+}
+
+.agent-dashboard-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.agent-dashboard-status-pill {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: capitalize;
+  background: #eee;
+  color: #555;
+}
+
+.status-pending {
+  background: #fff4e0;
+  color: #a15c1e;
+}
+
+.status-confirmed,
+.status-preparing {
+  background: #e8f0ff;
+  color: #2255bb;
+}
+
+.status-out-for-delivery {
+  background: #ede4ff;
+  color: #6a3cc4;
+}
+
+.status-delivered {
+  background: #e6f7ec;
+  color: #1f8b4c;
+}
+
+.status-cancelled {
+  background: #fdeaea;
+  color: #c0392b;
+}
+
+.status-default {
+  background: #eee;
+  color: #555;
+}
+
+/* ── Empty / loading / error states ── */
+
+.agent-dashboard-empty {
+  padding: 32px;
+  text-align: center;
+  color: #888;
+  background: #fafafa;
+  border: 1px dashed #ddd;
+  border-radius: 12px;
+}
+
+.agent-dashboard-status {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 40vh;
+  text-align: center;
+  gap: 8px;
+  color: #555;
+  font-size: 1rem;
+}
+
+.agent-dashboard-status--error {
+  color: #b3261e;
+}
+
+.agent-dashboard-spinner {
+  width: 32px;
+  height: 32px;
+  border: 3px solid #e0e0e0;
+  border-top-color: #d17b3c;
+  border-radius: 50%;
+  animation: agent-dashboard-spin 0.8s linear infinite;
+  margin-bottom: 8px;
+}
+
+@keyframes agent-dashboard-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.agent-dashboard-retry-btn {
+  margin-top: 8px;
+  padding: 8px 20px;
+  border-radius: 8px;
+  border: 1px solid #d17b3c;
+  background: #fff;
+  color: #d17b3c;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.agent-dashboard-retry-btn:hover {
+  background: #d17b3c;
+  color: #fff;
+}
+
+/* ── Responsive ── */
+
+@media (max-width: 600px) {
+  .agent-dashboard-page {
+    padding: 16px;
+  }
+
+  .agent-dashboard-header {
+    flex-direction: column;
+  }
+
+  .agent-dashboard-stats-grid {
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  }
+}

@@ -1,0 +1,784 @@
+/* ════════════════════════════════════════════════════════════════
+   PINCODE.CSS - FULLY RESPONSIVE
+   Mobile First Approach
+════════════════════════════════════════════════════════════════ */
+
+/* :root {
+  --primary-blue: #2563eb;
+  --light-blue: #eff6ff;
+  --border-color: #e5e7eb;
+  --bg-light: #fafafa;
+  --bg-card: #ffffff;
+  --text-primary: #111827;
+  --text-secondary: #64748b;
+  --text-muted: #94a3b8;
+  --red-light: #fff1f2;
+  --red-text: #e11d48;
+  --green-light: #f0fdf4;
+  --green-text: #16a34a;
+} */
+
+* {
+  box-sizing: border-box;
+}
+
+/* Container & Layout */
+.rasi-pincode-container {
+  padding: 1rem;
+  /* background-color: #ffffff; */
+  min-height: 100vh;
+  font-family: 'Inter', -apple-system, sans-serif;
+  color: var(--text-primary);
+}
+
+/* ════════════════════════════════════════════════════════════════
+   HEADER SECTION - MOBILE FIRST
+════════════════════════════════════════════════════════════════ */
+.rasi-pincode-header {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: stretch;
+  margin-bottom: 1.5rem;
+  border-bottom: 1px solid #f0f0f0;
+  padding-bottom: 1.25rem;
+  gap: 1rem;
+}
+
+.header-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.header-info h1 {
+  font-size: 25px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0;
+  letter-spacing: -0.02em;
+}
+
+.user-count-badge {
+  background: var(--light-blue);
+  color: var(--primary-blue);
+  padding: 0.5rem 1rem;
+  border-radius: 99px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  width: fit-content;
+}
+
+/* ════════════════════════════════════════════════════════════════
+   SEARCH BOX - MOBILE FIRST
+════════════════════════════════════════════════════════════════ */
+.rasi-search-box {
+  position: relative;
+  width: 100%;
+}
+
+.rasi-search-box .search-icon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #9ca3af;
+  flex-shrink: 0;
+}
+
+.rasi-search-box input {
+  width: 100%;
+  padding: 0.65rem 1rem 0.65rem 2.5rem;
+  border: 0.2px solid #3e2723;
+  border-radius: 10px;
+  font-size: 0.85rem;
+  transition: all 0.2s ease;
+  background-color: var(--white);
+  color: var(--text-primary);
+  outline: none;
+  box-sizing: border-box;
+}
+
+.rasi-search-box input:focus {
+  outline: none;
+  border-color: var(--primary-blue);
+  background-color: var(--white);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+.rasi-search-box input::placeholder {
+  color: #bbb;
+}
+
+/* ════════════════════════════════════════════════════════════════
+   FORM SECTION - MOBILE FIRST
+════════════════════════════════════════════════════════════════ */
+.form-card {
+  margin-bottom: 1.5rem;
+  padding: 1rem;
+
+}
+
+.pincode-form {
+  display: flex;
+  width: 100%;
+}
+
+.form-row {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  width: 100%;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  flex: 1;
+  min-width: 0;
+}
+
+.id-text {
+  font-family: 'JetBrains Mono', monospace;
+  /* color: var(--white); */
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.submit-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  height: 44px;
+  border: none;
+  cursor: pointer;
+  padding: 0 1.25rem;
+  white-space: nowrap;
+  width: 100%;
+  font-size: 0.85rem;
+}
+
+.btn-text {
+  display: inline;
+}
+
+/* ════════════════════════════════════════════════════════════════
+   TABLE SECTION - MOBILE FIRST (CARD VIEW)
+════════════════════════════════════════════════════════════════ */
+.rasi-table-card {
+   background: var(--primary);
+  border-radius: 16px;
+  border: 1px solid #eaeaea;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.02);
+  overflow: hidden;
+}
+
+.table-scroll {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.rasi-users-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+/* Mobile: Hide table header */
+.rasi-users-table thead {
+  display: none;
+}
+
+.rasi-users-table tbody {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.rasi-users-table tr {
+  display: block;
+  border-bottom: 1px solid #f8fafc;
+  padding: 1rem;
+  background: var(--bg-card);
+}
+
+.rasi-users-table tr:last-child {
+  border-bottom: none;
+}
+
+.rasi-users-table tr:hover {
+  background-color: #fcfcfc;
+}
+
+.rasi-users-table td {
+  display: block;
+  padding: 0.5rem 0;
+  border-bottom: none;
+  font-size: 0.85rem;
+  color: var(--text-primary);
+  vertical-align: middle;
+}
+
+.rasi-users-table td:first-child {
+  padding-top: 0;
+}
+
+.rasi-users-table td:last-child {
+  padding-bottom: 0;
+}
+
+.rasi-users-table td::before {
+  content: attr(data-label);
+  font-weight: 700;
+  text-transform: uppercase;
+  font-size: 0.65rem;
+  color: var(--primary-blue);
+  display: block;
+  margin-bottom: 0.35rem;
+}
+
+.col-action::before {
+  display: none;
+}
+
+/* Specific Column Styling */
+.name-cell {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.bold-name {
+  font-weight: 700;
+  color: var(--text-primary);
+  word-break: break-word;
+}
+
+.pincode-text {
+  color: var(--text-muted);
+  font-size: 0.8rem;
+}
+
+.contact-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  /* color: var(--text-secondary); */
+  font-size: 0.8rem;
+}
+
+.contact-item svg {
+  color: var(--text-muted);
+  flex-shrink: 0;
+}
+
+.charge-value {
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+/* Role Badges */
+.role-tag {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.4rem 0.8rem;
+  border-radius: 8px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.role-tag.admin {
+  background-color: var(--red-light);
+  /* color: var(--white); */
+}
+
+.role-tag.customer {
+  background-color: #f0fdf4;
+  color: #16653d;
+}
+
+/* Delete Button */
+.delete-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--text-muted);
+  padding: 0.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+}
+
+.delete-btn:hover {
+  background: var(--red-light);
+  color: var(--red-text);
+}
+
+.delete-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.spinner-small {
+  animation: rotate 1.5s linear infinite;
+}
+
+/* ════════════════════════════════════════════════════════════════
+   LOADING & EMPTY STATES
+════════════════════════════════════════════════════════════════ */
+.admin-loading-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 60vh;
+  gap: 1rem;
+  color: var(--text-secondary);
+}
+
+.spinner {
+  animation: rotate 1.5s linear infinite;
+  color: var(--primary-blue);
+}
+
+.no-data {
+  text-align: center;
+  padding: 3rem 1rem !important;
+  color: var(--text-muted);
+  font-style: italic;
+  display: block;
+  width: 100%;
+}
+
+@keyframes rotate {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Input Spinner Remove */
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+input[type=number] {
+  -moz-appearance: textfield;
+}
+
+/* ════════════════════════════════════════════════════════════════
+   TABLET RESPONSIVE (640px and up)
+════════════════════════════════════════════════════════════════ */
+@media (min-width: 640px) {
+  .rasi-pincode-container {
+    padding: 1.5rem;
+  }
+
+  .rasi-pincode-header {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1.5rem;
+  }
+
+  .header-info h1 {
+    font-size: 1.6rem;
+  }
+
+  .rasi-search-box {
+    width: 240px;
+  }
+
+  .form-card {
+    padding: 1.25rem;
+  }
+
+  .pincode-form {
+    gap: 1rem;
+  }
+
+  .form-row {
+    flex-direction: row;
+    gap: 1rem;
+    align-items: flex-end;
+  }
+
+  .form-group {
+    flex: 1;
+  }
+
+  .submit-btn {
+    width: auto;
+    padding: 0 1.5rem;
+    height: 44px;
+    flex: 0 0 auto;
+  }
+
+  .btn-text {
+    display: inline;
+  }
+
+  /* Table shows headers on tablet */
+  .rasi-users-table thead {
+    display: table-header-group;
+  }
+
+  .rasi-users-table thead tr {
+    background-color: #f8fafc;
+  }
+
+  .rasi-users-table th {
+    padding: 1rem 1rem;
+    /* background-color: #f8fafc; */
+    background-color: #F28482;
+
+    color: var(--white);
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    border-bottom: 1px solid #edf2f7;
+    display: table-cell;
+  }
+
+  .rasi-users-table th:first-child {
+    padding-left: 1rem;
+  }
+
+  .rasi-users-table tbody {
+    display: table-row-group;
+  }
+
+  .rasi-users-table tr {
+    display: table-row;
+    border-bottom: 1px solid #f8fafc;
+    padding: 0;
+    background: var(--bg-card);
+  }
+
+  .rasi-users-table tr:hover td {
+    background-color: #fcfcfc;
+  }
+
+  .rasi-users-table td {
+    display: table-cell;
+    padding: 1rem;
+    border-bottom: 1px solid #f8fafc;
+    color: var(--text-primary);
+    background-color: white;
+    font-size: 0.9rem;
+    vertical-align: middle;
+  }
+
+  .rasi-users-table td::before {
+    display: none;
+  }
+
+  .col-action {
+    text-align: center;
+  }
+
+  .pincode-text {
+    font-size: 0.85rem;
+  }
+
+  .charge-value {
+    font-weight: 700;
+  }
+
+  .delete-btn {
+    padding: 0.5rem;
+  }
+}
+
+/* ════════════════════════════════════════════════════════════════
+   DESKTOP RESPONSIVE (1024px and up)
+════════════════════════════════════════════════════════════════ */
+@media (min-width: 1024px) {
+  .rasi-pincode-container {
+    padding: 2.5rem;
+  }
+
+  .rasi-pincode-header {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: flex-end;
+    gap: 2rem;
+    margin-bottom: 2.5rem;
+    padding-bottom: 1.5rem;
+  }
+
+  .header-info h1 {
+    /* font-size: 1.75rem; */
+    margin-bottom: 0.5rem;
+  }
+
+  .user-count-badge {
+    padding: 0.5rem 1.25rem;
+    font-size: 0.8rem;
+  }
+
+  .rasi-search-box {
+    width: 320px;
+  }
+
+  .rasi-search-box input {
+    padding: 0.65rem 1rem 0.65rem 2.5rem;
+    border-radius: 10px;
+    font-size: 0.9rem;
+  }
+
+  .form-card {
+    margin-bottom: 2rem;
+    padding: 1.5rem;
+    
+
+  }
+
+  .form-row {
+    flex-direction: row;
+    gap: 1.5rem;
+    align-items: flex-end;
+  }
+
+  .form-group {
+    flex: 1;
+  }
+
+  .form-group:last-of-type {
+    flex: 1;
+  }
+
+  .submit-btn {
+    width: auto;
+    padding: 0 1.5rem;
+    height: 44px;
+    flex: 0 0 auto;
+    border-radius: 8px;
+    font-size: 0.85rem;
+  }
+
+  .rasi-table-card {
+    border-radius: 16px;
+  }
+
+  .rasi-users-table th {
+    padding: 1.25rem 1.5rem;
+    font-size: 0.75rem;
+  }
+
+  .rasi-users-table td {
+    padding: 1.25rem 1.5rem;
+    font-size: 0.9rem;
+  }
+
+  .name-cell {
+    gap: 1rem;
+  }
+
+  .contact-item {
+    gap: 0.75rem;
+    font-size: 0.85rem;
+  }
+
+  .delete-btn {
+    padding: 0.5rem;
+  }
+
+  .delete-btn:hover {
+    background: var(--red-light);
+    color: var(--red-text);
+  }
+}
+
+/* ════════════════════════════════════════════════════════════════
+   VERY SMALL SCREENS (under 400px)
+════════════════════════════════════════════════════════════════ */
+@media (max-width: 400px) {
+  .rasi-pincode-container {
+    padding: 0.75rem;
+  }
+
+  .header-info h1 {
+    font-size: 1.25rem;
+  }
+
+  .rasi-search-box input {
+    padding: 0.6rem 0.9rem 0.6rem 2.2rem;
+    font-size: 0.8rem;
+  }
+
+  .form-card {
+    padding: 0.75rem;
+    margin-bottom: 1rem;
+  }
+
+  .form-group {
+    gap: 0.4rem;
+  }
+
+  .submit-btn {
+    height: 40px;
+    padding: 0 1rem;
+    font-size: 0.75rem;
+  }
+
+  .rasi-users-table tr {
+    padding: 0.8rem;
+    margin-bottom: 0.5rem;
+    background: var(--white);
+  }
+
+  .rasi-users-table td {
+    padding: 0.4rem 0;
+    font-size: 0.8rem;
+  }
+
+  .rasi-users-table td::before {
+    font-size: 0.6rem;
+    margin-bottom: 0.2rem;
+  }
+
+  .id-text {
+    font-size: 0.65rem;
+  }
+
+  .pincode-text {
+    font-size: 0.75rem;
+  }
+
+  .bold-name {
+    font-size: 0.9rem;
+  }
+
+  .contact-item {
+    font-size: 0.75rem;
+    gap: 0.35rem;
+  }
+
+  .role-tag {
+    padding: 0.3rem 0.6rem;
+    font-size: 0.65rem;
+    gap: 0.3rem;
+  }
+
+  .delete-btn {
+    padding: 0.4rem;
+  }
+
+  .delete-btn svg {
+    width: 14px;
+    height: 14px;
+  }
+
+  .user-count-badge {
+    padding: 0.4rem 0.8rem;
+    font-size: 0.7rem;
+  }
+
+  .admin-loading-state {
+    min-height: 50vh;
+  }
+}
+
+.delete-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+}
+
+.delete-modal {
+  background: #fff;
+  width: 90%;
+  max-width: 400px;
+  border-radius: 16px;
+  padding: 24px;
+  text-align: center;
+  animation: popupScale 0.25s ease;
+}
+
+.modal-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 15px;
+}
+
+.modal-header svg {
+  /* color: #ef4444; */
+/* color:#eaeaea; */
+/* color: var(--primary); */
+padding:2px;
+}
+
+.modal-header h3 {
+  margin: 0;
+  font-size: 20px;
+  color:black;
+  text-align: center;
+}
+
+.delete-modal p {
+  color: #666;
+  margin-bottom: 20px;
+}
+
+.modal-actions {
+  display: flex;
+  gap: 12px;
+}
+
+.cancel-btn,
+.confirm-delete-btn {
+  flex: 1;
+  border: none;
+  padding: 12px;
+  border-radius: 10px;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.cancel-btn {
+  background: #e5e7eb;
+}
+
+.confirm-delete-btn {
+  background: #ef4444;
+  color: white;
+}
+
+.confirm-delete-btn:hover {
+  background: #dc2626;
+}
+
+@keyframes popupScale {
+  from {
+    transform: scale(0.8);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}

@@ -1,0 +1,132 @@
+.stock-workspace-container {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  animation: fadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  padding:10px;
+}
+
+.stock-metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+}
+
+.stock-stat-card {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  background-color: var(--card);
+  border-radius: 20px;
+  padding: 16px 24px;
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow);
+}
+
+.stock-stat-card .meta-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #FAF9F6;
+}
+
+.stock-stat-card .meta-icon.purple-ico { color: #7C3AED; background-color: #F5F3FF; }
+.stock-stat-card .meta-icon.alert-ico { color: var(--danger); background-color: #FEF2F2; }
+.stock-stat-card .meta-icon.green-ico { color: var(--green-3); background-color: #F7FEE7; }
+
+.stock-stat-card h3 {
+  font-size: 24px;
+  font-family: var(--font-display);
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.stock-stat-card span {
+  font-size: 11px;
+  color: var(--muted);
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.stock-table-section {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.stock-table-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background-color: var(--card);
+  padding: 16px 20px;
+  border-radius: 20px;
+  border: 1px solid var(--border);
+}
+
+.stock-table-header h4 {
+  font-size: 16px;
+  color: var(--text);
+  font-weight: 600;
+}
+
+/* STOCK PROGRESS METERS */
+.stock-health-bar-container {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.stock-size-text {
+  font-size: 13px;
+  font-weight: 600;
+  min-width: 65px;
+}
+
+.health-outline {
+  flex: 1;
+  height: 8px;
+  background-color: #FAF9F6;
+  border-radius: 99px;
+  border: 1px solid var(--border);
+  overflow: hidden;
+  position: relative;
+}
+
+.health-filler {
+  height: 100%;
+  border-radius: 99px;
+  transition: width 0.3s ease;
+}
+
+.health-filler.success-glow {
+  background-color: var(--success);
+}
+
+.health-filler.warning-glow {
+  background-color: var(--warning);
+}
+
+.health-filler.danger-glow {
+  background-color: var(--danger);
+}
+
+.text-danger {
+  color: var(--danger);
+  animation: pulseColor 1.5s infinite;
+}
+
+@keyframes pulseColor {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.1); }
+  100% { transform: scale(1); }
+}
+
+@media (max-width: 768px) {
+  .stock-metrics-grid {
+    grid-template-columns: 1fr;
+  }
+}
