@@ -765,7 +765,8 @@ export const OrderManagement: React.FC = () => {
     setError(null);
     try {
       const raw = await getOrders();
-      setOrders((raw ?? []).map(normalizeOrder));
+      const list = Array.isArray(raw) ? raw : raw?.orders ?? [];
+      setOrders(list.map(normalizeOrder));
     } catch (err) {
       console.error('Failed to fetch orders:', err);
       setError('Failed to load orders. Please check your connection and try again.');

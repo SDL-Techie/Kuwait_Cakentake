@@ -13,10 +13,10 @@ const PWAInstall: React.FC = () => {
 
   useEffect(() => {
     const handler = (e: any) => {
-   
       e.preventDefault();
       deferredPromptRef.current = e;
       setInstallSupported(true);
+      setShowPopup(true);
     };
 
     const appInstalledHandler = () => {
@@ -26,16 +26,18 @@ const PWAInstall: React.FC = () => {
 
     const manualTriggerHandler = async () => {
       setRequestedInstall(true);
+      setShowPopup(true);
 
       if (deferredPromptRef.current && !alreadyInstalled) {
         const promptEvent = deferredPromptRef.current;
-        promptEvent.prompt();
-        const choiceResult = await promptEvent.userChoice;
-        if (choiceResult?.outcome === 'accepted') {
-         
-          setAlreadyInstalled(true);
-        } else {
-         
+        try {
+          await promptEvent.prompt();
+          const choiceResult = await promptEvent.userChoice;
+          if (choiceResult?.outcome === 'accepted') {
+            setAlreadyInstalled(true);
+          }
+        } catch (error) {
+          console.error('PWA install prompt failed:', error);
         }
         deferredPromptRef.current = null;
         setInstallSupported(false);
@@ -46,7 +48,6 @@ const PWAInstall: React.FC = () => {
       if (!deferredPromptRef.current && !alreadyInstalled) {
         setShowFallbackInstallText(true);
       }
-      setShowPopup(true);
     };
 
     window.addEventListener('beforeinstallprompt', handler as EventListener);
@@ -74,16 +75,18 @@ const PWAInstall: React.FC = () => {
     const promptEvent = deferredPromptRef.current;
     if (!promptEvent) {
       setShowFallbackInstallText(true);
+      setShowPopup(true);
       return;
     }
 
-    promptEvent.prompt();
-    const choiceResult = await promptEvent.userChoice;
-    if (choiceResult?.outcome === 'accepted') {
-   
-      setAlreadyInstalled(true);
-    } else {
-      
+    try {
+      await promptEvent.prompt();
+      const choiceResult = await promptEvent.userChoice;
+      if (choiceResult?.outcome === 'accepted') {
+        setAlreadyInstalled(true);
+      }
+    } catch (error) {
+      console.error('PWA install prompt failed:', error);
     }
     deferredPromptRef.current = null;
     setInstallSupported(false);
