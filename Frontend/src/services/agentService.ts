@@ -1,7 +1,7 @@
 import { api } from "./api";
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Types (mirroring routes/agent_routes.py response shapes)
+// TYPES
 // ─────────────────────────────────────────────────────────────────────────────
 
 export interface Agent {
@@ -15,7 +15,8 @@ export interface Agent {
   created_by: number | null;
   default_discount: number;
   created_at: string;
-  [key: string]: any; // other User.to_dict() fields (currency_code, loyalty_points, etc.)
+
+  [key: string]: any;
 }
 
 export interface AgentProduct {
@@ -36,7 +37,8 @@ export interface BakeryProduct {
   id: number;
   name: string;
   price: number;
-  [key: string]: any; // rest of Product.to_dict(currency)
+
+  [key: string]: any;
 }
 
 export interface AgentOrderItemInput {
@@ -45,39 +47,101 @@ export interface AgentOrderItemInput {
   custom_json?: any;
 }
 
+// ─────────────────────────────────────────────────────────────────────────────
+// CREATE AGENT ORDER PAYLOAD
+// ─────────────────────────────────────────────────────────────────────────────
+
 export interface CreateAgentOrderPayload {
-  customer_id: number; // required — used to validate the address belongs to this customer
-  address_id: number;
+  customer_id: number;
+
+  /*
+   * DELIVERY -> address ID
+   * PICKUP   -> null
+   */
+  address_id: number | null;
+
   items: AgentOrderItemInput[];
-  payment_method?: "COD" | "CARD" | "STRIPE" | "KNET" | "UPI" | "LINK";
-  currency?: "INR" | "KWD" | "AED" | "USD" | "SAR" | "SGD";
-  delivery_date?: string; // "YYYY-MM-DD"
+
+  payment_method?:
+    | "COD"
+    | "CARD"
+    | "STRIPE"
+    | "KNET"
+    | "UPI"
+    | "LINK";
+
+  currency?:
+    | "INR"
+    | "KWD"
+    | "AED"
+    | "USD"
+    | "SAR"
+    | "SGD";
+
+  /*
+   * DELIVERY
+   */
+  delivery_date?: string;
   delivery_time_slot?: string;
+
+  /*
+   * PICKUP
+   */
+  pickup_date?: string;
+  pickup_time_slot?: string;
+
   greeting_message?: string;
   greeting_from?: string;
   greeting_to?: string;
+
+  /*
+   * Agent order fields
+   */
+  order_source?: "AGENT_SELF" | "AGENT";
+
+  delivery_method?: "PICKUP" | "DELIVERY";
+
+  agent_notes?: string;
+
+  agent_discount_percentage?: number;
+
+  discount_total?: number;
+
+  delivery_charge?: number;
+
+  subtotal?: number;
+
+  grand_total?: number;
 }
+
+// ─────────────────────────────────────────────────────────────────────────────
+// DASHBOARD
+// ─────────────────────────────────────────────────────────────────────────────
 
 export interface AgentDashboard {
   agent: Agent;
+
   todays_orders: number;
   todays_revenue: number;
+
   pending_orders: number;
   completed_orders: number;
   cancelled_orders: number;
+
   total_orders: number;
   total_revenue: number;
   total_customers: number;
+
   recent_orders: any[];
 }
 
 export interface AgentCatalog {
-  products: BakeryProduct[]; // normal bakery products (shared catalog)
-  agent_products: AgentProduct[]; // this agent's own private products
+  products: BakeryProduct[];
+  agent_products: AgentProduct[];
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// OWNER: Agent CRUD  (role: ADMIN / SHOP_MANAGER)
+// OWNER — AGENTS
 // ─────────────────────────────────────────────────────────────────────────────
 
 export const createAgent = async (payload: {
@@ -88,20 +152,42 @@ export const createAgent = async (payload: {
   password: string;
   default_discount?: number;
 }): Promise<Agent> => {
-  const res = await api.post("/owner/agents", payload);
-  return res.data.agent;
+  const res = await api.post(
+    "/owner/agents",
+    payload
+  );
+
+  return res.data?.agent;
 };
 
-export const getAgents = async (activeOnly?: boolean): Promise<Agent[]> => {
-  const res = await api.get("/owner/agents", {
-    params: activeOnly === undefined ? {} : { active: activeOnly ? "true" : "false" },
-  });
-  return res.data.agents ?? [];
+export const getAgents = async (
+  activeOnly?: boolean
+): Promise<Agent[]> => {
+  const res = await api.get(
+    "/owner/agents",
+    {
+      params:
+        activeOnly === undefined
+          ? {}
+          : {
+              active: activeOnly
+                ? "true"
+                : "false",
+            },
+    }
+  );
+
+  return res.data?.agents ?? [];
 };
 
-export const getAgentById = async (agentId: number): Promise<Agent> => {
-  const res = await api.get(`/owner/agents/${agentId}`);
-  return res.data.agent;
+export const getAgentById = async (
+  agentId: number
+): Promise<Agent> => {
+  const res = await api.get(
+    `/owner/agents/${agentId}`
+  );
+
+  return res.data?.agent;
 };
 
 export const updateAgent = async (
@@ -114,59 +200,103 @@ export const updateAgent = async (
     password: string;
   }>
 ): Promise<Agent> => {
-  const res = await api.put(`/owner/agents/${agentId}`, payload);
-  return res.data.agent;
+  const res = await api.put(
+    `/owner/agents/${agentId}`,
+    payload
+  );
+
+  return res.data?.agent;
 };
 
-export const deleteAgent = async (agentId: number): Promise<void> => {
-  await api.delete(`/owner/agents/${agentId}`);
+export const deleteAgent = async (
+  agentId: number
+): Promise<void> => {
+  await api.delete(
+    `/owner/agents/${agentId}`
+  );
 };
 
-export const setAgentStatus = async (agentId: number, active: boolean): Promise<Agent> => {
-  const res = await api.patch(`/owner/agents/${agentId}/status`, { active });
-  return res.data.agent;
+export const setAgentStatus = async (
+  agentId: number,
+  active: boolean
+): Promise<Agent> => {
+  const res = await api.patch(
+    `/owner/agents/${agentId}/status`,
+    {
+      active,
+    }
+  );
+
+  return res.data?.agent;
 };
 
-export const resetAgentPassword = async (agentId: number, password: string): Promise<void> => {
-  await api.post(`/owner/agents/${agentId}/reset-password`, { password });
+export const resetAgentPassword = async (
+  agentId: number,
+  password: string
+): Promise<void> => {
+  await api.post(
+    `/owner/agents/${agentId}/reset-password`,
+    {
+      password,
+    }
+  );
 };
 
 export const setAgentDiscount = async (
   agentId: number,
   default_discount: number
 ): Promise<Agent> => {
-  const res = await api.patch(`/owner/agents/${agentId}/discount`, { default_discount });
-  return res.data.agent;
+  const res = await api.patch(
+    `/owner/agents/${agentId}/discount`,
+    {
+      default_discount,
+    }
+  );
+
+  return res.data?.agent;
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
-// OWNER: Agent Products CRUD  (role: ADMIN / SHOP_MANAGER)
-// Private, per-agent products — NOT part of the shared Product catalog.
+// OWNER — AGENT PRODUCTS
 // ─────────────────────────────────────────────────────────────────────────────
 
-export const createAgentProduct = async (payload: {
-  agent_id: number;
-  name: string;
-  price: number;
-  description?: string;
-  image?: string;
-  cloudinary_public_id?: string;
-}): Promise<AgentProduct> => {
-  const res = await api.post("/owner/agent-products", payload);
-  return res.data.product;
+export const createAgentProduct = async (
+  payload: {
+    agent_id: number;
+    name: string;
+    price: number;
+    description?: string;
+    image?: string;
+    cloudinary_public_id?: string;
+  }
+): Promise<AgentProduct> => {
+  const res = await api.post(
+    "/owner/agent-products",
+    payload
+  );
+
+  return res.data?.product;
 };
 
-// All agent products across every agent
-export const getAllAgentProducts = async (): Promise<AgentProduct[]> => {
-  const res = await api.get("/owner/agent-products");
-  return res.data.products ?? [];
-};
+export const getAllAgentProducts =
+  async (): Promise<AgentProduct[]> => {
+    const res = await api.get(
+      "/owner/agent-products"
+    );
 
-// Products belonging to one particular agent (owner view — includes inactive)
-export const getAgentProductsForAgent = async (agentId: number): Promise<AgentProduct[]> => {
-  const res = await api.get(`/owner/agents/${agentId}/products`);
-  return res.data.products ?? [];
-};
+    return res.data?.products ?? [];
+  };
+
+export const getAgentProductsForAgent =
+  async (
+    agentId: number
+  ): Promise<AgentProduct[]> => {
+    const res = await api.get(
+      `/owner/agents/${agentId}/products`
+    );
+
+    return res.data?.products ?? [];
+  };
 
 export const updateAgentProduct = async (
   productId: number,
@@ -179,60 +309,171 @@ export const updateAgentProduct = async (
     is_active: boolean;
   }>
 ): Promise<AgentProduct> => {
-  const res = await api.put(`/owner/agent-products/${productId}`, payload);
-  return res.data.product;
+  const res = await api.put(
+    `/owner/agent-products/${productId}`,
+    payload
+  );
+
+  return res.data?.product;
 };
 
-export const deleteAgentProduct = async (productId: number): Promise<void> => {
-  await api.delete(`/owner/agent-products/${productId}`);
+export const deleteAgentProduct = async (
+  productId: number
+): Promise<void> => {
+  await api.delete(
+    `/owner/agent-products/${productId}`
+  );
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
-// AGENT: catalog / dashboard / orders  (role: AGENT)
+// AGENT — PRODUCTS
 // ─────────────────────────────────────────────────────────────────────────────
 
-// Agent's own private products only (active)
-export const getMyAgentProducts = async (): Promise<AgentProduct[]> => {
-  const res = await api.get("/agent/my-products");
-  return res.data.products ?? [];
-};
+export const getMyAgentProducts =
+  async (): Promise<AgentProduct[]> => {
+    const res = await api.get(
+      "/agent/my-products"
+    );
 
-// Source 1: normal bakery products, shared catalog, unfiltered by agent
-export const getBakeryProductsForAgent = async (
+    return res.data?.products ?? [];
+  };
+
+export const getBakeryProductsForAgent =
+  async (
+    currency: string = "KWD"
+  ): Promise<BakeryProduct[]> => {
+    const res = await api.get(
+      "/agent/products",
+      {
+        headers: {
+          "X-Currency": currency,
+        },
+      }
+    );
+
+    return res.data?.products ?? [];
+  };
+
+export const getAgentCatalog = async (
   currency: string = "KWD"
-): Promise<BakeryProduct[]> => {
-  const res = await api.get("/agent/products", {
-    headers: { "X-Currency": currency },
-  });
-  return res.data.products ?? [];
-};
+): Promise<AgentCatalog> => {
+  const res = await api.get(
+    "/agent/catalog",
+    {
+      headers: {
+        "X-Currency": currency,
+      },
+    }
+  );
 
-// Convenience: both sources in one call → { products, agent_products }
-export const getAgentCatalog = async (currency: string = "KWD"): Promise<AgentCatalog> => {
-  const res = await api.get("/agent/catalog", {
-    headers: { "X-Currency": currency },
-  });
   return res.data;
 };
 
-export const getAgentDashboard = async (): Promise<AgentDashboard> => {
-  const res = await api.get("/agent/dashboard");
-  return res.data;
+// ─────────────────────────────────────────────────────────────────────────────
+// AGENT — DASHBOARD
+// ─────────────────────────────────────────────────────────────────────────────
+
+export const getAgentDashboard =
+  async (): Promise<AgentDashboard> => {
+    const res = await api.get(
+      "/agent/dashboard"
+    );
+
+    return res.data;
+  };
+
+// ─────────────────────────────────────────────────────────────────────────────
+// AGENT — ORDERS
+// ─────────────────────────────────────────────────────────────────────────────
+
+export const getAgentOrders = async (
+  status?: string
+): Promise<any[]> => {
+  const res = await api.get(
+    "/agent/orders",
+    {
+      params: status
+        ? {
+            status,
+          }
+        : {},
+    }
+  );
+
+  return res.data?.orders ?? [];
 };
 
-export const getAgentOrders = async (status?: string): Promise<any[]> => {
-  const res = await api.get("/agent/orders", {
-    params: status ? { status } : {},
-  });
-  return res.data.orders ?? [];
+export const getAgentOrderById = async (
+  orderId: number
+): Promise<any> => {
+  const res = await api.get(
+    `/agent/orders/${orderId}`
+  );
+
+  return res.data?.order;
 };
 
-export const getAgentOrderById = async (orderId: number): Promise<any> => {
-  const res = await api.get(`/agent/orders/${orderId}`);
-  return res.data.order;
-};
+// ─────────────────────────────────────────────────────────────────────────────
+// CREATE AGENT ORDER
+// ─────────────────────────────────────────────────────────────────────────────
 
-export const createAgentOrder = async (payload: CreateAgentOrderPayload): Promise<any> => {
-  const res = await api.post("/agent/orders", payload);
-  return res.data.order;
+export const createAgentOrder = async (
+  payload: CreateAgentOrderPayload
+): Promise<any> => {
+  console.log(
+    "========================================"
+  );
+
+  console.log(
+    "CREATE AGENT ORDER API"
+  );
+
+  console.log(
+    "========================================"
+  );
+
+  console.log(
+    "Payload:",
+    JSON.stringify(
+      payload,
+      null,
+      2
+    )
+  );
+
+  try {
+    const res = await api.post(
+      "/agent/orders",
+      payload
+    );
+
+    console.log(
+      "CREATE AGENT ORDER RESPONSE:",
+      res.data
+    );
+
+    return res.data?.order;
+
+  } catch (error: any) {
+    console.error(
+      "CREATE AGENT ORDER ERROR:"
+    );
+
+    console.error(
+      "Status:",
+      error?.response?.status
+    );
+
+    console.error(
+      "Data:",
+      error?.response?.data
+    );
+
+    console.error(
+      "Message:",
+      error?.message
+    );
+
+    throw error;
+  }
 };

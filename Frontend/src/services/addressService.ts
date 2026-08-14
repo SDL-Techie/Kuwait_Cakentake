@@ -21,14 +21,15 @@ export interface Address {
 }
 
 /* ============================
-   Create
+   Create Address
 ============================ */
 
 export const createAddress = async (
   payload: Omit<Address, "id" | "user_id">
 ): Promise<Address> => {
   const res = await api.post("/addresses", payload);
-  return res.data.address;
+
+  return res.data?.address;
 };
 
 /* ============================
@@ -37,7 +38,8 @@ export const createAddress = async (
 
 export const getMyAddresses = async (): Promise<Address[]> => {
   const res = await api.get("/addresses/my-addresses");
-  return res.data.addresses;
+
+  return res.data?.addresses ?? [];
 };
 
 /* ============================
@@ -48,7 +50,8 @@ export const getUserAddresses = async (
   userId: number
 ): Promise<Address[]> => {
   const res = await api.get(`/users/${userId}/addresses`);
-  return res.data.addresses;
+
+  return res.data?.addresses ?? [];
 };
 
 /* ============================
@@ -59,11 +62,12 @@ export const getAddress = async (
   id: number
 ): Promise<Address> => {
   const res = await api.get(`/addresses/${id}`);
-  return res.data.address;
+
+  return res.data?.address;
 };
 
 /* ============================
-   Update
+   Update Address
 ============================ */
 
 export const updateAddress = async (
@@ -71,11 +75,12 @@ export const updateAddress = async (
   payload: Partial<Omit<Address, "id" | "user_id">>
 ): Promise<Address> => {
   const res = await api.put(`/addresses/${id}`, payload);
-  return res.data.address;
+
+  return res.data?.address;
 };
 
 /* ============================
-   Delete
+   Delete Address
 ============================ */
 
 export const deleteAddress = async (

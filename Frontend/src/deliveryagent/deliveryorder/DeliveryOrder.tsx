@@ -2892,6 +2892,25 @@ const DeliveryOrder: React.FC = () => {
     [pendingOrders, assignedOrders, driverActiveOrders, proofOrders, deliveredOrders]
   );
 
+
+  const getDeliverySchedule = (order: any) => {
+  const rawDate = order?.expected_delivery_date || order?.delivery_date || order?.deliveryDate || null;
+  const time = order?.time_slot || order?.delivery_time_slot || order?.deliveryTimeSlot || null;
+
+  let isToday = false;
+  if (rawDate) {
+    const d = new Date(rawDate);
+    const now = new Date();
+    isToday = d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth() && d.getDate() === now.getDate();
+  }
+
+  return {
+    dateLabel: rawDate ? fmtDate(rawDate) : null,
+    time,
+    isToday,
+  };
+};
+
   const visibleOrders = useMemo(() => {
     switch (activeTab) {
       case 'pending':       return pendingOrders;
@@ -3166,11 +3185,12 @@ const DeliveryOrder: React.FC = () => {
             const customer = order.customer;
             const addr     = order.delivery_address;
             const orderIsCustomCake = isCustomCakeOrder(order);
+            const schedule = getDeliverySchedule(order)
 
             return (
               <div
                 key={order.id}
-                className="da-order-card"
+                className={`da-order-card ${schedule.isToday ? 'card-due-today' : ''}`}
                 onClick={() => { setSelectedOrder(order); setModalOpen(true); }}
               >
                 {/* Card top */}
@@ -3188,6 +3208,22 @@ const DeliveryOrder: React.FC = () => {
                     {statusLabel(status)}
                   </span>
                 </div>
+
+
+
+                {(schedule.dateLabel || schedule.time) && (
+  <div className={`da-schedule-row ${schedule.isToday ? 'is-today' : ''}`}>
+    <IconClock size={12} />
+    <span className="da-schedule-label">Expected:</span>
+    <span className="da-schedule-value">
+      {schedule.dateLabel || 'Date TBD'}
+      {schedule.time && <> · {schedule.time}</>}
+    </span>
+    {schedule.isToday && <span className="da-schedule-today-tag">Today</span>}
+  </div>
+)}
+
+
 
                 {/* Custom cake badge */}
                 {orderIsCustomCake && (

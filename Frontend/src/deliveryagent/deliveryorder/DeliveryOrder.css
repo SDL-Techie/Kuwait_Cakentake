@@ -943,3 +943,71 @@
   line-height: 1.6;
 }
 .da-confirm-desc strong { color: #2d2d2d; }
+
+
+/* ============================================================
+   ADD-ON STYLES — merge these into your existing DeliveryOrder.css
+   All class names below are new; nothing here overrides your
+   current rules.
+============================================================ */
+
+/* ---------- Card highlight — orders due today ---------- */
+.da-order-card.card-due-today {
+  border: 1px solid rgba(217, 119, 6, 0.45);
+  box-shadow: 0 0 0 1px rgba(217, 119, 6, 0.12), 0 4px 14px rgba(217, 119, 6, 0.10);
+}
+
+.da-order-card:not(.card-due-today) {
+  border-left: 3px solid #4C8CD8;
+}
+
+.da-order-card.card-due-today {
+  border-left: 3px solid #D97706;
+}
+
+/* ---------- Expected delivery schedule row ---------- */
+.da-schedule-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11.5px;
+  font-weight: 600;
+  color: #2E5E93;
+  background: rgba(76, 140, 216, 0.10);
+  border-radius: 8px;
+  padding: 5px 9px;
+  margin: 6px 0 8px;
+  width: fit-content;
+}
+
+.da-schedule-label {
+  opacity: 0.75;
+  font-weight: 500;
+}
+
+.da-schedule-value {
+  font-weight: 700;
+}
+
+.da-schedule-row.is-today {
+  color: #B45309;
+  background: rgba(217, 119, 6, 0.12);
+}
+
+.da-schedule-today-tag {
+  display: inline-flex;
+  align-items: center;
+  font-size: 9.5px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #fff;
+  background: #D97706;
+  border-radius: 10px;
+  padding: 2px 7px;
+  margin-left: 2px;
+}
+
+@media (max-width: 760px) {
+  .da-schedule-row { font-size: 11px; padding: 4px 8px; }
+}

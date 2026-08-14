@@ -2166,70 +2166,158 @@ const SalesAgentCreateOrder: React.FC = () => {
   // orderService today. Only customer_name / customer_phone / area_id are
   // guaranteed to be real values — every other optional string field falls
   // back to "-" via orDash() when the agent left it blank.
-  const buildPayload = (): SalesAgentCreateOrderPayload => {
-    const items: SalesAgentOrderItem[] = cart
-      .filter((item) => item.product.id !== -1) // exclude custom-cake placeholder row
-      .map((item) => ({
-        product_id: item.product.id,
-        quantity: item.quantity,
-        custom_json: {
-          variant_id: item.variantId,
-          variant_name: orDash(item.variantName),
-          addon_ids: item.addonIds,
-          special_instruction: orDash(item.specialInstruction),
-          gift_message: orDash(item.giftMessage),
-        },
-      }));
+  // const buildPayload = (): SalesAgentCreateOrderPayload => {
+  //   const items: SalesAgentOrderItem[] = cart
+  //     .filter((item) => item.product.id !== -1) // exclude custom-cake placeholder row
+  //     .map((item) => ({
+  //       product_id: item.product.id,
+  //       quantity: item.quantity,
+  //       custom_json: {
+  //         variant_id: item.variantId,
+  //         variant_name: orDash(item.variantName),
+  //         addon_ids: item.addonIds,
+  //         special_instruction: orDash(item.specialInstruction),
+  //         gift_message: orDash(item.giftMessage),
+  //       },
+  //     }));
 
-    const custom_cake = isCustomCake
-      ? {
-          product_name: orDash(customCake.productName),
-          image: orDash(customCake.referenceImageUrl),
-          shape: orDash(customCake.shape),
-          flavour: orDash(customCake.flavour),
-          variant: orDash(customCake.variant),
-          price: Number(customCake.price || 0),
-          message: orDash(customCake.message),
-        }
-      : undefined;
+  //   const custom_cake = isCustomCake
+  //     ? {
+  //         product_name: orDash(customCake.productName),
+  //         image: orDash(customCake.referenceImageUrl),
+  //         shape: orDash(customCake.shape),
+  //         flavour: orDash(customCake.flavour),
+  //         variant: orDash(customCake.variant),
+  //         price: Number(customCake.price || 0),
+  //         message: orDash(customCake.message),
+  //       }
+  //     : undefined;
 
-    const address_line2 =
-      [address.houseNo, address.street].filter(Boolean).join(", ");
+  //   const address_line2 =
+  //     [address.houseNo, address.street].filter(Boolean).join(", ");
 
-    const payload: SalesAgentCreateOrderPayload = {
-      customer_name: customer.customerName.trim(),
-      customer_phone: customer.customerPhone.trim(),
-      customer_email: orDash(customer.customerEmail),
+  //   const payload: SalesAgentCreateOrderPayload = {
+  //     customer_name: customer.customerName.trim(),
+  //     customer_phone: customer.customerPhone.trim(),
+  //     customer_email: orDash(customer.customerEmail),
 
-      delivery_method: deliveryMethod === 'pickup' ? 'PICKUP' : 'DELIVERY',
+  //     delivery_method: deliveryMethod === 'pickup' ? 'PICKUP' : 'DELIVERY',
 
-      // Address fields only really apply to DELIVERY, but area_id is now
-      // collected (and required) for every order regardless of method.
-      address_line1: deliveryMethod === 'delivery' ? orDash(address.addressLine) : "-",
-      address_line2: deliveryMethod === 'delivery' ? orDash(address_line2) : "-",
-      landmark: deliveryMethod === 'delivery' ? orDash(address.landmark) : "-",
-      city: deliveryMethod === 'delivery' ? orDash(address.city) : "-",
-      state: deliveryMethod === 'delivery' ? orDash(address.state) : "-",
-      country: deliveryMethod === 'delivery' ? orDash(address.country) : "-",
-      area_id: address.areaId as number,
+  //     // Address fields only really apply to DELIVERY, but area_id is now
+  //     // collected (and required) for every order regardless of method.
+  //     address_line1: deliveryMethod === 'delivery' ? orDash(address.addressLine) : "-",
+  //     address_line2: deliveryMethod === 'delivery' ? orDash(address_line2) : "-",
+  //     landmark: deliveryMethod === 'delivery' ? orDash(address.landmark) : "-",
+  //     city: deliveryMethod === 'delivery' ? orDash(address.city) : "-",
+  //     state: deliveryMethod === 'delivery' ? orDash(address.state) : "-",
+  //     country: deliveryMethod === 'delivery' ? orDash(address.country) : "-",
+  //     area_id: address.areaId as number,
 
-      // Delivery vs Pickup dates — optional, unfilled sent as "-"
-      delivery_date: deliveryMethod === 'delivery' ? orDash(address.deliveryDate) : "-",
-      delivery_time_slot: deliveryMethod === 'delivery' ? orDash(address.deliveryTimeSlot) : "-",
+  //     // Delivery vs Pickup dates — optional, unfilled sent as "-"
+  //     delivery_date: deliveryMethod === 'delivery' ? orDash(address.deliveryDate) : "-",
+  //     delivery_time_slot: deliveryMethod === 'delivery' ? orDash(address.deliveryTimeSlot) : "-",
 
-      pickup_date: deliveryMethod === 'pickup' ? orDash(pickupDate) : "-",
-      pickup_time_slot: deliveryMethod === 'pickup' ? orDash(pickupTimeSlot) : "-",
+  //     pickup_date: deliveryMethod === 'pickup' ? orDash(pickupDate) : "-",
+  //     pickup_time_slot: deliveryMethod === 'pickup' ? orDash(pickupTimeSlot) : "-",
 
-      items,
+  //     items,
 
-      payment_method: paymentMethod ? paymentMethod : "-",
-      order_type: "agent_order",
+  //     payment_method: paymentMethod ? paymentMethod : "-",
+  //     order_type: "agent_order",
 
-      custom_cake,
-    } as SalesAgentCreateOrderPayload;
+  //     custom_cake,
+  //   } as SalesAgentCreateOrderPayload;
 
-    return payload;
+  //   return payload;
+  // };
+
+  // ── Payload builder ──────────────────────────────────────────────────────
+// Built strictly against SalesAgentCreateOrderPayload as it exists in your
+// orderService today. Only customer_name / customer_phone / area_id are
+// guaranteed to be real values — other optional *text* fields fall back to
+// "-" via orDash() when the agent left them blank.
+//
+// IMPORTANT: delivery_date / delivery_time_slot / pickup_date /
+// pickup_time_slot are NOT run through orDash(). The backend parses these
+// with strptime('%Y-%m-%d'), so sending "-" as a placeholder throws
+// "time data '-' does not match format '%Y-%m-%d'". When left blank we
+// omit the key entirely instead, via orDateField() below.
+const buildPayload = (): SalesAgentCreateOrderPayload => {
+  const items: SalesAgentOrderItem[] = cart
+    .filter((item) => item.product.id !== -1) // exclude custom-cake placeholder row
+    .map((item) => ({
+      product_id: item.product.id,
+      quantity: item.quantity,
+      custom_json: {
+        variant_id: item.variantId,
+        variant_name: orDash(item.variantName),
+        addon_ids: item.addonIds,
+        special_instruction: orDash(item.specialInstruction),
+        gift_message: orDash(item.giftMessage),
+      },
+    }));
+
+  const custom_cake = isCustomCake
+    ? {
+        product_name: orDash(customCake.productName),
+        image: orDash(customCake.referenceImageUrl),
+        shape: orDash(customCake.shape),
+        flavour: orDash(customCake.flavour),
+        variant: orDash(customCake.variant),
+        price: Number(customCake.price || 0),
+        message: orDash(customCake.message),
+      }
+    : undefined;
+
+  const address_line2 =
+    [address.houseNo, address.street].filter(Boolean).join(", ");
+
+  // Returns the trimmed value, or undefined if blank — never "-".
+  // Use this ONLY for date / time-slot fields.
+  const orDateField = (value: string | null | undefined): string | undefined => {
+    const trimmed = (value ?? "").trim();
+    return trimmed ? trimmed : undefined;
   };
+
+  const payload: SalesAgentCreateOrderPayload = {
+    customer_name: customer.customerName.trim(),
+    customer_phone: customer.customerPhone.trim(),
+    customer_email: orDash(customer.customerEmail),
+
+    delivery_method: deliveryMethod === 'pickup' ? 'PICKUP' : 'DELIVERY',
+
+    // Address fields only really apply to DELIVERY, but area_id is now
+    // collected (and required) for every order regardless of method.
+    address_line1: deliveryMethod === 'delivery' ? orDash(address.addressLine) : "-",
+    address_line2: deliveryMethod === 'delivery' ? orDash(address_line2) : "-",
+    landmark: deliveryMethod === 'delivery' ? orDash(address.landmark) : "-",
+    city: deliveryMethod === 'delivery' ? orDash(address.city) : "-",
+    state: deliveryMethod === 'delivery' ? orDash(address.state) : "-",
+    country: deliveryMethod === 'delivery' ? orDash(address.country) : "-",
+    area_id: address.areaId as number,
+
+    // Delivery vs Pickup dates — optional. Blank → omit the key entirely
+    // (undefined), NOT "-", because the backend parses these as real dates.
+    delivery_date:
+      deliveryMethod === 'delivery' ? orDateField(address.deliveryDate) : undefined,
+    delivery_time_slot:
+      deliveryMethod === 'delivery' ? orDateField(address.deliveryTimeSlot) : undefined,
+
+    pickup_date:
+      deliveryMethod === 'pickup' ? orDateField(pickupDate) : undefined,
+    pickup_time_slot:
+      deliveryMethod === 'pickup' ? orDateField(pickupTimeSlot) : undefined,
+
+    items,
+
+    payment_method: paymentMethod ? paymentMethod : "-",
+    order_type: "agent_order",
+
+    custom_cake,
+  } as SalesAgentCreateOrderPayload;
+
+  return payload;
+};
 
   // ── Reset ────────────────────────────────────────────────────────────────
   const resetForm = () => {

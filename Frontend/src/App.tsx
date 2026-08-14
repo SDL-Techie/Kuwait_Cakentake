@@ -303,6 +303,8 @@ import BlogManagement from './admin/Blog/BlogManagement';
 import UserBlog from './pages/Blog/Userblog';
 import Unauthorized from './components/Unauthorized';
 import RoleProtectedRoute from './components/RoleProtectedRoute';
+import KitchenOrderCalendar from './kitchen/kitchencalender/Kitchenordercalender';
+import InventoryManagement from './admin/InventoryManagement/Inventorymanagement';
 
 
 // Lazy load pages
@@ -454,8 +456,9 @@ const AppContent: React.FC = () => {
       <Route path="agentmenu" element={<AgentMenuManagement/>}/>
       <Route path="agentmanagement" element={<AgentManagement/>}/>
       <Route path="orderpipeline" element={<OrderManagement/>}/>
-      <Route path="stock" element={<StockManagement/>}/>
-      <Route path="supplier" element={<SupplierManagement/>}/>
+      {/* <Route path="stock" element={<StockManagement/>}/>
+      <Route path="supplier" element={<SupplierManagement/>}/> */}
+      <Route path="inventory" element={<InventoryManagement/>}/>
       <Route path="loyality" element={<Loyalty/>}/>
     </Route>
 
@@ -472,7 +475,7 @@ const AppContent: React.FC = () => {
     </Route>
 
     <Route element={<RoleProtectedRoute allowedRoles={['ADMIN','KITCHEN_STAFF']} />}>
-      <Route path="kitchen" element={<KitchenDashboard/>}/>
+      <Route path="kitchen" element={<KitchenOrderCalendar/>}/>
       <Route path="kitchen-order" element={<KitchenOrder/>}/>
       <Route path="kitcheninventory" element={<KitchenInventory/>}/>
     </Route>

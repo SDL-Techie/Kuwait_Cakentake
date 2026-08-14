@@ -576,43 +576,159 @@ const AgentOrder: React.FC = () => {
   };
 
   // ── Payload builder ──────────────────────────────────────────────────────
-  const buildPayload = (): AgentOrderPayloadExtended => {
-    const items: AgentOrderItemInput[] = cart.map((item) => ({
+const buildPayload = (): AgentOrderPayloadExtended => {
+  const items: AgentOrderItemInput[] = cart.map(
+    (item) => ({
       product_id: item.productId,
+
       quantity: item.quantity,
+
       custom_json: {
         product_type: item.productType,
-        original_price: item.originalPrice,
-        discount_percentage: item.discountPercentage,
-        discount_amount: item.discountAmount,
-        final_price: item.finalPrice,
-        line_total: Number((item.finalPrice * item.quantity).toFixed(2)),
+
+        original_price: Number(
+          item.originalPrice.toFixed(2)
+        ),
+
+        discount_percentage: Number(
+          item.discountPercentage.toFixed(2)
+        ),
+
+        discount_amount: Number(
+          item.discountAmount.toFixed(2)
+        ),
+
+        final_price: Number(
+          item.finalPrice.toFixed(2)
+        ),
+
+        line_total: Number(
+          (
+            item.finalPrice *
+            item.quantity
+          ).toFixed(2)
+        ),
       },
-    }));
+    })
+  );
 
-    const payload: AgentOrderPayloadExtended = {
-      customer_id: agent!.id, // agent is ordering for themselves
-      // address_id: selectedAddressId ?? (deliveryMethod === "PICKUP" ? addresses[0]?.id : undefined),
-      address_id: deliveryMethod === "DELIVERY" ? (selectedAddressId ?? undefined) : undefined,
-      items,
-      payment_method: paymentMethod || undefined,
-      currency: currency as CreateAgentOrderPayload["currency"],
-      delivery_date: deliveryMethod === "PICKUP" ? pickupDate || undefined : deliveryDate || undefined,
-      delivery_time_slot: deliveryMethod === "PICKUP" ? pickupTimeSlot || undefined : deliveryTimeSlot || undefined,
+  const isPickup =
+    deliveryMethod === "PICKUP";
 
-      // extended / not-yet-backed-by-the-real-type fields:
-      order_source: "AGENT_SELF",
-      delivery_method: deliveryMethod || undefined,
-      agent_notes: notes.trim() || undefined,
-      agent_discount_percentage: agentDiscount,
-      discount_total: Number(discountTotal.toFixed(2)),
-      delivery_charge: deliveryCharge,
-      subtotal: Number(originalSubtotal.toFixed(2)),
-      grand_total: Number(grandTotal.toFixed(2)),
-    };
+  const payload: AgentOrderPayloadExtended = {
+    /*
+     * Agent is ordering for himself.
+     */
+    customer_id: agent!.id,
 
-    return payload;
+    /*
+     * Pickup:
+     *     address_id = null
+     *
+     * Delivery:
+     *     address_id = selected address
+     */
+    address_id: isPickup
+      ? null
+      : selectedAddressId ?? null,
+
+    items,
+
+    payment_method:
+      paymentMethod || "COD",
+
+    currency:
+      currency as CreateAgentOrderPayload["currency"],
+
+    /*
+     * DELIVERY fields
+     */
+    delivery_date:
+      !isPickup
+        ? deliveryDate || undefined
+        : undefined,
+
+    delivery_time_slot:
+      !isPickup
+        ? deliveryTimeSlot || undefined
+        : undefined,
+
+    /*
+     * PICKUP fields
+     */
+    pickup_date:
+      isPickup
+        ? pickupDate || undefined
+        : undefined,
+
+    pickup_time_slot:
+      isPickup
+        ? pickupTimeSlot || undefined
+        : undefined,
+
+    /*
+     * Agent order metadata
+     */
+    order_source: "AGENT_SELF",
+
+    delivery_method:
+      deliveryMethod,
+
+    agent_notes:
+      notes.trim() || undefined,
+
+    /*
+     * These are only informational on frontend.
+     * Backend calculates the real discount.
+     */
+    agent_discount_percentage:
+      Number(
+        agentDiscount.toFixed(2)
+      ),
+
+    discount_total:
+      Number(
+        discountTotal.toFixed(2)
+      ),
+
+    delivery_charge:
+      Number(
+        deliveryCharge.toFixed(2)
+      ),
+
+    subtotal:
+      Number(
+        originalSubtotal.toFixed(2)
+      ),
+
+    grand_total:
+      Number(
+        grandTotal.toFixed(2)
+      ),
   };
+
+  console.log(
+    "========================================"
+  );
+
+  console.log(
+    "CREATE AGENT ORDER PAYLOAD"
+  );
+
+  console.log(
+    "========================================"
+  );
+
+  console.log(
+    JSON.stringify(
+      payload,
+      null,
+      2
+    )
+  );
+
+  return payload;
+};
 
   const resetOrderState = () => {
     setCart([]);
@@ -627,28 +743,113 @@ const AgentOrder: React.FC = () => {
   };
 
   // ── Submit ───────────────────────────────────────────────────────────────
-  const handleCreateOrder = async () => {
-    setSuccessMessage("");
-    setSubmitError("");
-    if (!agent) {
-      setSubmitError("Your agent profile hasn't finished loading yet.");
-      return;
-    }
-    if (!validateForm()) return;
+const handleCreateOrder = async () => {
+  setSuccessMessage("");
+  setSubmitError("");
 
-    setIsSubmitting(true);
-    try {
-      const payload = buildPayload();
-      await createAgentOrder(payload);
-      setSuccessMessage("Order created successfully.");
-      resetOrderState();
-    } catch (err) {
-      setSubmitError("Could not create the order. Please check the details and try again.");
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
+  if (!agent) {
+    setSubmitError(
+      "Your agent profile hasn't finished loading yet."
+    );
+    return;
+  }
 
+  if (!validateForm()) {
+    return;
+  }
+
+  /*
+   * Delivery must have an address.
+   */
+  if (
+    deliveryMethod === "DELIVERY" &&
+    !selectedAddressId
+  ) {
+    setSubmitError(
+      "Please select a delivery address."
+    );
+    return;
+  }
+
+  /*
+   * Pickup must have date + time.
+   */
+  if (
+    deliveryMethod === "PICKUP" &&
+    (!pickupDate || !pickupTimeSlot)
+  ) {
+    setSubmitError(
+      "Please select pickup date and time."
+    );
+    return;
+  }
+
+  if (cart.length === 0) {
+    setSubmitError(
+      "Please add at least one product."
+    );
+    return;
+  }
+
+  setIsSubmitting(true);
+
+  try {
+    const payload =
+      buildPayload();
+
+    const order =
+      await createAgentOrder(
+        payload
+      );
+
+    console.log(
+      "ORDER CREATED:",
+      order
+    );
+
+    setSuccessMessage(
+      "Order created successfully."
+    );
+
+    resetOrderState();
+
+  } catch (err: any) {
+    console.error(
+      "========================================"
+    );
+
+    console.error(
+      "ORDER CREATION FAILED"
+    );
+
+    console.error(
+      "========================================"
+    );
+
+    console.error(
+      "Status:",
+      err?.response?.status
+    );
+
+    console.error(
+      "Backend response:",
+      err?.response?.data
+    );
+
+    const message =
+      err?.response?.data?.error ||
+      err?.response?.data?.message ||
+      err?.message ||
+      "Could not create the order.";
+
+    setSubmitError(
+      message
+    );
+
+  } finally {
+    setIsSubmitting(false);
+  }
+};
   // ── Render helpers ───────────────────────────────────────────────────────
 
   const renderNormalProductCard = (product: BakeryProduct) => {

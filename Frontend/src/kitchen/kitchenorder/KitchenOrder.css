@@ -1493,3 +1493,209 @@
     font-size: 15px;
   }
 }
+
+
+/* ============================================================
+   ADD-ON STYLES — merge these into your existing KitchenOrder.css
+   All class names below are new; nothing here overrides your
+   current rules.
+============================================================ */
+
+/* ---------- Segmented date filter ---------- */
+.ko-date-filter-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+}
+
+.ko-filter-segment-group {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  background: #F2F5F0;
+  border: 1px solid #E1E7DD;
+  border-radius: 12px;
+  padding: 3px;
+}
+
+.ko-filter-segment-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: none;
+  background: transparent;
+  color: #6B7563;
+  font-size: 12.5px;
+  font-weight: 600;
+  padding: 7px 12px;
+  border-radius: 9px;
+  cursor: pointer;
+  transition: background .15s, color .15s;
+  white-space: nowrap;
+}
+
+.ko-filter-segment-btn:hover {
+  background: rgba(255, 255, 255, 0.7);
+  color: #35402F;
+}
+
+.ko-filter-segment-btn.active {
+  background: #7CB342;
+  color: #fff;
+  box-shadow: 0 2px 6px rgba(124, 179, 66, 0.35);
+}
+
+.ko-date-filter-input-wrap {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  border: 1px solid #E1E7DD;
+  background: #fff;
+  padding: 7px 11px;
+  border-radius: 10px;
+  color: #6B7563;
+  cursor: pointer;
+}
+
+.ko-date-filter-input {
+  border: none;
+  outline: none;
+  font-size: 12.5px;
+  font-family: inherit;
+  color: #2B3327;
+  background: transparent;
+  cursor: pointer;
+}
+
+.ko-date-filter-active-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: #4C5A45;
+  background: rgba(124, 179, 66, 0.12);
+  border: 1px solid rgba(124, 179, 66, 0.3);
+  padding: 6px 8px 6px 12px;
+  border-radius: 20px;
+}
+
+.ko-date-filter-active-chip strong {
+  color: #35402F;
+  font-weight: 700;
+}
+
+.ko-date-filter-chip-clear {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(124, 179, 66, 0.2);
+  color: #4C5A45;
+  cursor: pointer;
+  transition: background .15s, color .15s;
+}
+
+.ko-date-filter-chip-clear:hover {
+  background: #E1544D;
+  color: #fff;
+}
+
+/* ---------- Fulfilment (pickup / delivery) highlight — order card ---------- */
+.ko-order-card.card-fulfillment-pickup {
+  border-left: 3px solid #7CB342;
+}
+
+.ko-order-card.card-fulfillment-delivery {
+  border-left: 3px solid #4C8CD8;
+}
+
+.ko-fulfillment-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  flex-wrap: wrap;
+  padding: 6px 9px;
+  border-radius: 9px;
+  margin-bottom: 8px;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.ko-fulfillment-row.is-pickup {
+  background: rgba(124, 179, 66, 0.12);
+  color: #4C7A29;
+}
+
+.ko-fulfillment-row.is-delivery {
+  background: rgba(76, 140, 216, 0.12);
+  color: #2E5E93;
+}
+
+.ko-fulfillment-type-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  font-size: 10.5px;
+}
+
+.ko-fulfillment-schedule {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-weight: 500;
+  opacity: 0.9;
+}
+
+.ko-fulfillment-time {
+  font-weight: 600;
+}
+
+/* ---------- Fulfilment section — order detail modal ---------- */
+.op-fd-fulfillment h4 {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.op-fd-fulfillment.is-pickup {
+  background: rgba(124, 179, 66, 0.08);
+  border: 1px solid rgba(124, 179, 66, 0.25);
+  border-radius: 12px;
+  padding: 12px 14px;
+}
+
+.op-fd-fulfillment.is-delivery {
+  background: rgba(76, 140, 216, 0.08);
+  border: 1px solid rgba(76, 140, 216, 0.25);
+  border-radius: 12px;
+  padding: 12px 14px;
+}
+
+.op-fd-fulfillment.is-pickup h4 {
+  color: #4C7A29;
+}
+
+.op-fd-fulfillment.is-delivery h4 {
+  color: #2E5E93;
+}
+
+@media (max-width: 760px) {
+  .ko-date-filter-bar { gap: 8px; }
+  .ko-filter-segment-btn { padding: 6px 9px; font-size: 12px; }
+}
+
+.op-fd-hidden { display: none; }
+.op-fd-addon-thumb {
+  width: 40px;   /* match whatever size the placeholder is */
+  height: 40px;
+  object-fit: cover;
+  border-radius: 6px;
+}

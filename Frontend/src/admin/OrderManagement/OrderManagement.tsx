@@ -1231,7 +1231,7 @@ export const OrderManagement: React.FC = () => {
             rowClassName={rowClassFor}
             columns={[
               {
-                header: 'Order #',
+                header: 'Order Id',
                 accessor: (row: Order) => (
                   <div className="tbl-order-id-cell">
                     <strong className="tbl-order-id">{row.orderNumber ?? row.id}</strong>

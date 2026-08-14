@@ -63,7 +63,7 @@ const NAV_SECTIONS = [
       {
         type: 'group', name: 'Kitchen', icon: <FaUtensils />, roles: ['ADMIN', 'KITCHEN_STAFF'],
         children: [
-          // { name: 'Kitchen Dashboard', icon: <FaTachometerAlt />, path: '/admin/kitchen', roles: ['ADMIN', 'KITCHEN_STAFF'] },
+          { name: 'Kitchen Calender', icon: <FaTachometerAlt />, path: '/admin/kitchen', roles: ['ADMIN', 'KITCHEN_STAFF'] },
           { name: 'Kitchen Order', icon: <FaReceipt />, path: '/admin/kitchen-order', roles: ['ADMIN', 'KITCHEN_STAFF'] },
           { name: 'Kitchen Inventory', icon: <FaBoxes />, path: '/admin/kitcheninventory', roles: ['ADMIN', 'KITCHEN_STAFF'] },
         ],
@@ -152,8 +152,8 @@ const NAV_SECTIONS = [
       {
         type: 'group', name: 'Stock & Inventory', icon: <FaWarehouse />, roles: ['ADMIN'],
         children: [
-          { name: 'Stock & Inventory', icon: <FaBoxes />, path: '/admin/stock', roles: ['ADMIN','SHOP_MANAGER'] },
-          { name: 'Supplier Management', icon: <FaTruckLoading />, path: '/admin/supplier', roles: ['ADMIN','SHOP_MANAGER'] },
+          { name: 'Stock & Inventory', icon: <FaBoxes />, path: '/admin/inventory', roles: ['ADMIN','SHOP_MANAGER'] },
+          // { name: 'Supplier Management', icon: <FaTruckLoading />, path: '/admin/supplier', roles: ['ADMIN','SHOP_MANAGER'] },
         ],
       },
       { type: 'link', name: 'Loyalty', icon: <FaGem />, path: '/admin/loyality', roles: ['ADMIN','SHOP_MANAGER'] },

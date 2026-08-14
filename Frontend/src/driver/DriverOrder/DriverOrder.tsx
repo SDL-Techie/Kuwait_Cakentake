@@ -4406,6 +4406,15 @@ const fmt = {
  * (building / building_name / building_no, etc.), so this checks a few
  * common variants rather than assuming one exact field name.
  */
+// const addrField = (addr: any, keys: string[]): string | null => {
+//   if (!addr) return null;
+//   for (const k of keys) {
+//     const v = addr[k];
+//     if (v !== undefined && v !== null && String(v).trim() !== "") return String(v);
+//   }
+//   return null;
+// };
+
 const addrField = (addr: any, keys: string[]): string | null => {
   if (!addr) return null;
   for (const k of keys) {
@@ -5119,14 +5128,25 @@ const DriverOrder: React.FC<Props> = ({ driverId: propDriverId }) => {
                 )}
 
                 {/* Address */}
-                {addr && (
+                {/* {addr && (
                   <div className="do-card-row">
                     {Ico.pin}
                     <span>
                       {[addr.street, addr.city, addr.pincode].filter(Boolean).join(", ")}
                     </span>
                   </div>
-                )}
+                )} */}
+
+                {addr && (
+  <div className="do-card-row">
+    {Ico.pin}
+    <span>
+      {[addr.street, addr.city, addr.area?.name || addr.area_name, addr.pincode, addr.country?.name || addr.country_name]
+        .filter(Boolean)
+        .join(", ")}
+    </span>
+  </div>
+)}
 
                 {/* Items */}
                 <div className="do-card-items">
@@ -5373,11 +5393,45 @@ const DriverOrder: React.FC<Props> = ({ driverId: propDriverId }) => {
                     const block    = addrField(addr, ["block", "block_no"]);
                     const avenue   = addrField(addr, ["avenue", "avenue_name"]);
                     const street   = addrField(addr, ["street", "street_name"]);
+                    // const floorApt = [
+                    //   addrField(addr, ["floor", "floor_no"]),
+                    //   addrField(addr, ["apartment", "apartment_no", "flat_no", "unit"]),
+                    // ].filter(Boolean).join(" ");
+                    // const notes = addrField(addr, ["address_notes", "notes", "landmark"]);
+ 
                     const floorApt = [
-                      addrField(addr, ["floor", "floor_no"]),
-                      addrField(addr, ["apartment", "apartment_no", "flat_no", "unit"]),
-                    ].filter(Boolean).join(" ");
-                    const notes = addrField(addr, ["address_notes", "notes", "landmark"]);
+  addrField(addr, ["floor", "floor_no"]),
+  addrField(addr, ["apartment", "apartment_no", "flat_no", "unit"]),
+].filter(Boolean).join(" ");
+const notes = addrField(addr, ["address_notes", "notes", "landmark"]);
+
+
+//       const area =
+//   addrField(addr, ["area", "area_name"]) ||
+//   addr?.area?.name ||
+//   null;
+// const country =
+//   addrField(addr, ["country", "country_name"]) ||
+//   addr?.country?.name ||
+//   addrField(addr, ["country_code"]) ||
+//   null;
+
+
+const area =
+  (addr?.area && typeof addr.area === 'object'
+    ? (addr.area.name ?? addr.area.areaName ?? null)
+    : addr?.area) ||
+  addrField(addr, ["area_name"]) ||
+  null;
+
+const country =
+  (addr?.country && typeof addr.country === 'object'
+    ? (addr.country.name ?? addr.country.countryName ?? null)
+    : addr?.country) ||
+  addrField(addr, ["country_name", "country_code"]) ||
+  null;
+
+
 
                     return (
                       <div className="do-address-box">
@@ -5388,12 +5442,21 @@ const DriverOrder: React.FC<Props> = ({ driverId: propDriverId }) => {
                         )}
                         {(building || block || avenue || street || floorApt || notes) && (
                           <div className="do-address-fields">
-                            {building && <p className="do-address-field"><strong>Building:</strong> {building}</p>}
+                            {/* {building && <p className="do-address-field"><strong>Building:</strong> {building}</p>}
                             {block    && <p className="do-address-field"><strong>Block:</strong> {block}</p>}
                             {avenue   && <p className="do-address-field"><strong>Avenue:</strong> {avenue}</p>}
                             {street   && <p className="do-address-field"><strong>Street:</strong> {street}</p>}
                             {floorApt && <p className="do-address-field"><strong>Floor/Apt:</strong> {floorApt}</p>}
-                            {notes    && <p className="do-address-field"><strong>Address notes:</strong> {notes}</p>}
+                            {notes    && <p className="do-address-field"><strong>Address notes:</strong> {notes}</p>} */}
+
+                              {building && <p className="do-address-field"><strong>Building:</strong> {building}</p>}
+        {block    && <p className="do-address-field"><strong>Block:</strong> {block}</p>}
+        {avenue   && <p className="do-address-field"><strong>Avenue:</strong> {avenue}</p>}
+        {street   && <p className="do-address-field"><strong>Street:</strong> {street}</p>}
+        {floorApt && <p className="do-address-field"><strong>Floor/Apt:</strong> {floorApt}</p>}
+        {area     && <p className="do-address-field"><strong>Area:</strong> {area}</p>}
+        {country  && <p className="do-address-field"><strong>Country:</strong> {country}</p>}
+        {notes    && <p className="do-address-field"><strong>Address notes:</strong> {notes}</p>}
                           </div>
                         )}
                       </div>

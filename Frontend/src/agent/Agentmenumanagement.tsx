@@ -762,7 +762,7 @@ function ProductFormModal({
           <label className="am-field">
             <span>Price</span>
             <div className="am-price-input">
-              <span>$</span>
+              {/* <span>$</span> */}
               <input
                 type="number"
                 min={0}
