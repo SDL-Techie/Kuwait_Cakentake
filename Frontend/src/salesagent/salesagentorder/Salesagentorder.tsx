@@ -5,7 +5,7 @@ import {
 } from 'lucide-react';
 import './Salesagentorder.css';
 
-import { getOrderHistory, getSalesAgentOrders, asArrayResponse } from '../../services/orderService';
+import { getOrderHistory, getSalesAgentOrders } from '../../services/orderService';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -483,8 +483,7 @@ const Salesagentorder: React.FC = () => {
     setError(null);
     try {
       const raw = await getSalesAgentOrders();
-      const list = asArrayResponse(raw);
-      const normalized = list.map(normalizeOrder);
+      const normalized = (raw ?? []).map(normalizeOrder);
       setOrders(normalized);
     } catch (err) {
       console.error('Failed to fetch sales agent orders:', err);

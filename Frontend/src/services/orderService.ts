@@ -37,14 +37,6 @@ export interface CreateOrderPayload {
   redeemed_points?: number;   // if using loyalty redemption
 }
 
-export const asArrayResponse = <T = any>(payload: any): T[] => {
-  if (Array.isArray(payload)) return payload as T[];
-  if (Array.isArray(payload?.orders)) return payload.orders as T[];
-  if (Array.isArray(payload?.data)) return payload.data as T[];
-  if (Array.isArray(payload?.items)) return payload.items as T[];
-  return [] as T[];
-};
-
 
 // ─────────────────────────────────────────────────────────────
 // SALES AGENT CREATE ORDER
@@ -128,13 +120,14 @@ export const createOrder = async (payload: CreateOrderPayload): Promise<any> => 
 /** GET /orders — role-scoped list */
 export const getOrders = async (): Promise<any[]> => {
   const res = await api.get('/orders');
-  return asArrayResponse(res.data);
+  // Backend returns { count, orders } or array directly
+  return res.data?.orders ?? res.data ?? [];
 };
 
 /** GET /orders/sales-agent */
 export const getSalesAgentOrders = async (): Promise<any[]> => {
   const res = await api.get('/orders/sales-agent');
-  return asArrayResponse(res.data);
+  return res.data?.orders ?? res.data ?? [];
 };
 
 /** GET /orders/:id */
@@ -146,7 +139,7 @@ export const getOrderById = async (id: number): Promise<any> => {
 /** GET /orders/:id/history */
 export const getOrderHistory = async (id: number): Promise<any[]> => {
   const res = await api.get(`/orders/${id}/history`);
-  return asArrayResponse(res.data);
+  return res.data?.history ?? res.data ?? [];
 };
 
 /** POST /create-checkout-session */
