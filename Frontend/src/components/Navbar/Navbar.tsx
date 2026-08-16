@@ -523,6 +523,7 @@ export default function Navbar({ cartCount, wishlistCount = 0 }: NavbarProps) {
           <Link to="/about" className="navtop-link">About</Link>
           <Link to="/contact" className="navtop-link">Contact</Link>
           <Link to="/userblog" className="navtop-link">Blog</Link>
+          <Link to="/delete-account" className="navtop-link">Delete account</Link>
         </div>
         <div className="navtop-contact">
           <a href={CONTACT_PHONE_TEL} className="navtop-contact-item">

@@ -1,0 +1,1009 @@
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+}
+
+.deleteAccountPage {
+  min-height: 100vh;
+  background: #fff8ec;
+  color: #314631;
+  font-family:
+    Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+.pageContainer {
+  width: min(1140px, calc(100% - 40px));
+  margin: 0 auto;
+}
+
+/* =========================
+   HERO
+========================= */
+
+.deleteHero {
+  position: relative;
+  overflow: hidden;
+  padding: 92px 0 105px;
+
+  background: linear-gradient(
+    135deg,
+    #8faf6e 0%,
+    #6f8e57 30%,
+    #526a45 65%,
+    #314631 100%
+  );
+}
+
+.heroInner {
+  position: relative;
+  z-index: 2;
+}
+
+.heroBadge {
+  width: fit-content;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+
+  padding: 8px 13px;
+
+  border: 1px solid rgba(239, 232, 202, 0.25);
+  border-radius: 100px;
+
+  color: #efe8ca;
+
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 1.7px;
+}
+
+.badgeDot {
+  width: 6px;
+  height: 6px;
+
+  border-radius: 50%;
+
+  background: #c8a96b;
+
+  box-shadow: 0 0 0 4px rgba(200, 169, 107, 0.13);
+}
+
+.deleteHero h1 {
+  max-width: 750px;
+
+  margin: 25px 0 0;
+
+  color: #fff8ec;
+
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: clamp(46px, 6vw, 76px);
+  font-weight: 500;
+  line-height: 0.98;
+
+  letter-spacing: -2.8px;
+}
+
+.deleteHero h1 span {
+  display: block;
+  color: #efe8ca;
+}
+
+.deleteHero > .heroInner > p {
+  max-width: 650px;
+
+  margin: 25px 0 0;
+
+  color: rgba(255, 248, 236, 0.76);
+
+  font-size: 16px;
+  line-height: 1.8;
+}
+
+.heroNote {
+  width: fit-content;
+  max-width: 650px;
+
+  margin-top: 30px;
+  padding: 13px 16px;
+
+  display: flex;
+  align-items: center;
+  gap: 11px;
+
+  border: 1px solid rgba(239, 232, 202, 0.17);
+  border-radius: 12px;
+
+  background: rgba(49, 70, 49, 0.28);
+
+  color: rgba(255, 248, 236, 0.8);
+
+  font-size: 12px;
+  line-height: 1.5;
+
+  backdrop-filter: blur(8px);
+}
+
+.heroNoteIcon {
+  width: 22px;
+  height: 22px;
+
+  flex: 0 0 22px;
+
+  display: grid;
+  place-items: center;
+
+  border-radius: 50%;
+
+  background: #c8a96b;
+  color: #314631;
+
+  font-family: Georgia, serif;
+  font-weight: 700;
+}
+
+.heroGlow {
+  position: absolute;
+
+  border-radius: 50%;
+
+  pointer-events: none;
+}
+
+.heroGlowOne {
+  width: 480px;
+  height: 480px;
+
+  right: -160px;
+  top: -210px;
+
+  border: 1px solid rgba(239, 232, 202, 0.1);
+}
+
+.heroGlowTwo {
+  width: 300px;
+  height: 300px;
+
+  right: 11%;
+  bottom: -220px;
+
+  background: rgba(200, 169, 107, 0.07);
+}
+
+/* =========================
+   MAIN
+========================= */
+
+.deleteMain {
+  padding: 85px 0 100px;
+}
+
+.deleteGrid {
+  display: grid;
+
+  grid-template-columns:
+    minmax(0, 1fr)
+    minmax(390px, 0.78fr);
+
+  gap: 80px;
+
+  align-items: start;
+}
+
+/* =========================
+   LEFT CONTENT
+========================= */
+
+.sectionEyebrow,
+.formMiniLabel {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+
+  color: #8b713f;
+
+  font-size: 9px;
+  font-weight: 900;
+  letter-spacing: 1.8px;
+}
+
+.sectionEyebrow span,
+.formMiniLabel span {
+  width: 24px;
+  height: 1px;
+
+  background: #c8a96b;
+}
+
+.privacySection > h2 {
+  max-width: 520px;
+
+  margin: 15px 0 0;
+
+  color: #314631;
+
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 38px;
+  font-weight: 500;
+  line-height: 1.14;
+
+  letter-spacing: -1px;
+}
+
+.sectionDescription {
+  max-width: 570px;
+
+  margin: 17px 0 0;
+
+  color: #707564;
+
+  font-size: 14px;
+  line-height: 1.8;
+}
+
+/* =========================
+   STEPS
+========================= */
+
+.steps {
+  margin-top: 40px;
+}
+
+.step {
+  display: grid;
+
+  grid-template-columns: 50px 1fr;
+
+  gap: 18px;
+
+  padding: 25px 0;
+
+  border-bottom: 1px solid rgba(49, 70, 49, 0.12);
+}
+
+.step:first-child {
+  border-top: 1px solid rgba(49, 70, 49, 0.12);
+}
+
+.stepNumber {
+  padding-top: 2px;
+
+  color: #c8a96b;
+
+  font-family: Georgia, serif;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.stepContent h3 {
+  margin: 0 0 7px;
+
+  color: #405641;
+
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.stepContent p {
+  max-width: 510px;
+
+  margin: 0;
+
+  color: #777a6c;
+
+  font-size: 13px;
+  line-height: 1.75;
+}
+
+/* =========================
+   PRIVACY CARD
+========================= */
+
+.privacyCard {
+  margin-top: 45px;
+  padding: 30px;
+
+  border: 1px solid rgba(200, 169, 107, 0.42);
+  border-radius: 22px;
+
+  background: #efe8ca;
+}
+
+.privacyCardTop {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+
+  margin-bottom: 20px;
+}
+
+.privacyIcon {
+  width: 42px;
+  height: 42px;
+
+  flex: 0 0 42px;
+
+  display: grid;
+  place-items: center;
+
+  border-radius: 12px;
+
+  background: #314631;
+  color: #efe8ca;
+
+  font-size: 16px;
+  font-weight: 800;
+}
+
+.privacyCardTop span {
+  color: #957b48;
+
+  font-size: 8px;
+  font-weight: 900;
+  letter-spacing: 1.5px;
+}
+
+.privacyCardTop h3 {
+  margin: 3px 0 0;
+
+  color: #314631;
+
+  font-family: Georgia, serif;
+  font-size: 22px;
+  font-weight: 500;
+}
+
+.privacyCard > p {
+  margin: 13px 0;
+
+  color: #626951;
+
+  font-size: 12.5px;
+  line-height: 1.75;
+}
+
+.privacyNotice {
+  margin-top: 20px;
+  padding: 14px;
+
+  display: flex;
+  gap: 11px;
+
+  border: 1px solid rgba(49, 70, 49, 0.12);
+  border-radius: 12px;
+
+  background: rgba(255, 248, 236, 0.48);
+}
+
+.privacyNotice > span {
+  width: 22px;
+  height: 22px;
+
+  flex: 0 0 22px;
+
+  display: grid;
+  place-items: center;
+
+  border-radius: 50%;
+
+  background: #c8a96b;
+  color: #314631;
+
+  font-size: 11px;
+  font-weight: 900;
+}
+
+.privacyNotice p {
+  margin: 0;
+
+  color: #636852;
+
+  font-size: 11px;
+  line-height: 1.6;
+}
+
+.privacyLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 11px;
+
+  margin-top: 21px;
+
+  color: #314631;
+
+  font-size: 11px;
+  font-weight: 900;
+
+  text-decoration: none;
+}
+
+.privacyLink:hover {
+  text-decoration: underline;
+}
+
+/* =========================
+   REQUEST CARD
+========================= */
+
+.requestCard {
+  position: sticky;
+  top: 28px;
+
+  overflow: hidden;
+
+  padding: 38px;
+
+  border: 1px solid rgba(49, 70, 49, 0.1);
+  border-radius: 25px;
+
+  background: #fff;
+
+  box-shadow:
+    0 25px 70px rgba(49, 70, 49, 0.1),
+    0 3px 10px rgba(49, 70, 49, 0.04);
+}
+
+.requestCard::before {
+  content: "";
+
+  position: absolute;
+
+  top: 0;
+  left: 0;
+  right: 0;
+
+  height: 4px;
+
+  background: linear-gradient(
+    90deg,
+    #8faf6e,
+    #526a45,
+    #c8a96b
+  );
+}
+
+.requestCardHeader h2 {
+  margin: 13px 0 0;
+
+  color: #314631;
+
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 31px;
+  font-weight: 500;
+
+  letter-spacing: -0.7px;
+}
+
+.requestCardHeader > p {
+  margin: 10px 0 0;
+
+  color: #85877c;
+
+  font-size: 12.5px;
+  line-height: 1.65;
+}
+
+/* =========================
+   FORM
+========================= */
+
+.deleteForm {
+  margin-top: 30px;
+}
+
+.inputGroup {
+  margin-bottom: 19px;
+}
+
+.inputGroup label {
+  display: block;
+
+  margin-bottom: 8px;
+
+  color: #455744;
+
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.inputWrapper,
+.phoneWrapper {
+  height: 53px;
+
+  display: flex;
+  align-items: center;
+
+  overflow: hidden;
+
+  border: 1px solid #dedfd4;
+  border-radius: 12px;
+
+  background: #fffdf8;
+
+  transition: 0.2s ease;
+}
+
+.inputWrapper:focus-within,
+.phoneWrapper:focus-within {
+  border-color: #8faf6e;
+
+  background: #fff;
+
+  box-shadow: 0 0 0 3px rgba(111, 142, 87, 0.1);
+}
+
+.inputIcon {
+  width: 45px;
+
+  flex: 0 0 45px;
+
+  color: #8b997b;
+
+  text-align: center;
+
+  font-family: Georgia, serif;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.inputWrapper input,
+.phoneWrapper input {
+  width: 100%;
+  height: 100%;
+
+  padding: 0 15px 0 0;
+
+  border: 0;
+  outline: 0;
+
+  background: transparent;
+
+  color: #314631;
+
+  font-family: inherit;
+  font-size: 13px;
+}
+
+.inputWrapper input::placeholder,
+.phoneWrapper input::placeholder {
+  color: #aaa99e;
+}
+
+.countryCode {
+  height: 27px;
+
+  padding: 0 14px;
+
+  display: flex;
+  align-items: center;
+
+  border-right: 1px solid #dddccf;
+
+  color: #526a45;
+
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.phoneWrapper input {
+  padding-left: 14px;
+}
+
+.inputGroup small {
+  display: block;
+
+  margin: 7px 3px 0;
+
+  color: #9a9b91;
+
+  font-size: 9.5px;
+}
+
+/* =========================
+   CONFIRMATION
+========================= */
+
+.confirmationBox {
+  display: flex;
+  gap: 12px;
+
+  margin: 26px 0 18px;
+  padding: 14px;
+
+  border: 1px solid rgba(200, 169, 107, 0.35);
+  border-radius: 12px;
+
+  background: rgba(239, 232, 202, 0.35);
+}
+
+.confirmationIcon {
+  width: 25px;
+  height: 25px;
+
+  flex: 0 0 25px;
+
+  display: grid;
+  place-items: center;
+
+  border-radius: 50%;
+
+  background: #c8a96b;
+  color: #314631;
+
+  font-size: 11px;
+  font-weight: 900;
+}
+
+.confirmationBox strong {
+  display: block;
+
+  color: #53604a;
+
+  font-size: 10px;
+}
+
+.confirmationBox p {
+  margin: 4px 0 0;
+
+  color: #7d7e70;
+
+  font-size: 10px;
+  line-height: 1.55;
+}
+
+/* =========================
+   SUBMIT
+========================= */
+
+.submitButton {
+  width: 100%;
+  height: 55px;
+
+  padding: 0 17px;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  border: 0;
+  border-radius: 12px;
+
+  background: linear-gradient(
+    135deg,
+    #6f8e57,
+    #526a45 60%,
+    #314631
+  );
+
+  color: #fff8ec;
+
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 800;
+
+  cursor: pointer;
+
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.submitButton:hover {
+  transform: translateY(-2px);
+
+  box-shadow: 0 12px 24px rgba(49, 70, 49, 0.2);
+}
+
+.buttonArrow {
+  width: 30px;
+  height: 30px;
+
+  display: grid;
+  place-items: center;
+
+  border-radius: 50%;
+
+  background: rgba(255, 248, 236, 0.12);
+
+  color: #efe8ca;
+
+  font-size: 15px;
+}
+
+.secureText {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+
+  margin: 14px 0 0;
+
+  color: #a0a197;
+
+  font-size: 9px;
+}
+
+.secureText span {
+  color: #c8a96b;
+  font-size: 7px;
+}
+
+/* =========================
+   SUCCESS
+========================= */
+
+.successState {
+  min-height: 500px;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+
+  text-align: center;
+}
+
+.successCircle {
+  width: 70px;
+  height: 70px;
+
+  margin-bottom: 22px;
+
+  display: grid;
+  place-items: center;
+
+  border-radius: 50%;
+
+  background: rgba(143, 175, 110, 0.15);
+}
+
+.successCircle span {
+  width: 48px;
+  height: 48px;
+
+  display: grid;
+  place-items: center;
+
+  border-radius: 50%;
+
+  background: #526a45;
+  color: #fff8ec;
+
+  font-size: 19px;
+}
+
+.successLabel {
+  color: #9a7e49;
+
+  font-size: 9px;
+  font-weight: 900;
+  letter-spacing: 1.8px;
+}
+
+.successState h2 {
+  margin: 12px 0 0;
+
+  color: #314631;
+
+  font-family: Georgia, serif;
+  font-size: 29px;
+  font-weight: 500;
+}
+
+.successState > p {
+  max-width: 360px;
+
+  margin: 13px 0 0;
+
+  color: #7e8174;
+
+  font-size: 12px;
+  line-height: 1.7;
+}
+
+.successEmail {
+  width: 100%;
+
+  margin-top: 24px;
+  padding: 14px;
+
+  border-radius: 12px;
+
+  background: #fff8ec;
+}
+
+.successEmail span,
+.successEmail strong {
+  display: block;
+}
+
+.successEmail span {
+  margin-bottom: 4px;
+
+  color: #a3a398;
+
+  font-size: 9px;
+}
+
+.successEmail strong {
+  color: #526a45;
+
+  font-size: 12px;
+}
+
+.backButton {
+  margin-top: 22px;
+  padding: 11px 17px;
+
+  border: 1px solid rgba(49, 70, 49, 0.18);
+  border-radius: 10px;
+
+  background: transparent;
+  color: #526a45;
+
+  font-family: inherit;
+  font-size: 10px;
+  font-weight: 800;
+
+  cursor: pointer;
+}
+
+/* =========================
+   SUPPORT
+========================= */
+
+.supportSection {
+  padding: 58px 0;
+
+  background: #efe8ca;
+}
+
+.supportInner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 40px;
+}
+
+.supportLabel {
+  color: #9a7c45;
+
+  font-size: 8px;
+  font-weight: 900;
+  letter-spacing: 1.7px;
+}
+
+.supportInner h2 {
+  margin: 8px 0 0;
+
+  color: #314631;
+
+  font-family: Georgia, serif;
+  font-size: 29px;
+  font-weight: 500;
+}
+
+.supportInner p {
+  max-width: 580px;
+
+  margin: 8px 0 0;
+
+  color: #747962;
+
+  font-size: 12px;
+  line-height: 1.65;
+}
+
+.supportButton {
+  min-width: 170px;
+
+  padding: 14px 18px;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+
+  border: 1px solid rgba(49, 70, 49, 0.2);
+  border-radius: 11px;
+
+  color: #314631;
+
+  font-size: 10px;
+  font-weight: 900;
+
+  text-decoration: none;
+
+  transition: 0.2s ease;
+}
+
+.supportButton:hover {
+  background: #314631;
+  color: #fff8ec;
+}
+
+/* =========================
+   TABLET
+========================= */
+
+@media (max-width: 900px) {
+  .deleteGrid {
+    grid-template-columns: 1fr;
+    gap: 55px;
+  }
+
+  .requestCard {
+    position: static;
+  }
+}
+
+/* =========================
+   MOBILE
+========================= */
+
+@media (max-width: 600px) {
+  .pageContainer {
+    width: calc(100% - 28px);
+  }
+
+  .deleteHero {
+    padding: 65px 0 72px;
+  }
+
+  .deleteHero h1 {
+    margin-top: 20px;
+
+    font-size: 43px;
+    letter-spacing: -1.6px;
+  }
+
+  .deleteHero > .heroInner > p {
+    font-size: 13px;
+  }
+
+  .heroNote {
+    align-items: flex-start;
+  }
+
+  .deleteMain {
+    padding: 55px 0 65px;
+  }
+
+  .privacySection > h2 {
+    font-size: 31px;
+  }
+
+  .step {
+    grid-template-columns: 38px 1fr;
+  }
+
+  .privacyCard {
+    padding: 22px;
+    border-radius: 18px;
+  }
+
+  .requestCard {
+    padding: 27px 20px;
+    border-radius: 20px;
+  }
+
+  .requestCardHeader h2 {
+    font-size: 27px;
+  }
+
+  .supportInner {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .supportButton {
+    width: 100%;
+  }
+}
