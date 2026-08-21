@@ -758,7 +758,7 @@ def agent_create_order():
         db.session.add(order)
         db.session.flush()
 
-    
+        order.order_number = str(order.id)
 
         subtotal = Decimal("0.001")
 

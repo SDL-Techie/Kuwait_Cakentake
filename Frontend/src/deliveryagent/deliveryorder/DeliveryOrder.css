@@ -1011,3 +1011,84 @@
 @media (max-width: 760px) {
   .da-schedule-row { font-size: 11px; padding: 4px 8px; }
 }
+
+
+
+/* ── Order origin card highlights (user / sales agent / agent) ── */
+.da-order-card.card-sales-agent {
+  background: #fff5f7;
+  border-color: #f3c9d4;
+}
+.da-order-card.card-sales-agent:hover {
+  border-color: #eaa9ba;
+  box-shadow: 0 4px 16px rgba(219, 39, 119, 0.08);
+}
+.da-order-card.card-agent-order {
+  background: #f2faee;
+  border-color: #cfe8bd;
+}
+.da-order-card.card-agent-order:hover {
+  border-color: #a9d68a;
+  box-shadow: 0 4px 16px rgba(111, 142, 87, 0.10);
+}
+
+/* ── Legend row ── */
+.da-legend-row {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  flex-wrap: wrap;
+  font-size: 12px;
+  color: #666;
+}
+.da-legend-item { display: flex; align-items: center; gap: 6px; }
+.da-legend-swatch {
+  width: 12px;
+  height: 12px;
+  border-radius: 4px;
+  display: inline-block;
+  border: 1px solid rgba(0,0,0,0.08);
+}
+.swatch-user         { background: #ffffff; }
+.swatch-sales-agent  { background: #fff1f4; border-color: #f3c9d4; }
+.swatch-agent-order  { background: #f2faee; border-color: #cfe8bd; }
+
+
+/* ── Order origin card highlights (user / sales agent / agent) ── */
+.da-order-card.card-sales-agent {
+  background: #fff5f7;
+  border-color: #f3c9d4;
+}
+.da-order-card.card-sales-agent:hover {
+  border-color: #eaa9ba;
+  box-shadow: 0 4px 16px rgba(219, 39, 119, 0.08);
+}
+.da-order-card.card-agent-order {
+  background: #f2faee;
+  border-color: #cfe8bd;
+}
+.da-order-card.card-agent-order:hover {
+  border-color: #a9d68a;
+  box-shadow: 0 4px 16px rgba(111, 142, 87, 0.10);
+}
+
+/* ── Legend row ── */
+.da-legend-row {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  flex-wrap: wrap;
+  font-size: 12px;
+  color: #666;
+}
+.da-legend-item { display: flex; align-items: center; gap: 6px; }
+.da-legend-swatch {
+  width: 12px;
+  height: 12px;
+  border-radius: 4px;
+  display: inline-block;
+  border: 1px solid rgba(0,0,0,0.08);
+}
+.swatch-user         { background: #ffffff; }
+.swatch-sales-agent  { background: #fff1f4; border-color: #f3c9d4; }
+.swatch-agent-order  { background: #f2faee; border-color: #cfe8bd; }

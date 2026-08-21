@@ -17,6 +17,7 @@ import {
   deleteAgentProduct,
 } from "../services/agentService";
 import "./Agentmenumanagement.css";
+import { api } from "../services/api"; 
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Cloudinary upload
@@ -30,35 +31,50 @@ import "./Agentmenumanagement.css";
 // (ImageUploader) doesn't need to change.
 // ─────────────────────────────────────────────────────────────────────────────
 
-const CLOUD_NAME = "djwyoxnqy";
-const UPLOAD_PRESET = "CakeNTake_upload";
+// const CLOUD_NAME = "lm9ndjvj";
+// const UPLOAD_PRESET = "cakentake";
+
+// const uploadToCloudinary = (file: File, onProgress?: (percent: number) => void): Promise<string> => {
+//   const data = new FormData();
+//   data.append("file", file);
+//   data.append("upload_preset", UPLOAD_PRESET);
+
+//   return new Promise((resolve, reject) => {
+//     const xhr = new XMLHttpRequest();
+//     xhr.open("POST", `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`);
+//     xhr.upload.onprogress = (e) => {
+//       if (e.lengthComputable && onProgress) onProgress(Math.round((e.loaded / e.total) * 100));
+//     };
+//     xhr.onload = () => {
+//       try {
+//         const res = JSON.parse(xhr.responseText);
+//         if (xhr.status >= 200 && xhr.status < 300 && res.secure_url) {
+//           resolve(res.secure_url as string);
+//         } else {
+//           reject(new Error(res?.error?.message || "Image upload failed."));
+//         }
+//       } catch {
+//         reject(new Error("Image upload failed."));
+//       }
+//     };
+//     xhr.onerror = () => reject(new Error("Image upload failed. Check your connection."));
+//     xhr.send(data);
+//   });
+// };
+
 
 const uploadToCloudinary = (file: File, onProgress?: (percent: number) => void): Promise<string> => {
   const data = new FormData();
   data.append("file", file);
-  data.append("upload_preset", UPLOAD_PRESET);
 
-  return new Promise((resolve, reject) => {
-    const xhr = new XMLHttpRequest();
-    xhr.open("POST", `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`);
-    xhr.upload.onprogress = (e) => {
-      if (e.lengthComputable && onProgress) onProgress(Math.round((e.loaded / e.total) * 100));
-    };
-    xhr.onload = () => {
-      try {
-        const res = JSON.parse(xhr.responseText);
-        if (xhr.status >= 200 && xhr.status < 300 && res.secure_url) {
-          resolve(res.secure_url as string);
-        } else {
-          reject(new Error(res?.error?.message || "Image upload failed."));
-        }
-      } catch {
-        reject(new Error("Image upload failed."));
-      }
-    };
-    xhr.onerror = () => reject(new Error("Image upload failed. Check your connection."));
-    xhr.send(data);
-  });
+  return api
+    .post("/api/upload/image", data, {
+      headers: { "Content-Type": "multipart/form-data" },
+      onUploadProgress: (e) => {
+        if (e.total && onProgress) onProgress(Math.round((e.loaded / e.total) * 100));
+      },
+    })
+    .then((res: any) => res.data.secure_url as string);
 };
 
 // ─────────────────────────────────────────────────────────────────────────────

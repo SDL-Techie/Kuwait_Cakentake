@@ -1,25 +1,20 @@
-
-
-
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify, redirect
 from flask_jwt_extended import jwt_required
 from sqlalchemy import func
-import stripe
-from flask_jwt_extended import get_jwt_identity
-from flask import redirect
 
 from config import Config
 from extensions import db
 from models.order import Order
 from middleware.role import role_required
 from routes.order_routes import assign_order_to_kitchen
+
 from services.tap_service import (
     create_knet_charge,
+    create_tap_charge,
     verify_charge
 )
-from services.stripe_service import create_stripe_checkout
 
-stripe.api_key = Config.STRIPE_SECRET_KEY
+
 payment_bp = Blueprint("payment", __name__)
 
 
@@ -31,17 +26,25 @@ payment_bp = Blueprint("payment", __name__)
 @jwt_required()
 def create_payment():
 
-    data = request.get_json()
+    data = request.get_json() or {}
+
+    if not data.get("order_id"):
+        return jsonify({
+            "error": "order_id is required"
+        }), 400
 
     order = Order.query.get_or_404(data["order_id"])
 
-    order.payment_method = data.get("payment_method")
+    payment_method = data.get("payment_method", "TAP")
+
+    order.payment_method = payment_method
 
     db.session.commit()
 
     return jsonify({
         "message": "Payment initiated",
-        "order_id": order.id
+        "order_id": order.id,
+        "payment_method": order.payment_method
     }), 201
 
 
@@ -61,219 +64,306 @@ def get_payment(order_id):
         "payment_status": order.payment_status,
         "payment_gateway": order.payment_gateway,
         "gateway_order_id": order.gateway_order_id,
-        "total": float(order.total),
+        "total": float(order.total or 0),
         "currency": order.currency
-    })
+    }), 200
 
 
 # =====================================================
 # CREATE TAP PAYMENT LINK
 # =====================================================
 
-# @payment_bp.route("/payments/<int:order_id>/create-link", methods=["POST"])
+# @payment_bp.route("/payments/create-link", methods=["POST"])
 # @jwt_required()
-# def create_payment_link(order_id):
+# def create_payment_link():
+
+#     data = request.get_json() or {}
+
+#     order_id = data.get("order_id")
+
+#     if not order_id:
+#         return jsonify({
+#             "error": "order_id is required"
+#         }), 400
 
 #     order = Order.query.get_or_404(order_id)
 
-#     result = create_knet_charge(order)
+#     # Prevent duplicate payment
+#     if str(order.payment_status or "").upper() == "PAID":
+#         return jsonify({
+#             "error": "Order already paid."
+#         }), 400
+
+#     # -------------------------------------------------
+#     # TAP ONLY
+#     # -------------------------------------------------
+
+#     order.payment_gateway = "TAP"
+
+#     # Since this is an online Tap payment
+#     order.payment_method = data.get(
+#         "payment_method",
+#         "KNET"
+#     )
+
+#     db.session.commit()
+
+#     try:
+
+#         result = create_knet_charge(order)
+
+#     except Exception as exc:
+
+#         db.session.rollback()
+
+#         return jsonify({
+#             "success": False,
+#             "error": "Failed to create Tap payment",
+#             "details": str(exc)
+#         }), 500
+
+#     print("========== TAP RESPONSE ==========")
+#     print(result)
+#     print("===================================")
+
+#     # -------------------------------------------------
+#     # TAP ERROR
+#     # -------------------------------------------------
 
 #     if result.get("errors"):
 
-#         return jsonify(result), 400
+#         db.session.rollback()
 
-#     order.payment_method = "KNET"
-#     order.payment_gateway = "TAP"
+#         return jsonify({
+#             "success": False,
+#             "gateway": "TAP",
+#             "errors": result.get("errors")
+#         }), 400
+
+#     # -------------------------------------------------
+#     # GET PAYMENT URL
+#     # -------------------------------------------------
+
+#     transaction = result.get("transaction") or {}
+
+#     payment_url = transaction.get("url")
+
+#     if not payment_url:
+
+#         return jsonify({
+#             "success": False,
+#             "gateway": "TAP",
+#             "error": "Tap did not return a payment URL",
+#             "tap_response": result
+#         }), 400
+
+#     # -------------------------------------------------
+#     # SAVE TAP CHARGE
+#     # -------------------------------------------------
+
 #     order.gateway_order_id = result.get("id")
+
+#     # Payment is not paid yet
+#     order.payment_status = "PENDING"
 
 #     db.session.commit()
 
 #     return jsonify({
-#         "success": True,
-#         "payment_url": result["transaction"]["url"],
-#         "tap_charge_id": result["id"],
-#         "status": result["status"]
-#     })
 
+#         "success": True,
+
+#         "gateway": "TAP",
+
+#         "payment_method": order.payment_method,
+
+#         "order_id": order.id,
+
+#         "tap_charge_id": result.get("id"),
+
+#         "payment_url": payment_url,
+
+#         "tap_status": result.get("status"),
+
+#         "payment_status": order.payment_status,
+
+#         "amount": float(order.grand_total or order.total or 0),
+
+#         "currency": order.currency
+
+#     }), 200
 
 @payment_bp.route("/payments/create-link", methods=["POST"])
 @jwt_required()
 def create_payment_link():
 
-    data = request.get_json()
+    data = request.get_json() or {}
 
-    order = Order.query.get_or_404(data["order_id"])
+    order_id = data.get("order_id")
 
-    # if order.status != "ACCEPTED":
-    #     return jsonify({
-    #         "error": "Payment is allowed only after the order is accepted."
-    #     }), 400
-    
-    if order.payment_status == "PAID":
-      return jsonify({
-        "error": "Order already paid."
-    }), 400
+    if not order_id:
+        return jsonify({
+            "error": "order_id is required"
+        }), 400
 
-    gateway = data["payment_gateway"]
+    order = Order.query.get_or_404(order_id)
 
-    method = data["payment_method"]
+    # Prevent duplicate payment
+    if str(order.payment_status or "").upper() == "PAID":
+        return jsonify({
+            "error": "Order already paid."
+        }), 400
 
-    order.payment_gateway = gateway
-    order.payment_method = method
+    order.payment_gateway = "TAP"
+    db.session.commit()
+
+    currency = str(order.currency or "KWD").strip().upper()
+
+    try:
+        if currency == "KWD":
+            result = create_knet_charge(order)
+        else:
+            result = create_tap_charge(order)
+
+    except Exception as exc:
+
+        db.session.rollback()
+
+        return jsonify({
+            "success": False,
+            "error": "Failed to create Tap payment",
+            "details": str(exc)
+        }), 500
+
+    print("========== TAP RESPONSE ==========")
+    print(result)
+    print("===================================")
+
+    if result.get("errors"):
+
+        db.session.rollback()
+
+        return jsonify({
+            "success": False,
+            "gateway": "TAP",
+            "errors": result.get("errors")
+        }), 400
+
+    transaction = result.get("transaction") or {}
+
+    payment_url = transaction.get("url")
+
+    if not payment_url:
+
+        return jsonify({
+            "success": False,
+            "gateway": "TAP",
+            "error": "Tap did not return a payment URL",
+            "tap_response": result
+        }), 400
+
+    order.gateway_order_id = result.get("id")
+    order.payment_method = "KNET" if currency == "KWD" else "CARD"
+    order.payment_status = "PENDING"
 
     db.session.commit()
 
-    if gateway == "STRIPE":
-
-        result = create_stripe_checkout(order)
-
-        order.gateway_order_id = result["session_id"]
-
-        db.session.commit()
-
-        return jsonify(result)
-
-    elif gateway == "TAP":
-
-        result = create_knet_charge(order)
-        print(result)
-
-        if result.get("errors"):
-            return jsonify(result),400
-
-        order.gateway_order_id = result["id"]
-
-        db.session.commit()
-
-        return jsonify({
-
-            "gateway":"TAP",
-
-            "payment_url":result["transaction"]["url"],
-
-            "tap_charge_id":result["id"]
-
-        })
-
     return jsonify({
-        "error":"Invalid payment gateway"
-    }),400
+
+        "success": True,
+
+        "gateway": "TAP",
+
+        "payment_method": order.payment_method,
+
+        "order_id": order.id,
+
+        "tap_charge_id": result.get("id"),
+
+        "payment_url": payment_url,
+
+        "tap_status": result.get("status"),
+
+        "payment_status": order.payment_status,
+
+        "amount": float(order.grand_total or order.total or 0),
+
+        "currency": order.currency
+
+    }), 200
 
 # =====================================================
 # VERIFY TAP PAYMENT
 # =====================================================
 
-# @payment_bp.route("/payments/<int:order_id>/verify", methods=["GET"])
-# def verify_payment(order_id):
-#     print("VERIFY PAYMENT ROUTE HIT")
-
-#     order = Order.query.get_or_404(order_id)
-
-#     tap_charge_id = request.args.get("tap_id")
-
-#     if not tap_charge_id:
-
-#         return jsonify({
-#             "error": "tap_id is missing"
-#         }), 400
-
-#     result = verify_charge(tap_charge_id)
-
-#     status = result.get("status")
-
-#     order.gateway_response = result
-#     order.gateway_payment_id = result.get("id")
-
-#     transaction = result.get("transaction", {})
-
-#     order.gateway_transaction_id = transaction.get("id")
-#     # current_user_id = get_jwt_identity()
-
-#     # if status == "CAPTURED":
-
-#     #     order.payment_status = "PAID"
-
-#     # elif status == "FAILED":
-
-#     #     order.payment_status = "FAILED"
-
-#     # else:
-
-#     #     order.payment_status = "PENDING"
-#     # if status == "CAPTURED":
-
-#     #   order.payment_status = "PAID"
-
-#     # if order.status == "ACCEPTED":
-#     #     assign_order_to_kitchen(order, None)
-#     #     #   assign_order_to_kitchen(order, current_user_id)
-#     # elif status == "FAILED":
-
-#     #  order.payment_status = "FAILED"
-
-#     # else:
-
-#     #  order.payment_status = "PENDING"
-
-#     if status == "CAPTURED":
-
-#       order.payment_status = "PAID"
-
-#       if order.status == "ACCEPTED":
-#         assign_order_to_kitchen(order, None)
-
-#     elif status == "FAILED":
-
-#      order.payment_status = "FAILED"
-
-#     else:
-
-#      order.payment_status = "PENDING"
-
-     
-#     db.session.commit()
-
-#     # return jsonify({
-#     #     "success": True,
-#     #     "tap_status": status,
-#     #     "payment_status": order.payment_status,
-#     #     "order": order.to_dict()
-#     # })
-
-
-#     return redirect(
-#     f"{Config.TAP_SUCCESS_URL}"
-#     f"?order_id={order.id}"
-#     f"&tap_id={tap_charge_id}"
-#     )
-
-
 @payment_bp.route("/payments/<int:order_id>/verify", methods=["GET"])
 def verify_payment(order_id):
+
     order = Order.query.get_or_404(order_id)
 
-    tap_charge_id = request.args.get("tap_id") or order.gateway_order_id
+    # Tap normally returns the charge ID as tap_id
+    tap_charge_id = (
+        request.args.get("tap_id")
+        or order.gateway_order_id
+    )
+
     if not tap_charge_id:
+
         return jsonify({
+            "success": False,
             "error": "Unable to determine Tap charge ID"
         }), 400
 
-    result = verify_charge(tap_charge_id)
-    status = str(result.get("status") or "").upper()
+    try:
+
+        result = verify_charge(tap_charge_id)
+
+    except Exception as exc:
+
+        return jsonify({
+            "success": False,
+            "error": "Failed to verify Tap payment",
+            "details": str(exc)
+        }), 500
+
+    print("========== TAP VERIFY ==========")
+    print(result)
+    print("================================")
+
+    status = str(
+        result.get("status") or ""
+    ).upper()
+
+    # -------------------------------------------------
+    # SAVE TAP RESPONSE
+    # -------------------------------------------------
 
     order.gateway_response = result
+
     order.gateway_payment_id = result.get("id")
 
     transaction = result.get("transaction") or {}
+
     order.gateway_transaction_id = transaction.get("id")
 
+    # -------------------------------------------------
+    # PAYMENT SUCCESS
+    # -------------------------------------------------
+
     if status == "CAPTURED":
+
         order.payment_status = "PAID"
 
-        # Online orders enter kitchen only after Owner / Shop Manager
-        # has accepted them.
+        # Send accepted online order to kitchen
         if str(order.status or "").upper() == "ACCEPTED":
-            assign_order_to_kitchen(order, None)
+
+            assign_order_to_kitchen(
+                order,
+                None
+            )
+
+    # -------------------------------------------------
+    # PAYMENT FAILED
+    # -------------------------------------------------
 
     elif status in {
         "FAILED",
@@ -282,136 +372,71 @@ def verify_payment(order_id):
         "ABANDONED",
         "TIMEDOUT",
         "RESTRICTED",
-        "VOID",
+        "VOID"
     }:
+
         order.payment_status = "FAILED"
 
+    # -------------------------------------------------
+    # PAYMENT STILL PENDING
+    # -------------------------------------------------
+
     else:
+
         order.payment_status = "PENDING"
 
     db.session.commit()
 
-    return redirect(
-        f"{Config.TAP_SUCCESS_URL}"
-        f"?order_id={order.id}"
-        f"&tap_id={tap_charge_id}"
-    )
+    # -------------------------------------------------
+    # REDIRECT USER AFTER TAP PAYMENT
+    # -------------------------------------------------
 
-# =====================================================
-# VERIFY STRIPE PAYMENT
-# =====================================================
+    if Config.TAP_SUCCESS_URL:
 
-# @payment_bp.route("/payments/stripe/verify", methods=["GET"])
+        return redirect(
+            f"{Config.TAP_SUCCESS_URL}"
+            f"?order_id={order.id}"
+            f"&tap_id={tap_charge_id}"
+        )
 
-# def verify_stripe_payment():
-
-
-
-#     order_id = request.args.get("order_id")
-#     session_id = request.args.get("session_id")
-
-#     if not order_id or not session_id:
-#         return jsonify({"error": "Missing order_id or session_id"}), 400
-
-#     order = Order.query.get_or_404(order_id)
-
-#     session = stripe.checkout.Session.retrieve(session_id)
-    
-
-#     order.gateway_response = session
-
-#     order.gateway_order_id = session.id
-#     order.gateway_payment_id = session.payment_intent
-
-#     # if session.payment_status == "paid":
-#     #     order.payment_status = "PAID"
-#     # else:
-#     #     order.payment_status = "FAILED"
-#     if session.payment_status == "paid":
-
-#       order.payment_status = "PAID"
-
-#     if order.status == "ACCEPTED":
-#         # assign_order_to_kitchen(order, None)
-#       assign_order_to_kitchen(order, None)
-
-#     else:
-#       order.payment_status = "FAILED"
-
-#     db.session.commit()
-
-#     return jsonify({
-#         "success": True,
-#         "payment_status": order.payment_status,
-#         "order": order.to_dict()
-#     })
-
-
-@payment_bp.route("/payments/stripe/verify", methods=["GET"])
-def verify_stripe_payment():
-
-    order_id = request.args.get("order_id")
-    session_id = request.args.get("session_id")
-
-    if not order_id or not session_id:
-        return jsonify({"error": "Missing order_id or session_id"}), 400
-
-    order = Order.query.get_or_404(order_id)
-
-    # session = stripe.checkout.Session.retrieve(session_id)
-
-    # # order.gateway_response = session
-    # order.gateway_response = session.to_dict()
-    # order.gateway_order_id = session.id
-    # order.gateway_payment_id = session.payment_intent
-
-
-    session = stripe.checkout.Session.retrieve(session_id)
-
-    order.gateway_order_id = session.id
-    order.gateway_payment_id = session.payment_intent
-
-    order.gateway_response = {
-    "session_id": session.id,
-    "payment_intent": session.payment_intent,
-    "payment_status": session.payment_status,
-    "amount_total": session.amount_total,
-    "currency": session.currency,
-    "customer": session.customer,
-    "customer_email": session.customer_details.email if session.customer_details else None,
-    "payment_method_types": session.payment_method_types,
-    "status": session.status
-}
-
-   
-    if session.payment_status == "paid":
-
-        order.payment_status = "PAID"
-
-        # Send to kitchen only if already accepted
-        if order.status == "ACCEPTED":
-            assign_order_to_kitchen(order, None)
-
-    else:
-
-        order.payment_status = "FAILED"
-
-    db.session.commit()
+    # If no frontend success URL is configured,
+    # return JSON instead.
 
     return jsonify({
+
         "success": True,
+
+        "gateway": "TAP",
+
+        "tap_status": status,
+
         "payment_status": order.payment_status,
-        "order": order.to_dict()
-    })
+
+        "order_id": order.id,
+
+        "tap_charge_id": tap_charge_id
+
+    }), 200
+
+
 # =====================================================
 # MANUAL PAYMENT
 # =====================================================
 
-@payment_bp.route("/payments/<int:order_id>/mark-paid", methods=["POST"])
+@payment_bp.route(
+    "/payments/<int:order_id>/mark-paid",
+    methods=["POST"]
+)
 @jwt_required()
-@role_required(["ADMIN", "SHOP_MANAGER", "SALES_AGENT"])
+@role_required([
+    "ADMIN",
+    "SHOP_MANAGER",
+    "SALES_AGENT"
+])
 def mark_paid(order_id):
+
     order = Order.query.get_or_404(order_id)
+
     data = request.get_json(silent=True) or {}
 
     method = str(
@@ -424,27 +449,42 @@ def mark_paid(order_id):
         method = "COD"
 
     order.payment_method = method
+
     order.payment_status = "PAID"
 
-    # Accepted online/link orders must become visible in Kitchen
-    # immediately once payment is confirmed.
+    # If online/link order was already accepted,
+    # send it to kitchen.
     if str(order.status or "").upper() == "ACCEPTED":
-        assign_order_to_kitchen(order, None)
+
+        assign_order_to_kitchen(
+            order,
+            None
+        )
 
     db.session.commit()
 
     return jsonify({
+
         "message": "Order marked as paid",
+
         "order": order.to_dict()
+
     }), 200
+
 
 # =====================================================
 # PAYMENT REPORT
 # =====================================================
 
-@payment_bp.route("/payments/report", methods=["GET"])
+@payment_bp.route(
+    "/payments/report",
+    methods=["GET"]
+)
 @jwt_required()
-@role_required(["ADMIN", "SHOP_MANAGER"])
+@role_required([
+    "ADMIN",
+    "SHOP_MANAGER"
+])
 def payment_report():
 
     paid_orders = Order.query.filter_by(
@@ -456,7 +496,7 @@ def payment_report():
     ).count()
 
     total_collected = sum(
-        float(order.total)
+        float(order.total or 0)
         for order in paid_orders
     )
 
@@ -472,7 +512,9 @@ def payment_report():
 
     return jsonify({
 
-        "total_paid_orders": len(paid_orders),
+        "total_paid_orders": len(
+            paid_orders
+        ),
 
         "pending_orders": pending_orders,
 
@@ -483,19 +525,25 @@ def payment_report():
             {
                 "method": row[0],
                 "count": row[1],
-                "amount": float(row[2] or 0)
+                "amount": float(
+                    row[2] or 0
+                )
             }
 
             for row in by_method
         ]
-    })
+
+    }), 200
 
 
 # =====================================================
 # GET INVOICE
 # =====================================================
 
-@payment_bp.route("/invoices/<int:order_id>", methods=["GET"])
+@payment_bp.route(
+    "/invoices/<int:order_id>",
+    methods=["GET"]
+)
 @jwt_required()
 def get_invoice(order_id):
 
@@ -503,20 +551,26 @@ def get_invoice(order_id):
 
     return jsonify({
 
-        "invoice_number": f"INV-{order.order_number}",
+        "invoice_number":
+            f"INV-{order.order_number}",
 
-        "issued_at": order.created_at.isoformat(),
+        "issued_at":
+            order.created_at.isoformat(),
 
-        "order": order.to_dict()
+        "order":
+            order.to_dict()
 
-    })
+    }), 200
 
 
 # =====================================================
 # DOWNLOAD INVOICE
 # =====================================================
 
-@payment_bp.route("/invoices/<int:order_id>/download", methods=["POST"])
+@payment_bp.route(
+    "/invoices/<int:order_id>/download",
+    methods=["POST"]
+)
 @jwt_required()
 def download_invoice(order_id):
 
@@ -524,18 +578,23 @@ def download_invoice(order_id):
 
     return jsonify({
 
-        "message": "Invoice download ready",
+        "message":
+            "Invoice download ready",
 
-        "invoice_url": f"/invoices/{order_id}/file"
+        "invoice_url":
+            f"/invoices/{order_id}/file"
 
-    })
+    }), 200
 
 
 # =====================================================
-# SHARE INVOICE
+# SHARE INVOICE - WHATSAPP
 # =====================================================
 
-@payment_bp.route("/invoices/<int:order_id>/share-whatsapp", methods=["POST"])
+@payment_bp.route(
+    "/invoices/<int:order_id>/share-whatsapp",
+    methods=["POST"]
+)
 @jwt_required()
 def share_invoice_whatsapp(order_id):
 
@@ -543,8 +602,10 @@ def share_invoice_whatsapp(order_id):
 
     return jsonify({
 
-        "message": "Invoice shared via WhatsApp",
+        "message":
+            "Invoice shared via WhatsApp",
 
-        "order_id": order_id
+        "order_id":
+            order_id
 
-    })
+    }), 200

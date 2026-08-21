@@ -194,70 +194,61 @@ const getItemAddOns = (item: OrderItem): string[] => {
         </div>
 
 
-        {order.status === "ACCEPTED" &&
- order.payment_status !== "PAID" && (
+  {/* {order.status === "ACCEPTED" &&
+ order.payment_status !== "PAID" &&
+ order.payment_method === "UPI" && (
   <div className="payment-buttons">
-
-    {/* <button
+    <button
       className="stripe-btn"
-      onClick={() => createPayment(order.id, "STRIPE")}
+      onClick={async () => {
+        try {
+          const res = await createPayment(order.id);
+
+          if (res.payment_url) {
+            window.location.href = res.payment_url;
+          } else {
+            alert("No payment URL returned.");
+          }
+        } catch (err) {
+          console.error(err);
+          alert("Unable to create payment.");
+        }
+      }}
     >
-      Pay with Card
-    </button> */}
-
-    {/* <button
-      className="knet-btn"
-      onClick={() => createPayment(order.id, "TAP")}
-    >
-      Pay with KNET
-    </button> */}
-
-
-<button
-  className="stripe-btn"
-  onClick={async () => {
-    try {
-      const res = await createPayment(order.id, "STRIPE");
-
- 
-
-      if (res.payment_url) {
-        window.location.href = res.payment_url;
-      } else {
-        alert("No payment URL returned.");
-      }
-    } catch (err) {
-      console.error(err);
-      alert("Unable to create Stripe payment.");
-    }
-  }}
->
-  Pay with Stripe(INR)
-</button>
-
-<button
-  className="knet-btn"
-  onClick={async () => {
-    try {
-      const res = await createPayment(order.id, "TAP");
-
-  
-
-      if (res.payment_url) {
-        window.location.href = res.payment_url;
-      } else {
-        alert("No payment URL returned.");
-      }
-    } catch (err) {
-      console.error(err);
-      alert("Unable to create KNET payment.");
-    }
-  }}
->
-  Pay with KNET(KWT)
-</button>
+      Complete UPI Payment
+    </button>
   </div>
-)}
+)} */}
+
+
+{/* {["ASSIGNED_TO_KITCHEN", "PREPARING", "READY", "ASSIGNED_TO_AGENT", "ASSIGNED_TO_DRIVER", "OUT_FOR_DELIVERY"].includes(order.status) &&
+ order.payment_status !== "PAID" &&
+ order.payment_method &&
+ order.payment_method !== "COD" && (
+  <div className="payment-buttons">
+    <button
+      className="stripe-btn"
+      onClick={async () => {
+        try {
+          const res = await createPayment(order.id);
+
+          if (res.payment_url) {
+            window.location.href = res.payment_url;
+          } else {
+            alert("No payment URL returned.");
+          }
+        } catch (err) {
+          console.error(err);
+          alert("Unable to create payment.");
+        }
+      }}
+    >
+      Complete Payment
+    </button>
+  </div>
+)} */}
+
+
 
         <div className="ct-card-footer">
           <p className="ct-card-total">{symbol}{Number(computedTotal).toFixed(2)}</p>

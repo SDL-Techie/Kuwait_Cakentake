@@ -5,16 +5,16 @@ const PaymentSuccess = () => {
 
   const navigate = useNavigate();
 
-  useEffect(() => {
-
+useEffect(() => {
+    // Clear cart
     localStorage.removeItem("cart");
 
+    // Go to previous page after 2 seconds
     const timer = setTimeout(() => {
-      navigate("/orders");
+      navigate(-1);
     }, 2000);
 
     return () => clearTimeout(timer);
-
   }, [navigate]);
 
   return (

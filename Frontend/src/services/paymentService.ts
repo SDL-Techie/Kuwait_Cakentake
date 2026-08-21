@@ -1,29 +1,21 @@
 import { api } from "./api";
 
-/** POST /payments */
-// export const createPayment = async (orderId: number, paymentMethod: string): Promise<any> => {
-//   const res = await api.post("/payments", { order_id: orderId, payment_method: paymentMethod });
-//   return res.data;
-// };
-
-export const createPayment = async (
-  orderId: number,
-  gateway: "STRIPE" | "TAP"
-) => {
-
-  const paymentMethod =
-    gateway === "STRIPE"
-      ? "CARD"
-      : "KNET";
-
+/**
+ * POST /payments/create-link
+ * Gateway is decided server-side from the order's currency
+ * (KWD -> KNET, other currencies -> Tap's hosted portal).
+ * No gateway/payment_method needs to be sent from the client.
+ */
+export const createPaymentLink = async (orderId: number) => {
   const res = await api.post("/payments/create-link", {
     order_id: orderId,
-    payment_gateway: gateway,
-    payment_method: paymentMethod,
   });
 
   return res.data;
 };
+
+/** Alias kept for call sites that use the shorter name (e.g. Orders.tsx). */
+export const createPayment = createPaymentLink;
 
 /** GET /payments/:order_id */
 export const getPayment = async (orderId: number): Promise<any> => {
@@ -31,23 +23,11 @@ export const getPayment = async (orderId: number): Promise<any> => {
   return res.data;
 };
 
-/** POST /payments/:order_id/create-link */
-export const createPaymentLink = async (orderId: number): Promise<{ payment_url: string; session_id: string }> => {
-  const res = await api.post(`/payments/${orderId}/create-link`);
-  return res.data;
-};
-
-/** POST /payments/:order_id/verify */
-// export const verifyPayment = async (orderId: number, sessionId: string): Promise<any> => {
-//   const res = await api.post(`/payments/${orderId}/verify`, { session_id: sessionId });
-//   return res.data;
-// };
-
+/** GET /payments/:order_id/verify */
 export const verifyPayment = async (
   orderId: number,
   tapId: string
 ): Promise<any> => {
-
   const res = await api.get(
     `/payments/${orderId}/verify?tap_id=${tapId}`
   );
@@ -86,18 +66,5 @@ export const downloadInvoice = async (orderId: number): Promise<any> => {
 /** POST /invoices/:order_id/share-whatsapp */
 export const shareInvoiceWhatsapp = async (orderId: number): Promise<any> => {
   const res = await api.post(`/invoices/${orderId}/share-whatsapp`);
-  return res.data;
-};
-
-
-export const verifyStripePayment = async (
-  orderId: number,
-  sessionId: string
-) => {
-
-  const res = await api.get(
-    `/payments/stripe/verify?order_id=${orderId}&session_id=${sessionId}`
-  );
-
   return res.data;
 };

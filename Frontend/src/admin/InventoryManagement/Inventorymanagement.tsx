@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import './Inventorymanagement.css';
+import './InventoryManagement.css';
 import {
   getInventory,
   getLowStock,

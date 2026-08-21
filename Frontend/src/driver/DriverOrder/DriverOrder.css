@@ -1174,3 +1174,60 @@
   .do-spinner    { animation: none; }
   .do-refresh.spinning svg { animation: none; }
 }
+
+/* ============================================================
+   ORDER ORIGIN TINTING (User / Agent / Sales Agent)
+   ============================================================ */
+.do-card.card-origin-agent {
+  background: #F0F7EA;
+  border-color: #B9D9A0;
+}
+.do-card.card-origin-agent:hover {
+  border-color: #6F8E57;
+}
+
+.do-card.card-origin-sales-agent {
+  background: #FDF1F3;
+  border-color: #F0C4CE;
+}
+.do-card.card-origin-sales-agent:hover {
+  border-color: #E38FA0;
+}
+
+/* Legend row above the order grid */
+.do-legend-row {
+  display: flex;
+  gap: 14px;
+  flex-wrap: wrap;
+  font-size: 12px;
+  color: #6E7A5E;
+}
+.do-legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.do-legend-swatch {
+  width: 12px;
+  height: 12px;
+  border-radius: 4px;
+  display: inline-block;
+}
+.swatch-origin-agent { background: #F0F7EA; border: 1px solid #B9D9A0; }
+.swatch-origin-sales-agent { background: #FDF1F3; border: 1px solid #F0C4CE; }
+
+/* ============================================================
+   DISABLED PAYMENT ACTIONS (pickup-only / non-INR restriction)
+   ============================================================ */
+.do-payment-menu-item:disabled {
+  cursor: not-allowed;
+}
+.do-payment-menu-item:disabled span,
+.do-payment-menu-item:disabled small {
+  color: #A9B79A;
+}
+
+.btn-payment-online:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}

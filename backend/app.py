@@ -57,6 +57,7 @@ from models.notification_recipient import NotificationRecipient
 from routes.auth_routes import auth_bp
 from routes.category_routes import category_bp
 from routes.product_routes import product_bp
+from routes.upload_routes import upload_bp
 from routes.order_routes import order_bp
 from routes.delivery_charge_routes import delivery_charge_bp
 from routes.wishlist_route import wishlist_bp
@@ -139,6 +140,7 @@ migrate = Migrate(app, db)
 app.register_blueprint(auth_bp)
 app.register_blueprint(category_bp)
 app.register_blueprint(product_bp)
+app.register_blueprint(upload_bp)
 app.register_blueprint(order_bp)
 app.register_blueprint(wishlist_bp)
 app.register_blueprint(delivery_charge_bp)

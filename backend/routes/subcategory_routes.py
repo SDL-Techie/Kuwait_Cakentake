@@ -15,7 +15,7 @@ def get_subcategories():
 
 @subcategory_bp.route("/subcategories", methods=["POST"])
 @jwt_required()
-@role_required(["ADMIN", "SHOP_MANAGER"])
+@role_required(["ADMIN", "SHOP_MANAGER","SALES_AGENT"])
 def create_subcategory():
     data = request.get_json()
     sub = SubCategory(
@@ -31,7 +31,7 @@ def create_subcategory():
 
 @subcategory_bp.route("/subcategories/<int:sub_id>", methods=["PUT"])
 @jwt_required()
-@role_required(["ADMIN", "SHOP_MANAGER"])
+@role_required(["ADMIN", "SHOP_MANAGER","SALES_AGENT"])
 def update_subcategory(sub_id):
     sub = SubCategory.query.get_or_404(sub_id)
     data = request.get_json()
@@ -44,7 +44,7 @@ def update_subcategory(sub_id):
 
 @subcategory_bp.route("/subcategories/<int:sub_id>", methods=["DELETE"])
 @jwt_required()
-@role_required(["ADMIN", "SHOP_MANAGER"])
+@role_required(["ADMIN", "SHOP_MANAGER","SALES_AGENT"])
 def delete_subcategory(sub_id):
     sub = SubCategory.query.get_or_404(sub_id)
     db.session.delete(sub)

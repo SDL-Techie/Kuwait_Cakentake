@@ -105,9 +105,9 @@ export const initializeSampleData = () => {
   ];
 
   // Set localStorage
-  localStorage.setItem('rasi_cart', JSON.stringify(sampleCart));
-  localStorage.setItem('rasi_orders', JSON.stringify(sampleOrders));
-  localStorage.setItem('rasi_wishlist', JSON.stringify(sampleWishlist));
+  localStorage.setItem('cnt_cart', JSON.stringify(sampleCart));
+  localStorage.setItem('cnt_orders', JSON.stringify(sampleOrders));
+  localStorage.setItem('cnt_wishlist', JSON.stringify(sampleWishlist));
 };
 
 // Initialize on import

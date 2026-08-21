@@ -1,8 +1,8 @@
 // Cloudinary Configuration
 export const CLOUDINARY_CONFIG = {
-  cloudName: 'dyggibpsi',
-  apiKey: '747547142532252',
-  uploadPreset: 'Rajagiri Rasi Bakery'
+  cloudName: 'lm9ndjvj',
+  apiKey: '288559345877458',
+  uploadPreset:'cakentake',
 };
 
 // Upload function for images

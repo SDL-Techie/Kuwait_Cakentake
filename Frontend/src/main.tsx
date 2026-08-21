@@ -13,14 +13,14 @@ import { SettingsProvider } from './context/SettingsContext';
 import { CurrencyProvider } from './context/CurrencyContext';
 
 // ensure storage keys exist; we no longer auto-populate with dummy items
-if (!localStorage.getItem('rasi_cart')) {
-  localStorage.setItem('rasi_cart', JSON.stringify([]));
+if (!localStorage.getItem('cnt_cart')) {
+  localStorage.setItem('cnt_cart', JSON.stringify([]));
 }
-if (!localStorage.getItem('rasi_orders')) {
-  localStorage.setItem('rasi_orders', JSON.stringify([]));
+if (!localStorage.getItem('cnt_orders')) {
+  localStorage.setItem('cnt_orders', JSON.stringify([]));
 }
-if (!localStorage.getItem('rasi_wishlist')) {
-  localStorage.setItem('rasi_wishlist', JSON.stringify([]));
+if (!localStorage.getItem('cnt_wishlist')) {
+  localStorage.setItem('cnt_wishlist', JSON.stringify([]));
 }
 
 // developers can call `initializeSampleData()` from the console if they

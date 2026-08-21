@@ -76,8 +76,19 @@ export interface SalesAgentCreateOrderPayload {
   order_addons_total?: number;
   items: SalesAgentOrderItem[];
 
+  // delivery_date?: string;
+  // delivery_time_slot?: string;
+
+
   delivery_date?: string;
   delivery_time_slot?: string;
+
+  // Pickup schedule
+  pickup_date?: string;
+  pickup_time_slot?: string;
+
+  // Pickup or Delivery
+  delivery_method?: 'PICKUP' | 'DELIVERY' | string;
 
   payment_method?: string;
   order_type?: string;

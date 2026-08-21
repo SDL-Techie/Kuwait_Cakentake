@@ -1481,8 +1481,7 @@ import { searchCustomers, type Customer } from "../../services/userService";
 // AreaOption shape below) is an assumption. Point it at your real areas
 // service/export if the path or field names differ.
 import { getAreas } from "../../services/areaService";
-import axios from "axios";
-
+import { api } from "../../services/api";
 // =============================================================================
 // ─── TYPES ───────────────────────────────────────────────────────────────────
 // =============================================================================
@@ -1601,14 +1600,23 @@ const COUNTRY_CODES: CountryCodeOption[] = [
   { code: "+974", label: "Qatar", flag: "🇶🇦" },
 ];
 
-const CLOUD_NAME = "djwyoxnqy";
-const UPLOAD_PRESET = "CakeNTake_upload";
+// const CLOUD_NAME = "lm9ndjvj";
+// const UPLOAD_PRESET = "cakentake";
+
+// const uploadToCloudinary = async (file: File): Promise<string> => {
+//   const data = new FormData();
+//   data.append("file", file);
+//   data.append("upload_preset", UPLOAD_PRESET);
+//   const res = await axios.post(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`, data);
+//   return res.data.secure_url;
+// };
 
 const uploadToCloudinary = async (file: File): Promise<string> => {
   const data = new FormData();
   data.append("file", file);
-  data.append("upload_preset", UPLOAD_PRESET);
-  const res = await axios.post(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`, data);
+  const res = await api.post("/api/upload/image", data, {
+    headers: { "Content-Type": "multipart/form-data" },
+  });
   return res.data.secure_url;
 };
 
@@ -2282,7 +2290,8 @@ const buildPayload = (): SalesAgentCreateOrderPayload => {
   const payload: SalesAgentCreateOrderPayload = {
     customer_name: customer.customerName.trim(),
     customer_phone: customer.customerPhone.trim(),
-    customer_email: orDash(customer.customerEmail),
+    // customer_email: orDash(customer.customerEmail),
+    customer_email: customer.customerEmail.trim() || undefined,
 
     delivery_method: deliveryMethod === 'pickup' ? 'PICKUP' : 'DELIVERY',
 

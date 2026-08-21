@@ -20,14 +20,23 @@ import {
 } from '../../services/promotionService';
 
 
-const CLOUD_NAME = 'djwyoxnqy';
-const UPLOAD_PRESET = 'CakeNTake_upload';
+// const CLOUD_NAME ='lm9ndjvj';
+// const UPLOAD_PRESET ='cakentake';
+
+// // console.log('CLOUD_NAME:', CLOUD_NAME, 'PRESET:', UPLOAD_PRESET);
+
+// const uploadToCloudinary = async (file: File): Promise<string> => {
+//   const data = new FormData();
+//   data.append('file', file);
+//   data.append('upload_preset', UPLOAD_PRESET);
+//   const res = await uploadCloudinaryImage(CLOUD_NAME, data);
+//   return res.data.secure_url;
+// };
 
 const uploadToCloudinary = async (file: File): Promise<string> => {
   const data = new FormData();
   data.append('file', file);
-  data.append('upload_preset', UPLOAD_PRESET);
-  const res = await uploadCloudinaryImage(CLOUD_NAME, data);
+  const res = await uploadCloudinaryImage(data);
   return res.data.secure_url;
 };
 

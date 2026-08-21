@@ -146,7 +146,7 @@ def delivery_delivered():
 
 @delivery_bp.route("/delivery/proof-pending", methods=["GET"])
 @jwt_required()
-@role_required(["ADMIN", "SHOP_MANAGER"])
+@role_required(["ADMIN", "SHOP_MANAGER","DELIVERY_AGENT"])
 def delivery_proof_pending():
     """
     Orders where driver submitted proof and Owner/Shop Manager must confirm.

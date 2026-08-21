@@ -173,7 +173,7 @@
   justify-content: space-between;
   min-height: 220px;
   cursor: pointer;
-  transition: box-shadow 0.2s;
+  transition: box-shadow 0.2s, background-color 0.2s;
 }
 
 .ko-order-card:hover {
@@ -281,6 +281,16 @@
 .ko-action-icon-btn:hover {
   background-color: #eef3e6;
   color: #6F8E57;
+}
+
+.ko-action-icon-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.ko-action-icon-btn:disabled:hover {
+  background-color: transparent;
+  color: #666666;
 }
 
 .ko-action-primary-btn {
@@ -1606,6 +1616,7 @@
 }
 
 /* ---------- Fulfilment (pickup / delivery) highlight — order card ---------- */
+/* Delivery order → blue border. Pickup order → green border. */
 .ko-order-card.card-fulfillment-pickup {
   border-left: 3px solid #7CB342;
 }
@@ -1699,3 +1710,71 @@
   object-fit: cover;
   border-radius: 6px;
 }
+
+
+.ko-payment-modal-card { max-width: 400px; }
+.ko-payment-modal-body { display: flex; flex-direction: column; gap: 14px; }
+.ko-payment-summary p { margin: 2px 0; font-size: 14px; }
+.ko-payment-error-banner button { margin-left: 8px; }
+.ko-payment-content { display: flex; flex-direction: column; align-items: center; gap: 14px; }
+.ko-payment-qr { padding: 12px; background: #fff; border-radius: 8px; border: 1px solid #eee; }
+.ko-payment-link-row { display: flex; gap: 8px; width: 100%; align-items: center; }
+.ko-payment-link-input { flex: 1; padding: 8px 10px; border: 1px solid #ddd; border-radius: 6px; font-size: 12px; }
+.ko-payment-actions { display: flex; gap: 8px; width: 100%; justify-content: center; }
+
+/* ============================================================
+   ORDER-ORIGIN CARD HIGHLIGHTING
+   Three order "types" get a background tint on the kitchen card,
+   layered on top of the pickup(green)/delivery(blue) border-left
+   above:
+     · Regular customer order  → card keeps its default white bg
+     · Agent order              → lightest green tint
+     · Sales-agent order        → lightest rose tint
+============================================================ */
+.ko-order-card.card-origin-agent {
+  background-color: #F3FBEF;      /* lightest green */
+}
+
+.ko-order-card.card-origin-agent:hover {
+  background-color: #EEF8E8;
+}
+
+.ko-order-card.card-origin-sales-agent {
+  background-color: #FFF4F6;      /* lightest rose */
+}
+
+.ko-order-card.card-origin-sales-agent:hover {
+  background-color: #FDEBEF;
+}
+
+/* ---------- Card highlight legend (fulfilment + origin) ---------- */
+.ko-card-legend-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 16px;
+  padding: 8px 4px 0;
+}
+
+.ko-card-legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #555;
+}
+
+.ko-legend-swatch {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border-radius: 4px;
+  flex-shrink: 0;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.swatch-fulfillment-delivery { background-color: #4C8CD8; }
+.swatch-fulfillment-pickup   { background-color: #7CB342; }
+.swatch-origin-agent         { background-color: #F3FBEF; border-color: #cfe9c1; }
+.swatch-origin-sales-agent   { background-color: #FFF4F6; border-color: #f3c9d2; }

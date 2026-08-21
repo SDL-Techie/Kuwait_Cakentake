@@ -1,49 +1,163 @@
 import React from "react";
-import { useNavigate } from "react-router-dom";
-import type { ChatMessage } from "../../services/chatbotService";
+
+import {
+  useNavigate,
+} from "react-router-dom";
+
+import type {
+  ChatMessage,
+} from "../../services/chatbotService";
+
 import "./ChatWidget.css";
 
 interface Props {
   message: ChatMessage;
 }
 
-const ChatMessageBubble: React.FC<Props> = ({ message }) => {
-  const navigate = useNavigate();
-  const isUser = message.role === "user";
+const ChatMessageBubble: React.FC<Props> = ({
+  message,
+}) => {
+  const navigate =
+    useNavigate();
+
+  const isUser =
+    message.role === "user";
+
+  const handleNavigate = () => {
+    if (
+      message.action === "navigate" &&
+      message.url
+    ) {
+      navigate(message.url);
+    }
+  };
+
+  const handleProductClick = (
+    productId: number
+  ) => {
+    navigate(
+      `/product/${productId}`
+    );
+  };
 
   return (
-    <div className={`baker-msg-row ${isUser ? "baker-msg-row-user" : "baker-msg-row-bot"}`}>
-      <div className={`baker-msg-bubble ${isUser ? "baker-msg-user" : "baker-msg-bot"}`}>
-        <p className="baker-msg-text">{message.text}</p>
+    <div
+      className={`baker-msg-row ${
+        isUser
+          ? "baker-msg-row-user"
+          : "baker-msg-row-bot"
+      }`}
+    >
+      <div
+        className={`baker-msg-bubble ${
+          isUser
+            ? "baker-msg-user"
+            : "baker-msg-bot"
+        }`}
+      >
+        <p className="baker-msg-text">
+          {message.text}
+        </p>
 
-        {!!message.products?.length && (
+        {!!message.products
+          ?.length && (
           <div className="baker-product-cards">
-            {message.products.slice(0, 4).map((p) => (
-              <button
-                key={p.id}
-                className="baker-product-card"
-                onClick={() => p.productUrl && navigate(p.productUrl)}
-              >
-                {p.image_url && (
-                  <img src={p.image_url} alt={p.name} className="baker-product-img" />
-                )}
-                <div className="baker-product-info">
-                  <span className="baker-product-name">{p.name}</span>
-                  <span className="baker-product-price">₹{p.price}</span>
-                </div>
-              </button>
-            ))}
+            {message.products
+              .slice(0, 4)
+              .map((product) => (
+                <button
+                  key={product.id}
+                  className="baker-product-card"
+                  onClick={() =>
+                    handleProductClick(
+                      product.id
+                    )
+                  }
+                >
+                  {product.image_url && (
+                    <img
+                      src={
+                        product.image_url
+                      }
+                      alt={
+                        product.name
+                      }
+                      className="baker-product-img"
+                    />
+                  )}
+
+                  <div className="baker-product-info">
+                    <span className="baker-product-name">
+                      {product.name}
+                    </span>
+
+                    <span className="baker-product-price">
+                      {product.currency
+                        ? `${product.currency} `
+                        : "KWD "}
+                      {product.price}
+                    </span>
+                  </div>
+                </button>
+              ))}
           </div>
         )}
 
-        {message.redirectUrl && (
-          <button
-            className="baker-redirect-btn"
-            onClick={() => navigate(message.redirectUrl as string)}
-          >
-            {message.redirectLabel || "View"} →
-          </button>
+        {message.order && (
+          <div className="baker-order-card">
+            <strong>
+              Order #
+              {String(
+                message.order
+                  .order_number ??
+                  message.order.id ??
+                  ""
+              )}
+            </strong>
+
+            {message.order.status && (
+              <div>
+                Status:{" "}
+                {message.order.status}
+              </div>
+            )}
+
+            {message.order.payment_status && (
+              <div>
+                Payment:{" "}
+                {
+                  message.order
+                    .payment_status
+                }
+              </div>
+            )}
+
+            {message.order.grand_total != null && (
+              <div>
+                Total:{" "}
+                {message.order.currency ||
+                  "KWD"}{" "}
+                {
+                  message.order
+                    .grand_total
+                }
+              </div>
+            )}
+          </div>
         )}
+
+        {message.action ===
+          "navigate" &&
+          message.url && (
+            <button
+              className="baker-redirect-btn"
+              onClick={
+                handleNavigate
+              }
+            >
+              Open page →
+            </button>
+          )}
       </div>
     </div>
   );

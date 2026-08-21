@@ -2105,7 +2105,7 @@ export const OrderManagement: React.FC = () => {
               {pm.loading && (
                 <div className="op-pay-link-loading">
                   <Loader2 size={18} className="op-spin" />
-                  <span>Generating Stripe link…</span>
+                  <span>Generating Payment link…</span>
                 </div>
               )}
 

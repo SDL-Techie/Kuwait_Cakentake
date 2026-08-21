@@ -55,10 +55,18 @@ export const retailerApi = {
   createOrder: (payload: unknown, config?: unknown) => api.post("/api/v1/createretailerorder", payload, config as never),
 };
 
-export const uploadCloudinaryImage = async (cloudName: string, data: FormData) => {
-  const response = await axios.post(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, data);
+// export const uploadCloudinaryImage = async (cloudName: string, data: FormData) => {
+//   const response = await axios.post(`https://api.cloudinary.com/v1_1/lm9ndjvj/image/upload`, data);
+//   return response;
+// };
+
+export const uploadCloudinaryImage = async (data: FormData) => {
+  const response = await api.post("/api/upload/image", data, {
+    headers: { "Content-Type": "multipart/form-data" },
+  } as never);
   return response;
 };
+
 
 export const fetchGeoLocation = async () => {
   const response = await fetch("https://ipinfo.io/json");

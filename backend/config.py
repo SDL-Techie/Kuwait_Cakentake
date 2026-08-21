@@ -35,17 +35,12 @@ class Config:
 
     API_BASE_URL = os.getenv("API_BASE_URL")
 
-    STRIPE_SECRET_KEY = os.getenv("STRIPE_SECRET_KEY")
-    STRIPE_PUBLISHABLE_KEY = os.getenv("STRIPE_PUBLISHABLE_KEY")
-
     TAP_SECRET_KEY = os.getenv("TAP_SECRET_KEY")
     TAP_PUBLIC_KEY = os.getenv("TAP_PUBLIC_KEY")
+    TAP_MERCHANT_ID = os.getenv("TAP_MERCHANT_ID")
 
     TAP_SUCCESS_URL = os.getenv("TAP_SUCCESS_URL")
     TAP_CANCEL_URL = os.getenv("TAP_CANCEL_URL")
-
-    STRIPE_SUCCESS_URL = os.getenv("STRIPE_SUCCESS_URL")
-    STRIPE_CANCEL_URL = os.getenv("STRIPE_CANCEL_URL")
 
 
     EXPO_PUSH_URL = os.getenv("EXPO_PUSH_URL", "https://exp.host/--/api/v2/push/send")
