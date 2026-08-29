@@ -488,7 +488,7 @@ body {
   min-height: calc(100vh - var(--header-height));
   width: 100%;
   max-width: 100%;
-  padding: 28px 32px 48px;
+  /* padding: 28px 32px 48px; */
   overflow-x: auto;
 }
 
@@ -520,9 +520,9 @@ body {
   .header-page-title {
     font-size: 16px;
   }
-  .rasi-admin-content-inner {
+  /* .rasi-admin-content-inner {
     padding: 18px;
-  }
+  } */
   .admin-info {
     display: none;
   }

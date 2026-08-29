@@ -1,6 +1,6 @@
 import React, { useState, useCallback, useEffect } from "react";
 import "./StockManagement.css";
-import * as stockAPI from "../../services/inventoryService"
+import * as stockAPI from "../../services/inventoryService";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -144,18 +144,16 @@ const defaultForm = () => ({
 
 // ─── Helper: Merge Material + InventoryItem → RawMaterial ────────────────────
 
+const isStockCategory = (val: unknown): val is StockCategory =>
+  val === "Dry Staples" || val === "Perishables" || val === "Cold Storage";
+
 const mergeDataToRawMaterial = (
-  material: stockAPI.Material,
+  material: stockAPI.RawMaterial,
   inventory: stockAPI.InventoryItem | null
 ): RawMaterial => {
-  // Extract category from description (stored as "CAT:CategoryName")
-  let category: StockCategory = "Dry Staples";
-  if (material.description?.startsWith("CAT:")) {
-    const catStr = material.description.substring(4).split("|")[0];
-    if (["Dry Staples", "Perishables", "Cold Storage"].includes(catStr)) {
-      category = catStr as StockCategory;
-    }
-  }
+  const category: StockCategory = isStockCategory(material.category)
+    ? material.category
+    : "Dry Staples";
 
   return {
     id: String(material.id),
@@ -163,7 +161,7 @@ const mergeDataToRawMaterial = (
     category,
     currentStock: inventory?.quantity ?? 0,
     unit: material.unit,
-    reorderLevel: inventory?.reorder_level ?? 0,
+    reorderLevel: inventory?.low_stock_threshold ?? 0,
     costPerUnit: material.cost_per_unit,
   };
 };
@@ -204,15 +202,13 @@ export const StockManagement: React.FC = () => {
         setPageLoading(true);
         setPageError(null);
 
-        // Fetch materials and inventory in parallel
         const [apiMaterials, apiInventory] = await Promise.all([
           stockAPI.getMaterials(),
           stockAPI.getInventory(),
         ]);
 
-        // Merge materials and inventory into RawMaterial array
         const merged = apiMaterials.map((mat) => {
-          const inv = apiInventory.find((inv) => inv.material_id === mat.id);
+          const inv = apiInventory.find((inv) => inv.material_id === mat.id) ?? null;
           return mergeDataToRawMaterial(mat, inv);
         });
 
@@ -298,31 +294,25 @@ export const StockManagement: React.FC = () => {
 
     setFormLoading(true);
     try {
-      // Build description with category info
-      const categoryPrefix = `CAT:${form.category}|`;
-      const description = categoryPrefix;
+      const quantity = parseFloat(form.currentStock) || 0;
+      const reorderLevel = parseFloat(form.reorderLevel) || 0;
 
-      // Create material first
+      // Create material with opening quantity + threshold in one call
       const newMaterial = await stockAPI.createMaterial({
         name: form.name,
         unit: form.unit,
         cost_per_unit: parseFloat(form.costPerUnit) || 0,
-        description,
+        category: form.category,
+        opening_quantity: quantity,
+        low_stock_threshold: reorderLevel,
       });
 
-      // Create initial inventory entry
-      await stockAPI.updateInventory(newMaterial.id, {
-        quantity: parseFloat(form.currentStock) || 0,
-        reason: "Initial stock entry",
-      });
-
-      // Merge the new data and add to state
       const newRawMaterial = mergeDataToRawMaterial(newMaterial, {
         id: 0,
         material_id: newMaterial.id,
-        quantity: parseFloat(form.currentStock) || 0,
-        unit: form.unit,
-        reorder_level: parseFloat(form.reorderLevel) || 0,
+        quantity,
+        low_stock_threshold: reorderLevel,
+        updated_at: null,
       });
 
       setMaterials((prev) => [...prev, newRawMaterial]);
@@ -342,25 +332,24 @@ export const StockManagement: React.FC = () => {
 
     setFormLoading(true);
     try {
-      const materialId = parseInt(selectedMaterial.id);
-      const categoryPrefix = `CAT:${form.category}|`;
-      const description = categoryPrefix;
+      const materialId = parseInt(selectedMaterial.id, 10);
+      const quantity = parseFloat(form.currentStock) || 0;
+      const reorderLevel = parseFloat(form.reorderLevel) || 0;
 
-      // Update material
+      // Update material fields (name, unit, cost, category)
       await stockAPI.updateMaterial(materialId, {
         name: form.name,
         unit: form.unit,
         cost_per_unit: parseFloat(form.costPerUnit) || 0,
-        description,
+        category: form.category,
       });
 
-      // Update inventory separately (quantity and reorder level)
+      // Update inventory quantity + reorder threshold
       await stockAPI.updateInventory(materialId, {
-        quantity: parseFloat(form.currentStock) || 0,
-        reason: "Material updated",
+        quantity,
+        low_stock_threshold: reorderLevel,
       });
 
-      // Update local state
       setMaterials((prev) =>
         prev.map((m) =>
           m.id === selectedMaterial.id
@@ -368,9 +357,9 @@ export const StockManagement: React.FC = () => {
                 ...m,
                 name: form.name,
                 category: form.category,
-                currentStock: parseFloat(form.currentStock) || 0,
+                currentStock: quantity,
                 unit: form.unit,
-                reorderLevel: parseFloat(form.reorderLevel) || 0,
+                reorderLevel,
                 costPerUnit: parseFloat(form.costPerUnit) || 0,
               }
             : m
@@ -391,7 +380,7 @@ export const StockManagement: React.FC = () => {
 
     setFormLoading(true);
     try {
-      const materialId = parseInt(selectedMaterial.id);
+      const materialId = parseInt(selectedMaterial.id, 10);
       await stockAPI.deleteMaterial(materialId);
 
       setMaterials((prev) => prev.filter((m) => m.id !== selectedMaterial.id));
@@ -411,17 +400,14 @@ export const StockManagement: React.FC = () => {
 
     setFormLoading(true);
     try {
-      const materialId = parseInt(selectedMaterial.id);
+      const materialId = parseInt(selectedMaterial.id, 10);
       const amount = parseFloat(restockAmount) || 0;
       const newStock = selectedMaterial.currentStock + amount;
 
-      // Update inventory with new quantity
       await stockAPI.updateInventory(materialId, {
         quantity: newStock,
-        reason: `Restocked +${amount}`,
       });
 
-      // Update local state
       setMaterials((prev) =>
         prev.map((m) =>
           m.id === selectedMaterial.id
@@ -504,7 +490,6 @@ export const StockManagement: React.FC = () => {
             <div className="stock-table-header sm-table-header-row">
               <h4>Ingredient &amp; Staples Ledger</h4>
               <div className="sm-header-actions">
-                {/* Category Filter Chips */}
                 <div className="sm-role-chips">
                   {CATEGORY_FILTERS.map((c) => (
                     <button

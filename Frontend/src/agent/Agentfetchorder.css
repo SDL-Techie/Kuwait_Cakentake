@@ -560,3 +560,240 @@
       "img total";
   }
 }
+
+/* Card border color-coding by delivery method */
+.af-order-card {
+  border-left: 4px solid transparent;
+}
+
+.af-order-card--pickup {
+  border-left-color: #3b82f6; /* blue */
+}
+
+.af-order-card--delivery {
+  border-left-color: #16a34a; /* green */
+}
+
+/* Full address breakdown on delivery cards */
+.af-card-address-block {
+  margin-top: 10px;
+  padding: 10px 12px;
+  background: #f7f9f5;
+  border: 1px solid #e4ede0;
+  border-radius: 8px;
+  font-size: 12.5px;
+  line-height: 1.6;
+  color: #4b5563;
+}
+
+.af-card-address-title {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #6b7c5c;
+  margin-bottom: 6px;
+}
+
+.af-card-address-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px 12px;
+}
+
+.af-card-address-grid .af-addr-full {
+  grid-column: 1 / -1;
+}
+
+.af-card-address-grid span {
+  color: #8a9482;
+  margin-right: 4px;
+}
+
+.af-card-address-grid strong {
+  color: #1f2937;
+  font-weight: 600;
+}
+
+/* Highlighted date + timeslot chip */
+.af-card-schedule-highlight {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 8px;
+  padding: 6px 10px;
+  background: #eef3e6;
+  border: 1px solid #c9dab3;
+  border-radius: 8px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: #3f5a2e;
+}
+
+/* Same highlight styling reused inside the modal */
+.af-modal-schedule-highlight {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 4px;
+  padding: 8px 12px;
+  background: #eef3e6;
+  border: 1px solid #c9dab3;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #3f5a2e;
+}
+
+
+/* Simple status steps (replaces timeline) */
+.af-status-steps {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 4px;
+}
+
+.af-status-step {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1px solid #e5e7eb;
+  background: #fafafa;
+  font-size: 13px;
+  font-weight: 500;
+  color: #9ca3af;
+}
+
+.af-status-step-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: #d1d5db;
+  flex-shrink: 0;
+}
+
+.af-status-step-done {
+  background: #f0f6ea;
+  border-color: #cfe0bd;
+  color: #4b6b3a;
+}
+
+.af-status-step-done .af-status-step-dot {
+  background: #7fa864;
+}
+
+.af-status-step-active {
+  background: #eef3e6;
+  border-color: #a9c48f;
+  color: #365227;
+  font-weight: 700;
+}
+
+.af-status-step-active .af-status-step-dot {
+  background: #4b6b3a;
+  box-shadow: 0 0 0 3px rgba(75, 107, 58, 0.18);
+}
+
+/* Address block reused, kept from before — grid already defined */
+
+
+/* ── Cancel order (agent orders) ─────────────────────────────────── */
+
+.af-card-actions {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.af-cancel-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+  justify-content: center;
+  padding: 8px 14px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #dc2626;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease, opacity 0.15s ease;
+}
+
+.af-cancel-btn:hover:not(:disabled) {
+  background: #fee2e2;
+  border-color: #fca5a5;
+}
+
+.af-cancel-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.af-modal-cancel-section {
+  border-top: 1px solid rgba(0, 0, 0, 0.08);
+  padding-top: 16px;
+}
+
+.af-modal-cancel-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  justify-content: center;
+  padding: 11px 16px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #ffffff;
+  background: #dc2626;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: background 0.15s ease, opacity 0.15s ease;
+}
+
+.af-modal-cancel-btn:hover:not(:disabled) {
+  background: #b91c1c;
+}
+
+.af-modal-cancel-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.af-cancel-error {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 10px;
+  padding: 8px 10px;
+  font-size: 13px;
+  color: #b91c1c;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 8px;
+}
+
+.af-status-cancelled-banner {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #b91c1c;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 8px;
+}
+
+.af-status-badge.af-status-cancelled {
+  color: #b91c1c;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+}

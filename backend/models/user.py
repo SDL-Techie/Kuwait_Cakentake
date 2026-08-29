@@ -13,7 +13,7 @@ class User(db.Model):
 
     # phone_no = db.Column(db.String(15), unique=True, nullable=False)
     phone_no = db.Column(db.String(25), unique=True, nullable=False)
-    email = db.Column(db.String(100), unique=True, nullable=False)
+    email = db.Column(db.String(100), unique=True, nullable=True)
 
     password = db.Column(db.String(255), nullable=False)
 

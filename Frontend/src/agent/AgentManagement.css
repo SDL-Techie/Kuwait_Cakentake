@@ -1134,3 +1134,35 @@
     align-items: flex-start;
   }
 }
+
+
+.am-option-chip-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+.am-option-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: #f2f6ec;
+  font-size: 13px;
+}
+.am-option-chip button {
+  border: none;
+  background: none;
+  cursor: pointer;
+  font-size: 14px;
+  line-height: 1;
+  color: #6b8a5b;
+}
+.am-option-add-row {
+  display: flex;
+  gap: 8px;
+}
+.am-option-add-row input {
+  flex: 1;
+}

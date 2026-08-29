@@ -1199,3 +1199,939 @@ const DriverSettlementPage: React.FC = () => {
 };
 
 export default DriverSettlementPage;
+
+
+
+
+
+
+
+// import React, { useCallback, useEffect, useMemo, useState } from "react";
+// import {
+//   getDrivers,
+//   getUnsettledOrders,
+//   getDriverCompleted,
+//   createSettlement,
+//   markSettlementPaid,
+// } from "../../services/driverService"; // adjust path to match project structure
+// import "./DriverSettlement.css";
+
+// /* ─────────────────────────────────────────────────────────────────────────
+//    TYPES
+// ───────────────────────────────────────────────────────────────────────── */
+
+// type Tab = "UNPAID" | "PAID";
+// type SettlementStatus = "PENDING" | "PAID";
+
+// interface Driver {
+//   id: number;
+//   first_name: string;
+//   last_name: string;
+//   phone_no?: string;
+// }
+
+// interface AddressLike {
+//   street?: string;
+//   city?: string;
+//   state?: string;
+//   pincode?: string;
+// }
+
+// interface DriverOrder {
+//   id: number;
+//   order_number: string;
+//   status: string;
+//   customer_name?: string;
+//   customer_phone?: string;
+//   address?: AddressLike | string | null;
+//   created_at?: string | null;
+//   delivery_date?: string | null;
+//   delivered_at?: string | null;
+//   grand_total?: number;
+//   delivery_charge?: number;
+//   currency?: string;
+//   notes?: string | null;
+
+//   // driver-settlement specific fields (attached client-side after fetch)
+//   driver_id: number;
+//   driver_name: string;
+//   settlement_status: SettlementStatus;
+//   settlement_id?: number | null;
+//   paid_via?: string | null;
+// }
+
+// /* ─────────────────────────────────────────────────────────────────────────
+//    HELPERS
+// ───────────────────────────────────────────────────────────────────────── */
+
+// function formatMoney(amount: number, currency: string = "KWD"): string {
+//   const decimals = currency === "KWD" ? 3 : 2;
+//   return Number(amount || 0).toFixed(decimals);
+// }
+
+// function formatDate(value?: string | null): string {
+//   if (!value) return "—";
+//   const date = new Date(value);
+//   if (Number.isNaN(date.getTime())) return "—";
+//   return date.toLocaleDateString(undefined, { day: "2-digit", month: "short", year: "numeric" });
+// }
+
+// function isSameMonth(dateStr: string, ref: Date): boolean {
+//   const d = new Date(dateStr);
+//   if (Number.isNaN(d.getTime())) return false;
+//   return d.getFullYear() === ref.getFullYear() && d.getMonth() === ref.getMonth();
+// }
+
+// function addrLine(address?: AddressLike | string | null): string {
+//   if (!address) return "—";
+//   if (typeof address === "string") return address || "—";
+//   return [address.street, address.city, address.state, address.pincode].filter(Boolean).join(", ") || "—";
+// }
+
+// function driverFullName(d?: { first_name?: string; last_name?: string } | null): string {
+//   return d ? `${d.first_name || ""} ${d.last_name || ""}`.trim() || "—" : "—";
+// }
+
+// const ORDER_STATUS_CLASS: Record<string, string> = {
+//   PENDING: "badge-order-pending",
+//   CONFIRMED: "badge-order-confirmed",
+//   PREPARING: "badge-order-preparing",
+//   OUT_FOR_DELIVERY: "badge-order-out",
+//   DELIVERED: "badge-order-delivered",
+//   CANCELLED: "badge-order-cancelled",
+//   REJECTED: "badge-order-cancelled",
+// };
+
+// /* ─────────────────────────────────────────────────────────────────────────
+//    COMPONENT
+// ───────────────────────────────────────────────────────────────────────── */
+
+// export default function DriverSettlementPage(): React.JSX.Element {
+//   const [drivers, setDrivers] = useState<Driver[]>([]);
+//   const [orders, setOrders] = useState<DriverOrder[]>([]);
+//   const [loading, setLoading] = useState<boolean>(true);
+//   const [error, setError] = useState<boolean>(false);
+
+//   // tab
+//   const [activeTab, setActiveTab] = useState<Tab>("UNPAID");
+
+//   // filters
+//   const [driverFilter, setDriverFilter] = useState<string>("ALL");
+//   const [dateFrom, setDateFrom] = useState<string>("");
+//   const [dateTo, setDateTo] = useState<string>("");
+//   const [search, setSearch] = useState<string>("");
+
+//   // selection — a settlement can only ever combine orders from ONE driver
+//   const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
+//   const [selectedDriverId, setSelectedDriverId] = useState<number | null>(null);
+//   const [switchNotice, setSwitchNotice] = useState<string>("");
+
+//   // NEW: per-order editable settlement amount. Defaults to the order's
+//   // delivery_charge, but the user can adjust it lower/higher while settling.
+//   const [editedAmounts, setEditedAmounts] = useState<Map<number, number>>(new Map());
+
+//   // pay modal (cash only)
+//   const [payModalOpen, setPayModalOpen] = useState<boolean>(false);
+//   const [paySubmitting, setPaySubmitting] = useState<boolean>(false);
+//   const [payError, setPayError] = useState<string>("");
+//   const [payNotice, setPayNotice] = useState<string>("");
+
+//   // view modal
+//   const [viewOrder, setViewOrder] = useState<DriverOrder | null>(null);
+
+//   const fetchData = useCallback(async () => {
+//     setLoading(true);
+//     setError(false);
+//     try {
+//       const driversList: Driver[] = await getDrivers();
+//       const driversById = new Map(driversList.map((d) => [d.id, d]));
+
+//       const targetDrivers = driverFilter !== "ALL" ? driversList.filter((d) => d.id === Number(driverFilter)) : driversList;
+
+//       const [unsettledLists, completedLists] = await Promise.all([
+//         Promise.all(
+//           targetDrivers.map(async (d) => {
+//             try {
+//               const res = await getUnsettledOrders(d.id);
+//               return (res?.orders || []) as DriverOrder[];
+//             } catch {
+//               return [] as DriverOrder[];
+//             }
+//           })
+//         ),
+//         Promise.all(
+//           targetDrivers.map(async (d) => {
+//             try {
+//               const res = await getDriverCompleted(d.id);
+//               return (res || []) as DriverOrder[];
+//             } catch {
+//               return [] as DriverOrder[];
+//             }
+//           })
+//         ),
+//       ]);
+
+//       const combined: DriverOrder[] = [];
+
+//       targetDrivers.forEach((d, idx) => {
+//         const driverName = driverFullName(d);
+
+//         (unsettledLists[idx] || []).forEach((o: any) => {
+//           combined.push({
+//             ...o,
+//             driver_id: d.id,
+//             driver_name: driverName,
+//             settlement_status: "PENDING",
+//           });
+//         });
+
+//         (completedLists[idx] || [])
+//           .filter((o: any) => o.is_driver_settled)
+//           .forEach((o: any) => {
+//             combined.push({
+//               ...o,
+//               driver_id: d.id,
+//               driver_name: driverName,
+//               settlement_status: "PAID",
+//               settlement_id: o.driver_settlement_id ?? null,
+//               paid_via: "CASH",
+//             });
+//           });
+//       });
+
+//       const filtered = combined.filter((o) => {
+//         if (dateFrom && o.delivery_date && String(o.delivery_date) < dateFrom) return false;
+//         if (dateTo && o.delivery_date && String(o.delivery_date) > dateTo) return false;
+//         return true;
+//       });
+
+//       setDrivers(driversList);
+//       setOrders(filtered);
+//       void driversById; // reserved for future lookups
+//     } catch (err) {
+//       console.error("Failed to load driver settlement data:", err);
+//       setError(true);
+//     } finally {
+//       setLoading(false);
+//     }
+//     // eslint-disable-next-line react-hooks/exhaustive-deps
+//   }, [driverFilter, dateFrom, dateTo]);
+
+//   useEffect(() => {
+//     fetchData();
+//   }, [fetchData]);
+
+//   // clear selection whenever the underlying order set changes
+//   useEffect(() => {
+//     setSelectedIds(new Set());
+//     setSelectedDriverId(null);
+//     setEditedAmounts(new Map());
+//   }, [orders]);
+
+//   const currency = orders[0]?.currency || "KWD";
+
+//   const unpaidOrders = useMemo(() => orders.filter((o) => o.settlement_status === "PENDING"), [orders]);
+//   const paidOrders = useMemo(() => orders.filter((o) => o.settlement_status === "PAID"), [orders]);
+//   const tabOrders = activeTab === "UNPAID" ? unpaidOrders : paidOrders;
+
+//   // ── Summary cards ──
+//   const summary = useMemo(() => {
+//     const pendingAmount = unpaidOrders.reduce((sum, o) => sum + Number(o.delivery_charge || 0), 0);
+//     const paidAmount = paidOrders.reduce((sum, o) => sum + Number(o.delivery_charge || 0), 0);
+//     return {
+//       pendingAmount,
+//       paidAmount,
+//       pendingCount: unpaidOrders.length,
+//       paidCount: paidOrders.length,
+//       totalDrivers: drivers.length,
+//     };
+//   }, [unpaidOrders, paidOrders, drivers]);
+
+//   // ── Monthly stats ──
+//   const monthlyStats = useMemo(() => {
+//     const now = new Date();
+//     const prevMonthRef = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+
+//     let currentMonthCollection = 0;
+//     let previousMonthCollection = 0;
+//     const paidMonths = new Set<string>();
+
+//     paidOrders.forEach((o) => {
+//       const ref = o.delivered_at || o.created_at || "";
+//       if (ref && isSameMonth(ref, now)) currentMonthCollection += Number(o.delivery_charge || 0);
+//       if (ref && isSameMonth(ref, prevMonthRef)) previousMonthCollection += Number(o.delivery_charge || 0);
+
+//       const d = new Date(ref);
+//       if (!Number.isNaN(d.getTime())) {
+//         paidMonths.add(`${d.getFullYear()}-${d.getMonth()}`);
+//       }
+//     });
+
+//     const averageCollection = paidMonths.size > 0 ? summary.paidAmount / paidMonths.size : 0;
+
+//     return {
+//       currentMonthCollection,
+//       previousMonthCollection,
+//       outstandingAmount: summary.pendingAmount,
+//       averageCollection,
+//     };
+//   }, [paidOrders, summary]);
+
+//   // ── Selected driver (for side panel) — only meaningful when a single driver is filtered ──
+//   const selectedDriverFilter = useMemo(() => {
+//     if (driverFilter === "ALL") return null;
+//     return drivers.find((d) => d.id === Number(driverFilter)) || null;
+//   }, [driverFilter, drivers]);
+
+//   const driverPanelStats = useMemo(() => {
+//     if (!selectedDriverFilter) return null;
+//     const driverOrders = orders.filter((o) => o.driver_id === selectedDriverFilter.id);
+//     const pending = driverOrders.filter((o) => o.settlement_status === "PENDING");
+//     const paid = driverOrders.filter((o) => o.settlement_status === "PAID");
+//     return {
+//       pendingCount: pending.length,
+//       pendingAmount: pending.reduce((sum, o) => sum + Number(o.delivery_charge || 0), 0),
+//       paidCount: paid.length,
+//       paidAmount: paid.reduce((sum, o) => sum + Number(o.delivery_charge || 0), 0),
+//     };
+//   }, [selectedDriverFilter, orders]);
+
+//   // ── Group orders (of the active tab) by driver for table display ──
+//   const groupedOrders = useMemo(() => {
+//     const groups = new Map<number, { driverName: string; orders: DriverOrder[] }>();
+//     tabOrders.forEach((o) => {
+//       if (!groups.has(o.driver_id)) {
+//         groups.set(o.driver_id, { driverName: o.driver_name, orders: [] });
+//       }
+//       groups.get(o.driver_id)!.orders.push(o);
+//     });
+//     return Array.from(groups.entries());
+//   }, [tabOrders]);
+
+//   const selectedOrders = useMemo(
+//     () => unpaidOrders.filter((o) => selectedIds.has(o.id)),
+//     [unpaidOrders, selectedIds]
+//   );
+
+//   // NEW: resolve the amount to use for an order — the edited value if the
+//   // user has touched it, otherwise its original delivery_charge.
+//   const getOrderAmount = useCallback(
+//     (order: DriverOrder): number => {
+//       const edited = editedAmounts.get(order.id);
+//       return edited !== undefined ? edited : Number(order.delivery_charge || 0);
+//     },
+//     [editedAmounts]
+//   );
+
+//   // selectedTotal now reflects any edits made in the settlement modal
+//   const selectedTotal = useMemo(
+//     () => selectedOrders.reduce((sum, o) => sum + getOrderAmount(o), 0),
+//     [selectedOrders, getOrderAmount]
+//   );
+
+//   // NEW: update a single order's settlement amount
+//   const updateOrderAmount = (orderId: number, rawValue: string) => {
+//     const value = rawValue === "" ? 0 : Math.max(0, Number(rawValue));
+//     setEditedAmounts((prev) => {
+//       const next = new Map(prev);
+//       next.set(orderId, Number.isFinite(value) ? value : 0);
+//       return next;
+//     });
+//   };
+
+//   // ── Selection: a single in-flight settlement can only span ONE driver's orders.
+//   const toggleOrder = (order: DriverOrder) => {
+//     if (order.settlement_status !== "PENDING") return;
+
+//     setSelectedIds((prev) => {
+//       if (prev.has(order.id)) {
+//         const next = new Set(prev);
+//         next.delete(order.id);
+//         if (next.size === 0) setSelectedDriverId(null);
+//         setEditedAmounts((amts) => {
+//           const nextAmts = new Map(amts);
+//           nextAmts.delete(order.id);
+//           return nextAmts;
+//         });
+//         return next;
+//       }
+
+//       if (selectedDriverId !== null && selectedDriverId !== order.driver_id) {
+//         setSwitchNotice(`Switched selection to ${order.driver_name}'s orders — a settlement covers one driver at a time.`);
+//         setSelectedDriverId(order.driver_id);
+//         setEditedAmounts(new Map([[order.id, Number(order.delivery_charge || 0)]]));
+//         return new Set([order.id]);
+//       }
+
+//       setSelectedDriverId(order.driver_id);
+//       setEditedAmounts((amts) => {
+//         const nextAmts = new Map(amts);
+//         nextAmts.set(order.id, Number(order.delivery_charge || 0));
+//         return nextAmts;
+//       });
+//       return new Set(prev).add(order.id);
+//     });
+//   };
+
+//   const toggleSelectAllInGroup = (groupOrders: DriverOrder[]) => {
+//     const groupPending = groupOrders.filter((o) => o.settlement_status === "PENDING");
+//     const groupPendingIds = groupPending.map((o) => o.id);
+//     if (groupPendingIds.length === 0) return;
+//     const groupDriverId = groupOrders[0].driver_id;
+//     const groupDriverName = groupOrders[0].driver_name;
+
+//     setSelectedIds((prev) => {
+//       const sameDriverAlready = selectedDriverId === null || selectedDriverId === groupDriverId;
+
+//       if (!sameDriverAlready) {
+//         setSwitchNotice(`Switched selection to ${groupDriverName}'s orders — a settlement covers one driver at a time.`);
+//         setSelectedDriverId(groupDriverId);
+//         setEditedAmounts(new Map(groupPending.map((o) => [o.id, Number(o.delivery_charge || 0)])));
+//         return new Set(groupPendingIds);
+//       }
+
+//       const allSelected = groupPendingIds.every((id) => prev.has(id));
+//       const next = new Set(prev);
+//       groupPendingIds.forEach((id) => {
+//         if (allSelected) next.delete(id);
+//         else next.add(id);
+//       });
+
+//       setEditedAmounts((amts) => {
+//         const nextAmts = new Map(amts);
+//         groupPending.forEach((o) => {
+//           if (allSelected) nextAmts.delete(o.id);
+//           else if (!nextAmts.has(o.id)) nextAmts.set(o.id, Number(o.delivery_charge || 0));
+//         });
+//         return nextAmts;
+//       });
+
+//       if (next.size === 0) setSelectedDriverId(null);
+//       else setSelectedDriverId(groupDriverId);
+//       return next;
+//     });
+//   };
+
+//   const clearSelection = () => {
+//     setSelectedIds(new Set());
+//     setSelectedDriverId(null);
+//     setEditedAmounts(new Map());
+//   };
+
+//   useEffect(() => {
+//     if (!switchNotice) return;
+//     const t = setTimeout(() => setSwitchNotice(""), 3500);
+//     return () => clearTimeout(t);
+//   }, [switchNotice]);
+
+//   // ── Initiate settlement ──
+//   const handleInitiatePayment = async () => {
+//     setPayError("");
+//     setPayNotice("");
+
+//     const orderIds = Array.from(selectedIds);
+//     if (orderIds.length === 0 || selectedDriverId === null) return;
+
+//     setPaySubmitting(true);
+//     try {
+//       // send both the per-order adjusted amounts and the overall total,
+//       // so the backend can persist whatever the driver actually got settled for
+//       const orderAmounts = selectedOrders.map((o) => ({
+//         order_id: o.id,
+//         amount: getOrderAmount(o),
+//       }));
+
+//       const result: any = await createSettlement({
+//         driver_id: selectedDriverId,
+//         order_ids: orderIds,
+//         order_amounts: orderAmounts,
+//         amount: selectedTotal,
+//         payment_source: "CASH",
+//       });
+
+//       const settlementId = result?.settlement?.id ?? result?.id;
+//       if (settlementId) {
+//         await markSettlementPaid(settlementId, { payment_source: "CASH" });
+//       }
+
+//       closePayModal();
+//       clearSelection();
+//       setPayNotice("Settlement recorded as paid in cash.");
+//       await fetchData();
+//     } catch (err) {
+//       console.error("Failed to initiate settlement:", err);
+//       setPayError("Something went wrong recording this settlement. Please try again.");
+//     } finally {
+//       setPaySubmitting(false);
+//     }
+//   };
+
+//   const closePayModal = () => {
+//     setPayModalOpen(false);
+//     setPayError("");
+//   };
+
+//   // ── Search filtering happens client-side ──
+//   const visibleGroupedOrders = useMemo(() => {
+//     if (!search.trim()) return groupedOrders;
+//     const q = search.trim().toLowerCase();
+//     return groupedOrders
+//       .map(([driverId, group]) => [
+//         driverId,
+//         {
+//           ...group,
+//           orders: group.orders.filter(
+//             (o) =>
+//               o.order_number?.toLowerCase().includes(q) ||
+//               o.customer_name?.toLowerCase().includes(q) ||
+//               o.customer_phone?.toLowerCase().includes(q)
+//           ),
+//         },
+//       ] as [number, { driverName: string; orders: DriverOrder[] }])
+//       .filter(([, group]) => group.orders.length > 0);
+//   }, [groupedOrders, search]);
+
+//   return (
+//     <div className="driver-settlement-page">
+//       <header className="driver-settlement-header">
+//         <div>
+//           <h1 className="driver-settlement-title">Driver Settlement Management</h1>
+//           <p className="driver-settlement-subtitle">
+//             Track delivery charges owed to drivers and settle their orders in cash.
+//           </p>
+//         </div>
+//         <button className="driver-settlement-refresh-btn" onClick={fetchData} disabled={loading}>
+//           ⟳ Refresh
+//         </button>
+//       </header>
+
+//       {/* ── Summary cards ── */}
+//       <section className="driver-settlement-summary-grid">
+//         <div className="driver-settlement-summary-card driver-settlement-summary-card--amber">
+//           <span className="driver-settlement-summary-label">Total Pending Amount</span>
+//           <span className="driver-settlement-summary-value">{formatMoney(summary.pendingAmount, currency)}</span>
+//         </div>
+//         <div className="driver-settlement-summary-card driver-settlement-summary-card--green">
+//           <span className="driver-settlement-summary-label">Total Paid Amount</span>
+//           <span className="driver-settlement-summary-value">{formatMoney(summary.paidAmount, currency)}</span>
+//         </div>
+//         <div className="driver-settlement-summary-card">
+//           <span className="driver-settlement-summary-label">Pending Orders</span>
+//           <span className="driver-settlement-summary-value">{summary.pendingCount}</span>
+//         </div>
+//         <div className="driver-settlement-summary-card">
+//           <span className="driver-settlement-summary-label">Paid Orders</span>
+//           <span className="driver-settlement-summary-value">{summary.paidCount}</span>
+//         </div>
+//         <div className="driver-settlement-summary-card">
+//           <span className="driver-settlement-summary-label">Total Drivers</span>
+//           <span className="driver-settlement-summary-value">{summary.totalDrivers}</span>
+//         </div>
+//       </section>
+
+//       {/* ── Filters ── */}
+//       <section className="driver-settlement-filters">
+//         <div className="driver-settlement-filter-field">
+//           <label>Driver</label>
+//           <select value={driverFilter} onChange={(e) => setDriverFilter(e.target.value)}>
+//             <option value="ALL">All Drivers</option>
+//             {drivers.map((d) => (
+//               <option key={d.id} value={d.id}>
+//                 {d.first_name} {d.last_name}
+//               </option>
+//             ))}
+//           </select>
+//         </div>
+
+//         <div className="driver-settlement-filter-field">
+//           <label>From Date</label>
+//           <input type="date" value={dateFrom} onChange={(e) => setDateFrom(e.target.value)} />
+//         </div>
+
+//         <div className="driver-settlement-filter-field">
+//           <label>To Date</label>
+//           <input type="date" value={dateTo} onChange={(e) => setDateTo(e.target.value)} />
+//         </div>
+
+//         <div className="driver-settlement-filter-field driver-settlement-filter-field--search">
+//           <label>Search</label>
+//           <input
+//             type="text"
+//             placeholder="Customer name, order number, or phone"
+//             value={search}
+//             onChange={(e) => setSearch(e.target.value)}
+//           />
+//         </div>
+//       </section>
+
+//       {/* ── Tabs ── */}
+//       <div className="driver-settlement-tabs">
+//         <button
+//           className={`driver-settlement-tab ${activeTab === "UNPAID" ? "driver-settlement-tab--active" : ""}`}
+//           onClick={() => setActiveTab("UNPAID")}
+//         >
+//           Unpaid Settlement
+//           <span className="driver-settlement-tab-count">{summary.pendingCount}</span>
+//         </button>
+//         <button
+//           className={`driver-settlement-tab ${activeTab === "PAID" ? "driver-settlement-tab--active" : ""}`}
+//           onClick={() => setActiveTab("PAID")}
+//         >
+//           Paid Settlement
+//           <span className="driver-settlement-tab-count">{summary.paidCount}</span>
+//         </button>
+//       </div>
+
+//       {payNotice && <div className="driver-settlement-inline-notice">{payNotice}</div>}
+
+//       <div className={`driver-settlement-body ${selectedDriverFilter ? "driver-settlement-body--with-panel" : ""}`}>
+//         {/* ── Main column ── */}
+//         <div className="driver-settlement-main">
+//           {/* Selected bar */}
+//           {activeTab === "UNPAID" && selectedIds.size > 0 && (
+//             <div className="driver-settlement-selected-bar">
+//               <div>
+//                 <span className="driver-settlement-selected-label">Selected Orders</span>
+//                 <span className="driver-settlement-selected-count">{selectedIds.size}</span>
+//               </div>
+//               <div>
+//                 <span className="driver-settlement-selected-label">Total Selected</span>
+//                 <span className="driver-settlement-selected-count">{formatMoney(selectedTotal, currency)}</span>
+//               </div>
+//               {switchNotice && <div className="driver-settlement-switch-notice">{switchNotice}</div>}
+//               <div className="driver-settlement-selected-actions">
+//                 <button className="driver-settlement-link-btn" onClick={clearSelection}>
+//                   Clear
+//                 </button>
+//                 <button className="driver-settlement-pay-btn" onClick={() => setPayModalOpen(true)}>
+//                   Initiate Settlement
+//                 </button>
+//               </div>
+//             </div>
+//           )}
+
+//           {/* Table */}
+//           {loading ? (
+//             <div className="driver-settlement-skeleton-wrapper">
+//               {[...Array(5)].map((_, i) => (
+//                 <div className="driver-settlement-skeleton-row" key={i} />
+//               ))}
+//             </div>
+//           ) : error ? (
+//             <div className="driver-settlement-empty driver-settlement-empty--error">
+//               <p>Unable to load driver settlement data.</p>
+//               <button className="driver-settlement-link-btn" onClick={fetchData}>
+//                 Retry
+//               </button>
+//             </div>
+//           ) : visibleGroupedOrders.length === 0 ? (
+//             <div className="driver-settlement-empty">
+//               {activeTab === "UNPAID" ? "No unpaid settlements match the current filters." : "No paid settlements match the current filters."}
+//             </div>
+//           ) : (
+//             <div className="driver-settlement-table-wrapper">
+//               <table className="driver-settlement-table">
+//                 <thead>
+//                   <tr>
+//                     {activeTab === "UNPAID" && <th className="col-check"></th>}
+//                     <th className="col-order">Order #</th>
+//                     <th className="col-customer">Customer</th>
+//                     <th className="col-date">Delivered</th>
+//                     <th className="col-amount">Delivery Charge</th>
+//                     <th className="col-status">Order Status</th>
+//                     <th className="col-method">{activeTab === "UNPAID" ? "Method" : "Settled Via"}</th>
+//                     <th className="col-actions">Actions</th>
+//                   </tr>
+//                 </thead>
+//                 <tbody>
+//                   {visibleGroupedOrders.map(([driverId, group]) => {
+//                     const groupPendingIds = group.orders
+//                       .filter((o) => o.settlement_status === "PENDING")
+//                       .map((o) => o.id);
+//                     const groupAllSelected =
+//                       groupPendingIds.length > 0 && groupPendingIds.every((id) => selectedIds.has(id));
+
+//                     return (
+//                       <React.Fragment key={driverId}>
+//                         <tr className="driver-settlement-group-row">
+//                           {activeTab === "UNPAID" && (
+//                             <td>
+//                               {groupPendingIds.length > 0 && (
+//                                 <input
+//                                   type="checkbox"
+//                                   checked={groupAllSelected}
+//                                   onChange={() => toggleSelectAllInGroup(group.orders)}
+//                                   title="Select all pending orders for this driver"
+//                                 />
+//                               )}
+//                             </td>
+//                           )}
+//                           <td colSpan={7} className="driver-settlement-group-title">
+//                             {group.driverName}
+//                           </td>
+//                         </tr>
+//                         {group.orders.map((order) => (
+//                           <tr key={order.id} className="driver-settlement-order-row">
+//                             {activeTab === "UNPAID" && (
+//                               <td>
+//                                 <input
+//                                   type="checkbox"
+//                                   checked={selectedIds.has(order.id)}
+//                                   onChange={() => toggleOrder(order)}
+//                                 />
+//                               </td>
+//                             )}
+//                             <td>{order.order_number}</td>
+//                             <td>{order.customer_name}</td>
+//                             <td>{formatDate(order.delivery_date || order.delivered_at)}</td>
+//                             <td className="col-amount">{formatMoney(order.delivery_charge || 0, order.currency || currency)}</td>
+//                             <td>
+//                               <span
+//                                 className={`driver-settlement-badge ${
+//                                   ORDER_STATUS_CLASS[String(order.status).toUpperCase()] ||
+//                                   "badge-order-default"
+//                                 }`}
+//                               >
+//                                 {order.status}
+//                               </span>
+//                             </td>
+//                             <td>{activeTab === "UNPAID" ? "Cash" : order.paid_via || "Cash"}</td>
+//                             <td>
+//                               <button
+//                                 className="driver-settlement-view-btn"
+//                                 onClick={() => setViewOrder(order)}
+//                                 title="View order details"
+//                                 aria-label="View order details"
+//                               >
+//                                 <svg
+//                                   width="16"
+//                                   height="16"
+//                                   viewBox="0 0 24 24"
+//                                   fill="none"
+//                                   stroke="currentColor"
+//                                   strokeWidth="2"
+//                                   strokeLinecap="round"
+//                                   strokeLinejoin="round"
+//                                 >
+//                                   <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+//                                   <circle cx="12" cy="12" r="3" />
+//                                 </svg>
+//                               </button>
+//                             </td>
+//                           </tr>
+//                         ))}
+//                       </React.Fragment>
+//                     );
+//                   })}
+//                 </tbody>
+//               </table>
+//             </div>
+//           )}
+
+//           {/* Monthly statistics */}
+//           <section className="driver-settlement-monthly-stats">
+//             <div className="driver-settlement-stat-block">
+//               <span className="driver-settlement-summary-label">Current Month Collection</span>
+//               <span className="driver-settlement-summary-value">
+//                 {formatMoney(monthlyStats.currentMonthCollection, currency)}
+//               </span>
+//             </div>
+//             <div className="driver-settlement-stat-block">
+//               <span className="driver-settlement-summary-label">Previous Month Collection</span>
+//               <span className="driver-settlement-summary-value">
+//                 {formatMoney(monthlyStats.previousMonthCollection, currency)}
+//               </span>
+//             </div>
+//             <div className="driver-settlement-stat-block">
+//               <span className="driver-settlement-summary-label">Outstanding Amount</span>
+//               <span className="driver-settlement-summary-value">
+//                 {formatMoney(monthlyStats.outstandingAmount, currency)}
+//               </span>
+//             </div>
+//             <div className="driver-settlement-stat-block">
+//               <span className="driver-settlement-summary-label">Average Monthly Collection</span>
+//               <span className="driver-settlement-summary-value">
+//                 {formatMoney(monthlyStats.averageCollection, currency)}
+//               </span>
+//             </div>
+//           </section>
+//         </div>
+
+//         {/* ── Driver summary side panel ── */}
+//         {selectedDriverFilter && driverPanelStats && (
+//           <aside className="driver-settlement-side-panel">
+//             <h3>Driver</h3>
+//             <p className="driver-settlement-side-driver-name">
+//               {selectedDriverFilter.first_name} {selectedDriverFilter.last_name}
+//             </p>
+//             <div className="driver-settlement-side-row">
+//               <span>Pending Orders</span>
+//               <strong>{driverPanelStats.pendingCount}</strong>
+//             </div>
+//             <div className="driver-settlement-side-row">
+//               <span>Pending Amount</span>
+//               <strong>{formatMoney(driverPanelStats.pendingAmount, currency)}</strong>
+//             </div>
+//             <div className="driver-settlement-side-row">
+//               <span>Paid Orders</span>
+//               <strong>{driverPanelStats.paidCount}</strong>
+//             </div>
+//             <div className="driver-settlement-side-row">
+//               <span>Collected Amount</span>
+//               <strong>{formatMoney(driverPanelStats.paidAmount, currency)}</strong>
+//             </div>
+//           </aside>
+//         )}
+//       </div>
+
+//       {/* ── Initiate settlement modal (cash only) ── */}
+//       {payModalOpen && (
+//         <div className="driver-settlement-modal-overlay" onClick={() => !paySubmitting && closePayModal()}>
+//           <div className="driver-settlement-modal driver-settlement-modal--wide" onClick={(e) => e.stopPropagation()}>
+//             <h2>Initiate Settlement</h2>
+
+//             <div className="driver-settlement-modal-row">
+//               <span>Driver</span>
+//               <strong>
+//                 {selectedOrders.length > 0
+//                   ? Array.from(new Set(selectedOrders.map((o) => o.driver_name))).join(", ")
+//                   : "—"}
+//               </strong>
+//             </div>
+
+//             <div className="driver-settlement-pay-breakdown">
+//               <span className="driver-settlement-summary-label">
+//                 Orders in this settlement — amount is editable per order
+//               </span>
+//               <ul className="driver-settlement-pay-breakdown-list">
+//                 {selectedOrders.map((o) => {
+//                   const original = Number(o.delivery_charge || 0);
+//                   const edited = getOrderAmount(o);
+//                   const isAdjusted = edited !== original;
+//                   return (
+//                     <li key={o.id} className="driver-settlement-pay-breakdown-row">
+//                       <span>{o.order_number}</span>
+//                       <span className="driver-settlement-pay-breakdown-amount">
+//                         {isAdjusted && (
+//                           <span className="driver-settlement-original-amount">
+//                             was {formatMoney(original, o.currency || currency)}
+//                           </span>
+//                         )}
+//                         <input
+//                           type="number"
+//                           min={0}
+//                           step="0.001"
+//                           className="driver-settlement-amount-input"
+//                           value={edited}
+//                           disabled={paySubmitting}
+//                           onChange={(e) => updateOrderAmount(o.id, e.target.value)}
+//                         />
+//                       </span>
+//                     </li>
+//                   );
+//                 })}
+//               </ul>
+//               <div className="driver-settlement-pay-breakdown-total">
+//                 <span>Total</span>
+//                 <strong>{formatMoney(selectedTotal, currency)}</strong>
+//               </div>
+//             </div>
+
+//             <div className="driver-settlement-method-picker">
+//               <span className="driver-settlement-summary-label">Payment Type</span>
+//               <div className="driver-settlement-method-tiles">
+//                 <div className="driver-settlement-method-tile driver-settlement-method-tile--active driver-settlement-method-tile--fixed">
+//                   <span className="driver-settlement-method-icon">
+//                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+//                       <rect x="2" y="6" width="20" height="12" rx="2" />
+//                       <circle cx="12" cy="12" r="3" />
+//                     </svg>
+//                   </span>
+//                   <span className="driver-settlement-method-tile-text">
+//                     <strong>Cash</strong>
+//                     <small>Mark as settled now</small>
+//                   </span>
+//                 </div>
+//               </div>
+//             </div>
+
+//             {payError && <div className="driver-settlement-modal-error">{payError}</div>}
+
+//             <div className="driver-settlement-modal-actions">
+//               <button className="driver-settlement-link-btn" onClick={closePayModal} disabled={paySubmitting}>
+//                 Cancel
+//               </button>
+//               <button
+//                 className="driver-settlement-pay-btn"
+//                 onClick={handleInitiatePayment}
+//                 disabled={paySubmitting || selectedOrders.length === 0}
+//               >
+//                 {paySubmitting ? "Processing..." : "Confirm Cash Payment"}
+//               </button>
+//             </div>
+//           </div>
+//         </div>
+//       )}
+
+//       {/* ── View order modal ── */}
+//       {viewOrder && (
+//         <div className="driver-settlement-modal-overlay" onClick={() => setViewOrder(null)}>
+//           <div className="driver-settlement-modal driver-settlement-modal--wide" onClick={(e) => e.stopPropagation()}>
+//             <h2>Order {viewOrder.order_number}</h2>
+//             <div className="driver-settlement-view-grid">
+//               <div>
+//                 <span className="driver-settlement-summary-label">Driver</span>
+//                 <p>{viewOrder.driver_name}</p>
+//               </div>
+//               <div>
+//                 <span className="driver-settlement-summary-label">Customer</span>
+//                 <p>{viewOrder.customer_name}</p>
+//               </div>
+//               <div>
+//                 <span className="driver-settlement-summary-label">Phone</span>
+//                 <p>{viewOrder.customer_phone}</p>
+//               </div>
+//               <div>
+//                 <span className="driver-settlement-summary-label">Address</span>
+//                 <p>{addrLine(viewOrder.address)}</p>
+//               </div>
+//               <div>
+//                 <span className="driver-settlement-summary-label">Created</span>
+//                 <p>{formatDate(viewOrder.created_at)}</p>
+//               </div>
+//               <div>
+//                 <span className="driver-settlement-summary-label">Delivered</span>
+//                 <p>{formatDate(viewOrder.delivered_at || viewOrder.delivery_date)}</p>
+//               </div>
+//               <div>
+//                 <span className="driver-settlement-summary-label">Settlement Status</span>
+//                 <p>{viewOrder.settlement_status}</p>
+//               </div>
+//               <div>
+//                 <span className="driver-settlement-summary-label">Notes</span>
+//                 <p>{viewOrder.notes || "—"}</p>
+//               </div>
+//             </div>
+
+//             <div className="driver-settlement-view-totals">
+//               <div>
+//                 <span>Order Amount</span>
+//                 <strong>{formatMoney(viewOrder.grand_total || 0, viewOrder.currency || currency)}</strong>
+//               </div>
+//               <div className="driver-settlement-view-grand-total">
+//                 <span>Delivery Charge</span>
+//                 <strong>{formatMoney(viewOrder.delivery_charge || 0, viewOrder.currency || currency)}</strong>
+//               </div>
+//             </div>
+
+//             <div className="driver-settlement-modal-actions">
+//               <button className="driver-settlement-link-btn" onClick={() => setViewOrder(null)}>
+//                 Close
+//               </button>
+//             </div>
+//           </div>
+//         </div>
+//       )}
+//     </div>
+//   );
+// }

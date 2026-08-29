@@ -12,11 +12,14 @@ export interface Supplier {
   is_active: boolean;
 }
 
+export type MaterialCategory = "Dry Staples" | "Perishables" | "Cold Storage";
+
 export interface RawMaterial {
   id: number;
   name: string;
   unit: string;
   cost_per_unit: number;
+  category: MaterialCategory;
   supplier_id?: number | null;
   inventory?: InventoryItem | null;
 }
@@ -144,6 +147,7 @@ export const createMaterial = async (payload: {
   name: string;
   unit: string;
   cost_per_unit?: number;
+  category?: MaterialCategory;
   supplier_id?: number | null;
   opening_quantity?: number;
   low_stock_threshold?: number;
@@ -159,6 +163,7 @@ export const updateMaterial = async (
     name: string;
     unit: string;
     cost_per_unit: number;
+    category: MaterialCategory;
     supplier_id: number | null;
     low_stock_threshold: number;
   }>

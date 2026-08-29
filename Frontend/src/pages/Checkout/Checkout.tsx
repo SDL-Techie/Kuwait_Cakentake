@@ -3640,16 +3640,24 @@ const Checkout: React.FC = () => {
     sub: 'Pay when your order arrives',
     badge: 'Popular',
   },
-  // ...(onlinePaymentSupported
-  //   ? [{
-  //       key: 'upi' as const,
-  //       icon: <CreditCard size={20} />,
-  //       label: 'Pay Online Now',
-  //       sub: "You'll be redirected to a secure payment page (card / KNET)",
-  //       badge: null as string | null,
-  //     }]
-  //   : []),
-];
+//   ...(onlinePaymentSupported
+//     ? [{
+//         key: 'upi' as const,
+//         icon: <CreditCard size={20} />,
+//         label: 'Pay Online Now',
+//         sub: "You'll be redirected to a secure payment page (card / KNET)",
+//         badge: null as string | null,
+//       }]
+//     : []),
+// ];
+ {
+  key: 'upi' as const,
+  icon: <CreditCard size={20} />,
+  label: 'Pay Online Now',
+  sub: "You'll be redirected to a secure payment page (card / KNET)",
+  badge: null as string | null,
+}]
+
 
   /* ═══════════════════════════════════════
      RENDER
@@ -3971,7 +3979,7 @@ const Checkout: React.FC = () => {
                           onChange={e => setGreeting(g => ({ ...g, message: e.target.value }))}
                         />
                       </div>
-                      <div className="ch-two-col">
+                      {/* <div className="ch-two-col">
                         <div className="ch-field">
                           <label className="ch-label">From</label>
                           <input
@@ -3990,7 +3998,7 @@ const Checkout: React.FC = () => {
                             onChange={e => setGreeting(g => ({ ...g, to: e.target.value }))}
                           />
                         </div>
-                      </div>
+                      </div> */}
                     </motion.div>
                   )}
                 </div>
@@ -4045,8 +4053,8 @@ const Checkout: React.FC = () => {
       initial={{ opacity: 0, y: -4 }}
       animate={{ opacity: 1, y: 0 }}
     >
-      Tap "Place Order" and we'll take you straight to a secure payment page
-      to complete payment by card or KNET — no waiting on a link from us.
+      Tap Place Order and we'll take you straight to a secure payment page
+      to complete payment.
     </motion.div>
   )}
 </div>

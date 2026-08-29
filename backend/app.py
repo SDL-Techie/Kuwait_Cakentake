@@ -223,19 +223,127 @@ from sqlalchemy import text
 #                 pass
 
 
-ORDERS_SEQUENCE_FLOOR = 14999
+# ORDERS_SEQUENCE_FLOOR = 15999
+
+
+# def initialize_database():
+#     """
+#     Runs automatically on every boot (guarded by AUTO_INITIALIZE_DATABASE).
+#     Safe to run on every deploy/restart — every step checks state first
+#     and only acts if something is actually missing or behind.
+#     """
+#     with app.app_context():
+#         inspector = inspect(db.engine)
+#         existing_tables = set(inspector.get_table_names())
+
+#         try:
+#             if "alembic_version" not in existing_tables:
+#                 if existing_tables:
+#                     _run_stamp()
+#                 else:
+#                     _run_upgrade()
+#             else:
+#                 _run_upgrade()
+#         except Exception as exc:
+#             print("Migration step failed during startup:", str(exc))
+#             db.session.rollback()
+
+#         seed_admin()
+#         seed_currency_rates()
+
+#         # try:
+#         #     if db.session.bind.dialect.name == "postgresql" and "orders" in existing_tables:
+#         #         max_id = db.session.execute(text("SELECT MAX(id) FROM orders")).scalar() or 0
+#         #         seq_name = db.session.execute(
+#         #             text("SELECT pg_get_serial_sequence('orders', 'id')")
+#         #         ).scalar()
+#         #         current_seq_val = db.session.execute(
+#         #             text(f"SELECT last_value FROM {seq_name}")
+#         #         ).scalar() or 0
+
+#         #         target = max(ORDERS_SEQUENCE_FLOOR, max_id)
+#         #         if current_seq_val < target:
+#         #             db.session.execute(
+#         #                 text("SELECT setval(pg_get_serial_sequence('orders','id'), :target, true)"),
+#         #                 {"target": target},
+#         #             )
+#         #             db.session.commit()
+#         # except Exception as exc:
+#         #     print("Order sequence bootstrap failed:", str(exc))
+#         #     db.session.rollback()
+
+
+#     try:
+#         if "orders" in existing_tables:
+#           engine = db.engine
+
+#           if engine.dialect.name == "postgresql":
+
+#             max_id = db.session.execute(
+#                 text("SELECT COALESCE(MAX(id), 0) FROM orders")
+#             ).scalar() or 0
+
+#             seq_name = db.session.execute(
+#                 text("""
+#                     SELECT pg_get_serial_sequence('orders', 'id')
+#                 """)
+#             ).scalar()
+
+#             if seq_name:
+#                 current_seq_val = db.session.execute(
+#                     text(f"SELECT last_value FROM {seq_name}")
+#                 ).scalar() or 0
+
+#                 target = max(ORDERS_SEQUENCE_FLOOR, int(max_id))
+
+#                 if int(current_seq_val) < target:
+#                     db.session.execute(
+#                         text("""
+#                             SELECT setval(
+#                                 pg_get_serial_sequence('orders', 'id'),
+#                                 :target,
+#                                 true
+#                             )
+#                         """),
+#                         {"target": target},
+#                     )
+
+#                     db.session.commit()
+
+#                     print(
+#                         f"Order sequence updated successfully. "
+#                         f"Next order ID will be {target + 1}"
+#                     )
+#                 else:
+#                     print(
+#                         f"Order sequence already correct. "
+#                         f"Next order ID will be {int(current_seq_val) + 1}"
+#                     )
+
+#     except Exception as exc:
+#      print("Order sequence bootstrap failed:", str(exc))
+#      db.session.rollback()
+
+# if os.getenv("AUTO_INITIALIZE_DATABASE", "false").lower() in {"1", "true", "yes"}:
+#     initialize_database()
+
+ORDERS_SEQUENCE_FLOOR = 15999
 
 
 def initialize_database():
     """
-    Runs automatically on every boot (guarded by AUTO_INITIALIZE_DATABASE).
-    Safe to run on every deploy/restart — every step checks state first
-    and only acts if something is actually missing or behind.
+    Runs automatically on every boot.
+    Safe to run on every deploy/restart.
     """
+
     with app.app_context():
+
         inspector = inspect(db.engine)
         existing_tables = set(inspector.get_table_names())
 
+        # ─────────────────────────────────────────────
+        # DATABASE MIGRATIONS
+        # ─────────────────────────────────────────────
         try:
             if "alembic_version" not in existing_tables:
                 if existing_tables:
@@ -244,35 +352,139 @@ def initialize_database():
                     _run_upgrade()
             else:
                 _run_upgrade()
+
         except Exception as exc:
-            print("Migration step failed during startup:", str(exc))
+            print(
+                "Migration step failed during startup:",
+                str(exc)
+            )
             db.session.rollback()
 
+        # ─────────────────────────────────────────────
+        # SEED DATA
+        # ─────────────────────────────────────────────
         seed_admin()
         seed_currency_rates()
 
+        # ─────────────────────────────────────────────
+        # AUTOMATIC ORDER ID SEQUENCE
+        # ─────────────────────────────────────────────
         try:
-            if db.session.bind.dialect.name == "postgresql" and "orders" in existing_tables:
-                max_id = db.session.execute(text("SELECT MAX(id) FROM orders")).scalar() or 0
-                seq_name = db.session.execute(
-                    text("SELECT pg_get_serial_sequence('orders', 'id')")
-                ).scalar()
-                current_seq_val = db.session.execute(
-                    text(f"SELECT last_value FROM {seq_name}")
-                ).scalar() or 0
 
-                target = max(ORDERS_SEQUENCE_FLOOR, max_id)
-                if current_seq_val < target:
-                    db.session.execute(
-                        text("SELECT setval(pg_get_serial_sequence('orders','id'), :target, true)"),
-                        {"target": target},
-                    )
-                    db.session.commit()
+            if "orders" in existing_tables:
+
+                engine = db.engine
+
+                if engine.dialect.name == "postgresql":
+
+                    # Get highest existing order ID
+                    max_id = db.session.execute(
+                        text(
+                            "SELECT COALESCE(MAX(id), 0) "
+                            "FROM orders"
+                        )
+                    ).scalar() or 0
+
+                    # Get PostgreSQL sequence name
+                    seq_name = db.session.execute(
+                        text(
+                            """
+                            SELECT pg_get_serial_sequence(
+                                'orders',
+                                'id'
+                            )
+                            """
+                        )
+                    ).scalar()
+
+                    if seq_name:
+
+                        # Get current sequence value
+                        current_seq_val = db.session.execute(
+                            text(
+                                f"SELECT last_value FROM {seq_name}"
+                            )
+                        ).scalar() or 0
+
+                        # 15999 means NEXT ID = 16000
+                        target = max(
+                            ORDERS_SEQUENCE_FLOOR,
+                            int(max_id)
+                        )
+
+                        # Only move sequence forward
+                        if int(current_seq_val) < target:
+
+                            db.session.execute(
+                                text(
+                                    """
+                                    SELECT setval(
+                                        pg_get_serial_sequence(
+                                            'orders',
+                                            'id'
+                                        ),
+                                        :target,
+                                        true
+                                    )
+                                    """
+                                ),
+                                {
+                                    "target": target
+                                }
+                            )
+
+                            db.session.commit()
+
+                            print(
+                                "===================================="
+                            )
+                            print(
+                                "ORDER SEQUENCE UPDATED"
+                            )
+                            print(
+                                f"Current maximum order ID: {max_id}"
+                            )
+                            print(
+                                f"Sequence set to: {target}"
+                            )
+                            print(
+                                f"NEXT ORDER ID: {target + 1}"
+                            )
+                            print(
+                                "===================================="
+                            )
+
+                        else:
+
+                            print(
+                                "Order sequence already correct."
+                            )
+
+                            print(
+                                f"Current sequence: "
+                                f"{int(current_seq_val)}"
+                            )
+
+                            print(
+                                f"Next order ID: "
+                                f"{int(current_seq_val) + 1}"
+                            )
+
         except Exception as exc:
-            print("Order sequence bootstrap failed:", str(exc))
+
+            print(
+                "Order sequence bootstrap failed:",
+                str(exc)
+            )
+
             db.session.rollback()
 
-if os.getenv("AUTO_INITIALIZE_DATABASE", "false").lower() in {"1", "true", "yes"}:
+
+if os.getenv(
+    "AUTO_INITIALIZE_DATABASE",
+    "false"
+).lower() in {"1", "true", "yes"}:
+
     initialize_database()
 
 notification_scheduler = None

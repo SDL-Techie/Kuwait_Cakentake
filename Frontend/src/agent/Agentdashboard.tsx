@@ -28,9 +28,13 @@ const STATUS_CLASS_MAP: Record<string, string> = {
   REJECTED: "status-cancelled",
 };
 
-function formatCurrency(amount: number, currency: string = "KWD"): string {
+// Max number of rows shown in the Recent Orders table.
+const RECENT_ORDERS_LIMIT = 4;
+
+// No currency symbol/code — just the formatted number.
+function formatAmount(amount: number, currency: string = "KWD"): string {
   const decimals = currency === "KWD" ? 3 : 2;
-  return `${currency} ${Number(amount || 0).toFixed(decimals)}`;
+  return Number(amount || 0).toFixed(decimals);
 }
 
 function formatDate(value?: string): string {
@@ -115,6 +119,9 @@ export default function AgentDashboard(): React.JSX.Element {
   const currency = (data.agent?.currency_code as string) || "KWD";
   const agentName = `${data.agent?.first_name ?? ""} ${data.agent?.last_name ?? ""}`.trim();
 
+  // Only the first 4 recent orders are shown.
+  const recentOrders = (data.recent_orders || []).slice(0, RECENT_ORDERS_LIMIT);
+
   return (
     <div className="agent-dashboard-page">
       <header className="agent-dashboard-header">
@@ -136,7 +143,7 @@ export default function AgentDashboard(): React.JSX.Element {
           <StatCard label="Today's Orders" value={data.todays_orders} />
           <StatCard
             label="Today's Revenue"
-            value={formatCurrency(data.todays_revenue, currency)}
+            value={formatAmount(data.todays_revenue, currency)}
             variant="positive"
           />
         </div>
@@ -149,7 +156,7 @@ export default function AgentDashboard(): React.JSX.Element {
           <StatCard label="Total Orders" value={data.total_orders} />
           <StatCard
             label="Total Revenue"
-            value={formatCurrency(data.total_revenue, currency)}
+            value={formatAmount(data.total_revenue, currency)}
             variant="positive"
           />
           <StatCard label="Pending Orders" value={data.pending_orders} variant="warning" />
@@ -159,11 +166,11 @@ export default function AgentDashboard(): React.JSX.Element {
         </div>
       </section>
 
-      {/* Recent orders */}
+      {/* Recent orders — first 4 only */}
       <section className="agent-dashboard-section">
         <h2 className="agent-dashboard-section-title">Recent Orders</h2>
 
-        {(!data.recent_orders || data.recent_orders.length === 0) ? (
+        {recentOrders.length === 0 ? (
           <div className="agent-dashboard-empty">No orders yet.</div>
         ) : (
           <div className="agent-dashboard-table-wrapper">
@@ -178,7 +185,7 @@ export default function AgentDashboard(): React.JSX.Element {
                 </tr>
               </thead>
               <tbody>
-                {data.recent_orders.map((order: any) => {
+                {recentOrders.map((order: any) => {
                   const statusClass =
                     STATUS_CLASS_MAP[String(order?.status).toUpperCase()] || "status-default";
                   return (
@@ -190,7 +197,7 @@ export default function AgentDashboard(): React.JSX.Element {
                           {order?.status ?? "—"}
                         </span>
                       </td>
-                      <td>{formatCurrency(order?.grand_total ?? 0, order?.currency || currency)}</td>
+                      <td>{formatAmount(order?.grand_total ?? 0, order?.currency || currency)}</td>
                       <td>{formatDate(order?.created_at)}</td>
                     </tr>
                   );

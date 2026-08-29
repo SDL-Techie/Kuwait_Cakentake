@@ -84,40 +84,6 @@
   background: #fdf0ed;
 }
 
-/* ── Filters row ── */
-
-.sao-filters-row {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  align-items: center;
-  margin-bottom: 20px;
-}
-
-.sao-filter-tag {
-  background: var(--sao-surface);
-  border: 1px solid var(--sao-border-soft);
-  color: var(--sao-text-soft);
-  font-size: 12.5px;
-  font-weight: 500;
-  padding: 7px 14px;
-  border-radius: 999px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  white-space: nowrap;
-}
-
-.sao-filter-tag:hover {
-  border-color: var(--sao-primary-light);
-  color: var(--sao-text);
-}
-
-.sao-filter-tag.active {
-  background: var(--sao-primary);
-  border-color: var(--sao-primary);
-  color: #ffffff;
-}
-
 .sao-refresh-btn {
   margin-left: auto;
   width: 34px;
@@ -350,6 +316,7 @@
   stroke: var(--sao-primary-dark);
   stroke-width: 2;
   fill: none;
+  flex-shrink: 0;
 }
 
 .sao-icon-btn:hover {
@@ -510,8 +477,8 @@
 }
 
 .sao-fd-section.sao-fd-highlight-greeting {
-  background: #fdf3f6;
-  border-color: #f2cfe0;
+  background: var(--sao-primary-xlt);
+  border-color: var(--sao-primary-light);
 }
 
 .sao-fd-section h4 {
@@ -541,11 +508,6 @@
   color: var(--sao-text-muted);
   text-transform: uppercase;
   letter-spacing: 0.03em;
-}
-
-.sao-fd-address-block {
-  margin-top: 10px;
-  font-size: 13px;
 }
 
 .sao-fd-items-list {
@@ -621,7 +583,7 @@
   gap: 6px;
   font-size: 13px;
   font-style: italic;
-  color: #a3466b;
+  color: var(--sao-primary-dark);
   margin: 8px 0 0 0;
 }
 
@@ -663,65 +625,6 @@
   font-size: 13px;
 }
 
-/* ── Receipt modal ── */
-
-.sao-receipt-sheet {
-  font-family: 'Courier New', monospace;
-  font-size: 12.5px;
-  color: #222;
-}
-
-.sao-receipt-title {
-  text-align: center;
-}
-
-.sao-receipt-title h2 {
-  margin: 0 0 6px 0;
-  font-size: 16px;
-  letter-spacing: 0.05em;
-}
-
-.sao-divider {
-  text-align: center;
-  color: #999;
-  margin: 6px 0;
-  font-size: 11px;
-}
-
-.sao-receipt-basics p {
-  margin: 3px 0;
-}
-
-.sao-receipt-tr {
-  display: flex;
-  justify-content: space-between;
-  margin: 3px 0;
-}
-
-.sao-calc-row {
-  display: flex;
-  justify-content: space-between;
-  margin: 3px 0;
-}
-
-.sao-grand-total {
-  font-weight: 700;
-  font-size: 14px;
-}
-
-.sao-receipt-footer {
-  text-align: center;
-  margin-top: 10px;
-  font-style: italic;
-}
-
-.sao-receipt-controls {
-  display: flex;
-  justify-content: center;
-  gap: 10px;
-  margin-top: 16px;
-}
-
 @media print {
   .sao-no-print {
     display: none !important;
@@ -737,15 +640,6 @@
 
   .sao-title {
     font-size: 21px;
-  }
-
-  .sao-filters-row {
-    gap: 6px;
-  }
-
-  .sao-filter-tag {
-    font-size: 11.5px;
-    padding: 6px 11px;
   }
 
   .sao-data-table {
@@ -766,7 +660,6 @@
     grid-template-columns: 1fr;
   }
 }
-
 
 /* Row tint by fulfilment type */
 .sao-data-table tbody tr.sao-row-pickup {
@@ -789,7 +682,7 @@
   align-items: center;
   margin: 8px 0 12px;
   font-size: 13px;
-  color: #555;
+  color: var(--sao-text-soft);
 }
 .sao-legend-item {
   display: flex;
@@ -833,14 +726,442 @@
   margin-top: 6px;
 }
 
-/* Receipt logo */
-.sao-receipt-logo-wrap {
+/* ─────────────────────────────────────────────────────────────────────────
+   Date filter (All Orders tab) — icon button opens the native calendar
+   directly via showPicker(); the input itself stays functional but tucked
+   under the button so nothing needs to be typed by hand.
+───────────────────────────────────────────────────────────────────────── */
+
+.sao-date-filters-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin: 10px 0 14px;
+}
+
+.sao-date-filter-group {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.sao-date-filter-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  width: auto;
+  height: auto;
+  padding: 8px 14px;
+  border-radius: 10px;
+  border: 1px solid var(--sao-border);
+  background: var(--sao-surface);
+  color: var(--sao-primary-dark);
+  font-size: 13.5px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: border-color 0.15s ease, background 0.15s ease, color 0.15s ease;
+}
+
+.sao-date-filter-toggle svg {
+  stroke: var(--sao-primary-dark);
+}
+
+.sao-date-filter-toggle:hover {
+  border-color: var(--sao-primary-light);
+  background: var(--sao-primary-xlt);
+}
+
+.sao-date-filter-toggle.active {
+  border-color: var(--sao-primary);
+  background: var(--sao-primary-xlt);
+  color: var(--sao-primary-dark);
+}
+
+/* Real date input stays in the DOM (so showPicker()/typing both work) but
+   is visually collapsed under the button — clicking the button opens it. */
+.sao-date-input {
+  position: absolute;
+  inset: 0;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: 0;
+  border: none;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.sao-filter-clear-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  border: none;
+  background: var(--sao-primary-xlt);
+  color: var(--sao-primary-dark);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.sao-filter-clear-btn:hover {
+  background: var(--sao-border-soft);
+}
+
+/* ─────────────────────────────────────────────────────────────
+   Tabs: "All Orders" / "Monthly Analytics" — green theme
+   ───────────────────────────────────────────────────────────── */
+
+.sao-tabs-row {
+  display: flex;
+  gap: 8px;
+  margin: 16px 0;
+  border-bottom: 1px solid var(--sao-border);
+}
+
+.sao-tab-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 16px;
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid transparent;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--sao-text-muted);
+  cursor: pointer;
+  transition: color 0.15s ease, border-color 0.15s ease;
+}
+
+.sao-tab-btn:hover {
+  color: var(--sao-text);
+}
+
+.sao-tab-btn.active {
+  color: var(--sao-primary-dark);
+  border-bottom-color: var(--sao-primary);
+}
+
+.sao-tab-count {
+  background: var(--sao-primary-xlt);
+  color: var(--sao-primary-dark);
+  font-size: 11px;
+  font-weight: 700;
+  padding: 1px 7px;
+  border-radius: 999px;
+}
+
+.sao-tab-btn.active .sao-tab-count {
+  background: var(--sao-primary);
+  color: #ffffff;
+}
+
+/* Month navigation row (Monthly tab) */
+.sao-month-nav-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.sao-month-nav-group {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.sao-month-nav-label {
+  min-width: 150px;
+  text-align: center;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--sao-text);
+}
+
+.sao-today-btn {
+  margin-left: 6px;
+  border-radius: 999px;
+}
+
+/* Analytics summary cards */
+.sao-analytics-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.sao-analytics-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: var(--sao-surface);
+  border: 1px solid var(--sao-border);
+  border-radius: 12px;
+  padding: 14px 16px;
+}
+
+.sao-analytics-icon {
+  width: 36px;
+  height: 36px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  background: var(--sao-primary-xlt);
+  color: var(--sao-primary-dark);
+}
+
+.sao-analytics-card.tone-positive .sao-analytics-icon {
+  background: var(--sao-success-bg);
+  color: var(--sao-success);
+}
+.sao-analytics-card.tone-warning .sao-analytics-icon {
+  background: var(--sao-warn-bg);
+  color: var(--sao-warn);
+}
+.sao-analytics-card.tone-negative .sao-analytics-icon {
+  background: var(--sao-error-bg);
+  color: var(--sao-error);
+}
+
+.sao-analytics-text {
+  display: flex;
+  flex-direction: column;
+}
+
+.sao-analytics-value {
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--sao-text);
+  line-height: 1.2;
+}
+
+.sao-analytics-label {
+  font-size: 12px;
+  color: var(--sao-text-muted);
+}
+
+/* ═════════════════════════════════════════════════════════════
+   RECEIPT — green theme, grid-aligned label/value rows
+   Every row uses [label | dotted fill | value] so text always
+   lines up on the right edge regardless of length.
+   ═════════════════════════════════════════════════════════════ */
+
+.sao-rcpt-sheet {
+  width: 100%;
+  font-family: 'Courier New', ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 13px;
+  line-height: 1.55;
+  color: var(--sao-text);
+}
+
+.sao-rcpt-logo-wrap {
   display: flex;
   justify-content: center;
-  margin-bottom: 8px;
+  margin-bottom: 6px;
 }
-.sao-receipt-logo {
+
+.sao-rcpt-logo {
   max-width: 120px;
-  max-height: 60px;
+  max-height: 56px;
   object-fit: contain;
+}
+
+.sao-rcpt-title {
+  text-align: center;
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.18em;
+  color: var(--sao-primary-dark);
+  margin-bottom: 2px;
+}
+
+.sao-rcpt-rule {
+  width: 100%;
+  margin: 10px 0;
+}
+.sao-rcpt-rule--dashed {
+  border-top: 1.5px dashed var(--sao-primary-light);
+}
+.sao-rcpt-rule--solid {
+  border-top: 1.5px solid var(--sao-primary);
+  margin: 6px 0 8px;
+}
+
+.sao-rcpt-block {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.sao-rcpt-block-label {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--sao-primary);
+  margin-bottom: 4px;
+}
+
+.sao-rcpt-muted {
+  color: var(--sao-text-muted);
+  font-style: italic;
+  font-size: 12px;
+  margin: 2px 0;
+}
+
+/* Aligned label/value row */
+.sao-rcpt-row {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: baseline;
+  column-gap: 6px;
+}
+.sao-rcpt-row-label {
+  color: var(--sao-text-soft);
+  white-space: nowrap;
+}
+.sao-rcpt-row-dots {
+  border-bottom: 1px dotted var(--sao-primary-light);
+  transform: translateY(-3px);
+}
+.sao-rcpt-row-value {
+  text-align: right;
+  font-weight: 600;
+  color: var(--sao-text);
+  white-space: pre-wrap;
+  word-break: break-word;
+  max-width: 220px;
+}
+.sao-rcpt-row.is-strong .sao-rcpt-row-value {
+  color: var(--sao-primary-dark);
+  font-weight: 800;
+}
+.sao-rcpt-row.is-big .sao-rcpt-row-label,
+.sao-rcpt-row.is-big .sao-rcpt-row-value {
+  font-size: 15px;
+}
+.sao-rcpt-row.is-big .sao-rcpt-row-value {
+  color: var(--sao-primary-dark);
+  font-weight: 800;
+}
+.sao-rcpt-row.is-discount .sao-rcpt-row-value {
+  color: var(--sao-error);
+}
+
+/* Payment status chip inside the receipt */
+.sao-rcpt-pay-chip {
+  display: inline-block;
+  padding: 1px 8px;
+  border-radius: 999px;
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  background: var(--sao-primary-xlt);
+  color: var(--sao-primary-dark);
+}
+.sao-rcpt-pay-chip.is-paid,
+.sao-rcpt-pay-chip.is-completed {
+  background: var(--sao-success-bg);
+  color: var(--sao-success);
+}
+.sao-rcpt-pay-chip.is-pending {
+  background: var(--sao-warn-bg);
+  color: var(--sao-warn);
+}
+.sao-rcpt-pay-chip.is-failed {
+  background: var(--sao-error-bg);
+  color: var(--sao-error);
+}
+
+/* Items */
+.sao-rcpt-item {
+  padding: 4px 0;
+}
+.sao-rcpt-item-main {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  column-gap: 8px;
+  align-items: baseline;
+}
+.sao-rcpt-item-name {
+  font-weight: 600;
+  color: var(--sao-text);
+}
+.sao-rcpt-item-amount {
+  font-weight: 700;
+  text-align: right;
+  color: var(--sao-primary-dark);
+  white-space: nowrap;
+}
+.sao-rcpt-item-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 10px;
+  margin: 2px 0 0 4px;
+  font-size: 11px;
+  color: var(--sao-text-muted);
+}
+
+/* Customization (custom cake) block — the part that was previously missing */
+.sao-rcpt-custom-block {
+  background: var(--sao-primary-xlt);
+  border: 1px dashed var(--sao-primary);
+  border-radius: 8px;
+  padding: 10px 12px;
+}
+.sao-rcpt-custom-image {
+  width: 100%;
+  max-height: 130px;
+  object-fit: cover;
+  border-radius: 6px;
+  margin-bottom: 8px;
+  border: 1px solid var(--sao-border-soft);
+}
+.sao-rcpt-message {
+  margin-top: 6px;
+  padding: 8px 10px;
+  background: var(--sao-surface);
+  border-left: 3px solid var(--sao-primary);
+  font-style: italic;
+  color: var(--sao-text);
+  border-radius: 0 6px 6px 0;
+}
+
+.sao-rcpt-totals {
+  gap: 5px;
+}
+
+.sao-rcpt-footer {
+  text-align: center;
+  margin: 4px 0 0;
+  font-style: italic;
+  color: var(--sao-primary-dark);
+  font-size: 12.5px;
+}
+
+.sao-receipt-controls {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+@media print {
+  .sao-rcpt-sheet {
+    font-size: 12.5px;
+  }
 }

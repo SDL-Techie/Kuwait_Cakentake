@@ -11,6 +11,8 @@
   --green-text: #3f5530;
   --amber-soft: #fdeecb;
   --amber-text: #a15c1e;
+  --blue-soft: #e8f0ff;
+  --blue-text: #2255bb;
   --red-soft: #fbe1e1;
   --red-text: #b3261e;
   --ink: #23281f;
@@ -19,7 +21,7 @@
 
   width: 100%;
   min-height: 100vh;
-  padding: 24px;
+  padding: 24px 32px;
   box-sizing: border-box;
   background: #ffffff;
   color: var(--ink);
@@ -138,7 +140,7 @@
   border: 1px solid var(--border);
   border-radius: 14px;
   padding: 16px 20px;
-  margin-bottom: 24px;
+  margin-bottom: 16px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
 }
 
@@ -178,17 +180,95 @@
   box-shadow: 0 0 0 3px rgba(169, 196, 138, 0.25);
 }
 
+/* ── Tabs ── */
+
+.agent-payment-tabs {
+  display: flex;
+  gap: 4px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 20px;
+}
+
+.agent-payment-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  padding: 12px 6px;
+  margin-right: 22px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--muted);
+  cursor: pointer;
+  transition: color 0.15s ease, border-color 0.15s ease;
+}
+
+.agent-payment-tab:hover {
+  color: var(--green-text);
+}
+
+.agent-payment-tab--active {
+  color: var(--green-text);
+  border-bottom-color: var(--green-deep);
+}
+
+.agent-payment-tab-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 22px;
+  height: 22px;
+  padding: 0 6px;
+  border-radius: 999px;
+  background: var(--green-soft);
+  color: var(--green-text);
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+
+.agent-payment-tab--active .agent-payment-tab-count {
+  background: var(--green-deep);
+  color: #fff;
+}
+
+/* ── Inline notices ── */
+
+.agent-payment-inline-notice {
+  background: var(--green-soft);
+  color: var(--green-text);
+  border: 1px solid var(--green-mid);
+  border-radius: 10px;
+  padding: 10px 16px;
+  font-size: 0.88rem;
+  font-weight: 600;
+  margin-bottom: 16px;
+}
+
+.agent-payment-switch-notice {
+  font-size: 0.78rem;
+  color: var(--amber-text);
+  font-weight: 600;
+  max-width: 260px;
+}
+
 /* ── Body layout ── */
 
 .agent-payment-body {
+  display: block;
+  align-items: start;
+}
+
+.agent-payment-body--with-panel {
   display: grid;
   grid-template-columns: 1fr 280px;
   gap: 24px;
-  align-items: start;
 }
 
 .agent-payment-main {
   min-width: 0;
+  width: 100%;
 }
 
 /* ── Selected bar ── */
@@ -263,7 +343,7 @@
   padding: 4px;
 }
 
-/* ── Table ── */
+/* ── Table (full width, no artificial min-width) ── */
 
 .agent-payment-table-wrapper {
   overflow-x: auto;
@@ -271,13 +351,13 @@
   border: 1px solid var(--border);
   border-radius: 14px;
   margin-bottom: 24px;
+  width: 100%;
 }
 
 .agent-payment-table {
   width: 100%;
   border-collapse: collapse;
-  table-layout: fixed;
-  min-width: 960px;
+  table-layout: auto;
 }
 
 .agent-payment-table thead th {
@@ -291,8 +371,6 @@
   background: var(--green-soft);
   border-bottom: 1px solid var(--border);
   white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
 }
 
 .agent-payment-table tbody td {
@@ -300,15 +378,24 @@
   border-bottom: 1px solid #f1f3ee;
   font-size: 0.88rem;
   color: var(--ink);
-  overflow: hidden;
-  text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-/* Amount column (5th) reads better right-aligned */
-.agent-payment-table thead th:nth-child(5),
-.agent-payment-table tbody td:nth-child(5) {
+.agent-payment-table .col-check {
+  width: 40px;
+}
+
+.agent-payment-table .col-customer {
+  width: 22%;
+  white-space: normal;
+}
+
+.agent-payment-table .col-amount {
   text-align: right;
+}
+
+.agent-payment-table .col-actions {
+  width: 90px;
 }
 
 .agent-payment-group-row {
@@ -320,18 +407,10 @@
   color: var(--green-text);
   padding: 10px 16px !important;
   white-space: normal;
-  overflow: visible;
-  text-overflow: initial;
 }
 
 .agent-payment-order-row:hover {
   background: #fbfdf8;
-}
-
-.agent-payment-checkbox-disabled {
-  display: inline-block;
-  width: 16px;
-  height: 16px;
 }
 
 /* ── Badges ── */
@@ -345,16 +424,6 @@
   text-transform: capitalize;
 }
 
-.badge-payment-pending {
-  background: var(--amber-soft);
-  color: var(--amber-text);
-}
-
-.badge-payment-paid {
-  background: var(--green-soft);
-  color: var(--green-text);
-}
-
 .badge-order-pending {
   background: var(--amber-soft);
   color: var(--amber-text);
@@ -362,8 +431,8 @@
 
 .badge-order-confirmed,
 .badge-order-preparing {
-  background: #e8f0ff;
-  color: #2255bb;
+  background: var(--blue-soft);
+  color: var(--blue-text);
 }
 
 .badge-order-out {
@@ -555,11 +624,184 @@
   font-size: 0.9rem;
 }
 
+.agent-payment-modal-error {
+  background: var(--red-soft);
+  color: var(--red-text);
+  border-radius: 8px;
+  padding: 10px 14px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  margin-top: 16px;
+}
+
 .agent-payment-modal-actions {
   display: flex;
   justify-content: flex-end;
   gap: 12px;
   margin-top: 20px;
+}
+
+/* Payment breakdown list inside the initiate-payment modal */
+
+.agent-payment-pay-breakdown {
+  margin-top: 18px;
+}
+
+.agent-payment-pay-breakdown-list {
+  list-style: none;
+  margin: 8px 0 0 0;
+  padding: 0;
+  max-height: 160px;
+  overflow-y: auto;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+}
+
+.agent-payment-pay-breakdown-list li {
+  display: flex;
+  justify-content: space-between;
+  padding: 9px 14px;
+  font-size: 0.86rem;
+  border-bottom: 1px solid #f1f3ee;
+}
+
+.agent-payment-pay-breakdown-list li:last-child {
+  border-bottom: none;
+}
+
+.agent-payment-pay-breakdown-total {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: var(--green-soft);
+  border-radius: 10px;
+  padding: 12px 16px;
+  margin-top: 10px;
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--green-text);
+}
+
+/* Payment method tiles */
+
+.agent-payment-method-picker {
+  margin-top: 20px;
+}
+
+.agent-payment-method-tiles {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.agent-payment-method-tile {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: #fff;
+  border: 1.5px solid var(--border);
+  border-radius: 12px;
+  padding: 14px 16px;
+  cursor: pointer;
+  text-align: left;
+  transition: border-color 0.15s ease, background 0.15s ease, transform 0.1s ease;
+}
+
+.agent-payment-method-tile:hover {
+  border-color: var(--green-mid);
+  transform: translateY(-1px);
+}
+
+.agent-payment-method-tile--active {
+  border-color: var(--green-deep);
+  background: var(--green-soft);
+}
+
+.agent-payment-method-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: var(--green-soft);
+  color: var(--green-text);
+  flex-shrink: 0;
+}
+
+.agent-payment-method-tile--active .agent-payment-method-icon {
+  background: var(--green-deep);
+  color: #fff;
+}
+
+.agent-payment-method-tile-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.agent-payment-method-tile-text strong {
+  font-size: 0.92rem;
+  color: var(--ink);
+}
+
+.agent-payment-method-tile-text small {
+  font-size: 0.76rem;
+  color: var(--muted);
+}
+
+.agent-payment-method-hint {
+  margin: 10px 0 0 0;
+  font-size: 0.8rem;
+  color: var(--amber-text);
+  background: var(--amber-soft);
+  border-radius: 8px;
+  padding: 8px 12px;
+}
+
+/* Barcode / scan-to-pay step */
+
+.agent-payment-barcode-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 24px 16px;
+  margin-top: 16px;
+  background: #fafcf8;
+  border: 1px dashed var(--border);
+  border-radius: 14px;
+}
+
+.agent-payment-barcode-img {
+  width: 220px;
+  height: 220px;
+  border-radius: 10px;
+  background: #fff;
+  padding: 10px;
+  border: 1px solid var(--border);
+}
+
+.agent-payment-barcode-loading {
+  width: 220px;
+  height: 220px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--muted);
+  font-size: 0.85rem;
+  text-align: center;
+  border: 1px dashed var(--border);
+  border-radius: 10px;
+  background: #fff;
+}
+
+.agent-payment-barcode-caption {
+  margin: 0;
+  font-size: 0.82rem;
+  color: var(--muted);
+  text-align: center;
 }
 
 /* View order modal specifics */
@@ -620,12 +862,16 @@
 /* ── Responsive ── */
 
 @media (max-width: 900px) {
-  .agent-payment-body {
+  .agent-payment-body--with-panel {
     grid-template-columns: 1fr;
   }
 
   .agent-payment-side-panel {
     position: static;
+  }
+
+  .agent-payment-method-tiles {
+    grid-template-columns: 1fr;
   }
 }
 
@@ -640,5 +886,10 @@
 
   .agent-payment-view-grid {
     grid-template-columns: 1fr;
+  }
+
+  .agent-payment-selected-actions {
+    margin-left: 0;
+    width: 100%;
   }
 }

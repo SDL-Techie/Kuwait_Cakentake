@@ -81,9 +81,9 @@
 .koc-shell {
   position: relative;
   z-index: 1;
-  max-width: 1040px;
+  max-width: 1300px;
   margin: 0 auto;
-  padding: 48px 28px 80px;
+  /* padding: 48px 28px 80px; */
 }
 
 /* ---------- Header ---------- */

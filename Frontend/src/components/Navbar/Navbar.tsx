@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence, Variants } from 'framer-motion';
 import {
   ShoppingCart, User, Menu, X,
@@ -11,7 +10,7 @@ import {
 import { useCustomerAuth } from '../../context/CustomerAuthContext';
 import toast from 'react-hot-toast';
 import { getCustomerLoyalty } from "@/src/services/loyaltyService";
-import { fetchGeoLocationFromIpApi ,  storefrontApi} from '../../services/directApiService';
+import { storefrontApi} from '../../services/directApiService';
 import { useCurrency } from '../../context/CurrencyContext';
 import './Navbar.css';
 
@@ -118,7 +117,6 @@ export default function Navbar({ cartCount, wishlistCount = 0 }: NavbarProps) {
   const [userData, setUserData] = useState<UserData | null>(null);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const navigate = useNavigate();
-  const { t, i18n } = useTranslation();
   const location = useLocation();
   const { customer, isLoggedIn, logout } = useCustomerAuth();
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -127,69 +125,6 @@ export default function Navbar({ cartCount, wishlistCount = 0 }: NavbarProps) {
 
   const { currency, setCurrency } = useCurrency();
 
-  const changeLanguage = (lang: string) => {
-    i18n.changeLanguage(lang);
-    localStorage.setItem('language', lang);
-
-    if (lang === 'ar') {
-      document.documentElement.dir = 'rtl';
-      document.documentElement.lang = 'ar';
-    } else {
-      document.documentElement.dir = 'ltr';
-      document.documentElement.lang = 'en';
-    }
-  };
-
-  useEffect(() => {
-    const savedLanguage = localStorage.getItem('language');
-    const savedCurrency = localStorage.getItem('currency');
-
-    // User already chose language/currency
-    if (savedLanguage && savedCurrency) {
-      i18n.changeLanguage(savedLanguage);
-      document.documentElement.lang = savedLanguage;
-      document.documentElement.dir = savedLanguage === 'ar' ? 'rtl' : 'ltr';
-      return;
-    }
-
-    // First visit
-    fetchGeoLocationFromIpApi()
-      .then((data) => {
-        const country = data.country_code;
-
-        let language = 'en';
-        let currencyGuess = 'USD';
-
-        switch (country) {
-          case 'AE':
-            language = 'ar';
-            currencyGuess = 'AED';
-            break;
-          case 'SA':
-            language = 'ar';
-            currencyGuess = 'SAR';
-            break;
-          case 'IN':
-            language = 'en';
-            currencyGuess = 'INR';
-            break;
-          case 'KW':
-           language = 'ar';
-           currencyGuess = 'KWD';
-           break;
-          default:
-            language = 'en';
-            currencyGuess = 'USD';
-        }
-
-        localStorage.setItem('language', language);
-        localStorage.setItem('currency', currencyGuess);
-
-        i18n.changeLanguage(language);
-        document.documentElement.lang = language;
-        document.documentElement.dir = language === 'ar' ? 'rtl' : 'ltr';
-      });
-  }, []);
 
   // ── Check both context AND localStorage ──
   useEffect(() => {
@@ -341,9 +276,9 @@ export default function Navbar({ cartCount, wishlistCount = 0 }: NavbarProps) {
   };
 
   const leftNavLinks = [
-    { to: '/', label: t('home') },
-    { to: '/orders', label: t('orders') },
-    { to: '/products', label: t('products') }
+    { to: '/', label: ('home') },
+    { to: '/orders', label: ('orders') },
+    { to: '/products', label: ('products') }
   ];
 
   const isCheckoutPage = location.pathname.startsWith('/checkout');

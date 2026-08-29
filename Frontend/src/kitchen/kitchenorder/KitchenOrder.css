@@ -1136,61 +1136,6 @@
   color: #9ca3af;
 }
 
-/* ─────────────────────────────────────────────────────────────────────────
-   Date filter bar (in case not already styled elsewhere in the project)
-   ───────────────────────────────────────────────────────────────────────── */
-.ko-date-filter-bar {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 12px;
-  background-color: #f9faf7;
-  border: 1px solid #ececec;
-  border-radius: 12px;
-  padding: 10px 14px;
-}
-
-.ko-date-filter-group {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  color: #555;
-  font-size: 13px;
-}
-
-.ko-date-filter-group select {
-  border: 1px solid #dcdcdc;
-  border-radius: 8px;
-  padding: 6px 10px;
-  font-size: 13px;
-  background: #ffffff;
-  color: #2d2d2d;
-  cursor: pointer;
-}
-
-.ko-date-filter-input {
-  border: 1px solid #dcdcdc;
-  border-radius: 8px;
-  padding: 6px 10px;
-  font-size: 13px;
-  color: #2d2d2d;
-}
-
-.ko-date-filter-clear {
-  border: 1px solid #dcdcdc;
-  background: #ffffff;
-  border-radius: 8px;
-  padding: 6px 12px;
-  font-size: 12.5px;
-  font-weight: 600;
-  color: #6F8E57;
-  cursor: pointer;
-}
-
-.ko-date-filter-clear:hover {
-  background-color: #eef3e6;
-}
-
 /* ═══════════════════════════════════════════════════════════════════════
    CALENDAR VIEW — trigger button
    ═══════════════════════════════════════════════════════════════════════ */
@@ -1504,117 +1449,6 @@
   }
 }
 
-
-/* ============================================================
-   ADD-ON STYLES — merge these into your existing KitchenOrder.css
-   All class names below are new; nothing here overrides your
-   current rules.
-============================================================ */
-
-/* ---------- Segmented date filter ---------- */
-.ko-date-filter-bar {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  flex-wrap: wrap;
-  margin-bottom: 16px;
-}
-
-.ko-filter-segment-group {
-  display: inline-flex;
-  align-items: center;
-  gap: 3px;
-  background: #F2F5F0;
-  border: 1px solid #E1E7DD;
-  border-radius: 12px;
-  padding: 3px;
-}
-
-.ko-filter-segment-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  border: none;
-  background: transparent;
-  color: #6B7563;
-  font-size: 12.5px;
-  font-weight: 600;
-  padding: 7px 12px;
-  border-radius: 9px;
-  cursor: pointer;
-  transition: background .15s, color .15s;
-  white-space: nowrap;
-}
-
-.ko-filter-segment-btn:hover {
-  background: rgba(255, 255, 255, 0.7);
-  color: #35402F;
-}
-
-.ko-filter-segment-btn.active {
-  background: #7CB342;
-  color: #fff;
-  box-shadow: 0 2px 6px rgba(124, 179, 66, 0.35);
-}
-
-.ko-date-filter-input-wrap {
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
-  border: 1px solid #E1E7DD;
-  background: #fff;
-  padding: 7px 11px;
-  border-radius: 10px;
-  color: #6B7563;
-  cursor: pointer;
-}
-
-.ko-date-filter-input {
-  border: none;
-  outline: none;
-  font-size: 12.5px;
-  font-family: inherit;
-  color: #2B3327;
-  background: transparent;
-  cursor: pointer;
-}
-
-.ko-date-filter-active-chip {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 12px;
-  color: #4C5A45;
-  background: rgba(124, 179, 66, 0.12);
-  border: 1px solid rgba(124, 179, 66, 0.3);
-  padding: 6px 8px 6px 12px;
-  border-radius: 20px;
-}
-
-.ko-date-filter-active-chip strong {
-  color: #35402F;
-  font-weight: 700;
-}
-
-.ko-date-filter-chip-clear {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 18px;
-  height: 18px;
-  border-radius: 50%;
-  border: none;
-  background: rgba(124, 179, 66, 0.2);
-  color: #4C5A45;
-  cursor: pointer;
-  transition: background .15s, color .15s;
-}
-
-.ko-date-filter-chip-clear:hover {
-  background: #E1544D;
-  color: #fff;
-}
-
 /* ---------- Fulfilment (pickup / delivery) highlight — order card ---------- */
 /* Delivery order → blue border. Pickup order → green border. */
 .ko-order-card.card-fulfillment-pickup {
@@ -1698,11 +1532,6 @@
   color: #2E5E93;
 }
 
-@media (max-width: 760px) {
-  .ko-date-filter-bar { gap: 8px; }
-  .ko-filter-segment-btn { padding: 6px 9px; font-size: 12px; }
-}
-
 .op-fd-hidden { display: none; }
 .op-fd-addon-thumb {
   width: 40px;   /* match whatever size the placeholder is */
@@ -1778,3 +1607,190 @@
 .swatch-fulfillment-pickup   { background-color: #7CB342; }
 .swatch-origin-agent         { background-color: #F3FBEF; border-color: #cfe9c1; }
 .swatch-origin-sales-agent   { background-color: #FFF4F6; border-color: #f3c9d2; }
+
+
+/* ═══════════════════════════════════════════════════════════════════════
+   Date filter bar — SINGLE canonical definition.
+   (Previously this block existed three times in the file with drifting,
+   conflicting colors/padding — the browser was applying whichever
+   definition happened to load last, which is why the calendar button
+   rendered as a near-invisible white-on-white square. Consolidated here
+   and re-tinted so every piece is unmistakably visible and matches the
+   rest of the app's #6F8E57 accent instead of the stray lime green that
+   had crept into one of the old copies.)
+   ═══════════════════════════════════════════════════════════════════════ */
+.ko-date-filter-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  padding: 10px 14px;
+  background: #f7f9f6;
+  border: 1px solid #e6ebe3;
+  border-radius: 12px;
+  margin-bottom: 16px;
+}
+
+.ko-filter-segment-group {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: #fff;
+  border: 1px solid #e0e0e0;
+  border-radius: 999px;
+  padding: 4px;
+}
+
+.ko-filter-segment-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: none;
+  background: transparent;
+  color: #555;
+  font-weight: 600;
+  font-size: 13px;
+  padding: 7px 14px;
+  border-radius: 999px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.ko-filter-segment-btn:hover {
+  background: #f2f7f2;
+}
+
+.ko-filter-segment-btn.active {
+  background: #6F8E57;
+  color: #fff;
+}
+
+/* Prev/Next day arrows beside the "Today" segment button */
+.ko-filter-day-nav-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  flex: 0 0 28px;
+  border: 1px solid #e0e0e0;
+  background: #fff;
+  border-radius: 50%;
+  color: #555;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+}
+
+.ko-filter-day-nav-btn svg {
+  width: 14px;
+  height: 14px;
+  display: block;
+  flex-shrink: 0;
+  stroke: currentColor;
+}
+
+.ko-filter-day-nav-btn:hover {
+  background: #eef3e6;
+  border-color: #6F8E57;
+  color: #4a6b39;
+}
+
+.ko-filter-day-nav-btn:active {
+  transform: scale(0.94);
+}
+
+/* Calendar icon button that opens the native date picker.
+   Given a filled tint (not plain white-on-white) so the icon is
+   unmissable regardless of the card/page background behind it. */
+.ko-date-filter-calendar-wrap {
+  position: relative;
+  display: inline-flex;
+  flex-shrink: 0;
+}
+
+.ko-date-filter-calendar-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  flex-shrink: 0;
+  border: 1px solid #cfe0bd;
+  border-radius: 8px;
+  background: #eef3e6;
+  color: #4a6b39;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.ko-date-filter-calendar-btn svg {
+  width: 16px;
+  height: 16px;
+  display: block;
+  flex-shrink: 0;
+  stroke: currentColor;
+  fill: none;
+}
+
+.ko-date-filter-calendar-btn:hover {
+  background: #6F8E57;
+  border-color: #6F8E57;
+  color: #fff;
+  box-shadow: 0 2px 6px rgba(111, 142, 87, 0.35);
+}
+
+/* The real <input type="date"> stays in the DOM (required for showPicker())
+   but is fully invisible and un-clickable — the button above triggers it. */
+.ko-date-filter-hidden-input {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: 0;
+  border: 0;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.ko-date-filter-active-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #eaf3e3;
+  color: #3f5c2a;
+  font-size: 13px;
+  font-weight: 500;
+  padding: 6px 6px 6px 12px;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+
+.ko-date-filter-active-chip strong {
+  color: #2d4020;
+  font-weight: 700;
+}
+
+.ko-date-filter-chip-clear {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  border: none;
+  background: rgba(255, 255, 255, 0.6);
+  border-radius: 50%;
+  color: #3f5c2a;
+  cursor: pointer;
+}
+
+.ko-date-filter-chip-clear:hover {
+  background: #fff;
+}
+
+@media (max-width: 760px) {
+  .ko-date-filter-bar { gap: 8px; }
+  .ko-filter-segment-btn { padding: 6px 9px; font-size: 12px; }
+}

@@ -1,5 +1,5 @@
 from flask import Blueprint, request, jsonify
-from flask_jwt_extended import jwt_required
+from flask_jwt_extended import jwt_required, get_jwt_identity
 from datetime import datetime, timedelta
 from sqlalchemy import func
 from extensions import db
@@ -252,3 +252,33 @@ def get_customer_loyalty_history(customer_id):
         LoyaltyLedger.created_at.desc()
     ).all()
     return jsonify({"history": [h.to_dict() for h in history]}), 200
+
+
+
+@customers_bp.route("/customers/me/status", methods=["GET"])
+@jwt_required()
+def get_my_account_status():
+    user_id = get_jwt_identity()
+
+    user = User.query.get(user_id)
+
+    if not user:
+        return jsonify({
+            "code": "USER_NOT_FOUND",
+            "message": "User not found"
+        }), 401
+
+    if user.role != "USER":
+        return jsonify({
+            "is_active": True
+        }), 200
+
+    if not user.is_active:
+        return jsonify({
+            "code": "ACCOUNT_DEACTIVATED",
+            "message": "Your account has been deactivated."
+        }), 403
+
+    return jsonify({
+        "is_active": True
+    }), 200

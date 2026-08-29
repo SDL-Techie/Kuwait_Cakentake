@@ -120,6 +120,7 @@ const ROLES: { label: string; value: string }[] = [
   { label: "Kitchen Staff", value: "KITCHEN_STAFF" },
   { label: "Delivery Agent", value: "DELIVERY_AGENT" },
   { label: "Sales Staff", value: "SALES_AGENT" },
+  // { label: "Agent", value: "AGENT" },
   { label: "Driver", value: "DRIVER" },
 ];
 
@@ -220,7 +221,8 @@ export const StaffManagement: React.FC = () => {
     setTableLoading(true);
     try {
       const data = await getUsers(role || undefined);
-      const staffUsers = data.filter(user => user.role !== "USER");
+      // const staffUsers = data.filter(user => user.role !== "USER");
+      const staffUsers = data.filter(user => user.role !== "USER" && user.role !== "AGENT");
 setUsers(staffUsers);
     } catch (err: any) {
       showToast(err?.response?.data?.error || "Failed to load users.", "error");

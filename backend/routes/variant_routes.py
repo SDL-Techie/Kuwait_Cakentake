@@ -17,7 +17,7 @@ def get_variants(product_id):
 
 @variant_bp.route("/variants", methods=["POST"])
 @jwt_required()
-@role_required(["ADMIN", "SHOP_MANAGER"])
+@role_required(["ADMIN", "SHOP_MANAGER", "SALES_AGENT"])
 def create_variant():
     data = request.get_json()
     variant = Variant(
@@ -32,7 +32,7 @@ def create_variant():
 
 @variant_bp.route("/variants/<int:variant_id>", methods=["PUT"])
 @jwt_required()
-@role_required(["ADMIN", "SHOP_MANAGER"])
+@role_required(["ADMIN", "SHOP_MANAGER", "SALES_AGENT"])
 def update_variant(variant_id):
     variant = Variant.query.get_or_404(variant_id)
     data = request.get_json()
@@ -45,7 +45,7 @@ def update_variant(variant_id):
 
 @variant_bp.route("/variants/<int:variant_id>", methods=["DELETE"])
 @jwt_required()
-@role_required(["ADMIN", "SHOP_MANAGER"])
+@role_required(["ADMIN", "SHOP_MANAGER", "SALES_AGENT"])
 def delete_variant(variant_id):
     variant = Variant.query.get_or_404(variant_id)
     db.session.delete(variant)
@@ -63,7 +63,7 @@ def get_flavors(variant_id):
 
 @variant_bp.route("/flavors", methods=["POST"])
 @jwt_required()
-@role_required(["ADMIN", "SHOP_MANAGER"])
+@role_required(["ADMIN", "SHOP_MANAGER", "SALES_AGENT"])
 def create_flavor():
     data = request.get_json()
     flavor = Flavor(
@@ -78,7 +78,7 @@ def create_flavor():
 
 @variant_bp.route("/flavors/<int:flavor_id>", methods=["PUT"])
 @jwt_required()
-@role_required(["ADMIN", "SHOP_MANAGER"])
+@role_required(["ADMIN", "SHOP_MANAGER", "SALES_AGENT"])
 def update_flavor(flavor_id):
     flavor = Flavor.query.get_or_404(flavor_id)
     data = request.get_json()
@@ -91,7 +91,7 @@ def update_flavor(flavor_id):
 
 @variant_bp.route("/flavors/<int:flavor_id>", methods=["DELETE"])
 @jwt_required()
-@role_required(["ADMIN", "SHOP_MANAGER"])
+@role_required(["ADMIN", "SHOP_MANAGER", "SALES_AGENT"])
 def delete_flavor(flavor_id):
     flavor = Flavor.query.get_or_404(flavor_id)
     db.session.delete(flavor)

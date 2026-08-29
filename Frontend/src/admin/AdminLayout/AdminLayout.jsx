@@ -61,20 +61,20 @@ const NAV_SECTIONS = [
     items: [
       { type: 'link', name: 'Order Management', icon: <FaShoppingCart />, path: '/admin/orderpipeline', roles: ['ADMIN','SHOP_MANAGER'] },
       {
-        type: 'group', name: 'Kitchen', icon: <FaUtensils />, roles: ['ADMIN', 'KITCHEN_STAFF'],
+        type: 'group', name: 'Kitchen', icon: <FaUtensils />, roles: [ 'KITCHEN_STAFF'],
         children: [
-          { name: 'Kitchen Calender', icon: <FaTachometerAlt />, path: '/admin/kitchen', roles: ['ADMIN', 'KITCHEN_STAFF'] },
-          { name: 'Kitchen Order', icon: <FaReceipt />, path: '/admin/kitchen-order', roles: ['ADMIN', 'KITCHEN_STAFF'] },
-          { name: 'Kitchen Inventory', icon: <FaBoxes />, path: '/admin/kitcheninventory', roles: ['ADMIN', 'KITCHEN_STAFF'] },
+          { name: 'Kitchen Calender', icon: <FaTachometerAlt />, path: '/admin/kitchen', roles: ['KITCHEN_STAFF'] },
+          { name: 'Kitchen Order', icon: <FaReceipt />, path: '/admin/kitchen-order', roles: ['KITCHEN_STAFF'] },
+          { name: 'Kitchen Inventory', icon: <FaBoxes />, path: '/admin/kitcheninventory', roles: [ 'KITCHEN_STAFF'] },
         ],
       },
       {
-        type: 'group', name: 'Sales Staff', icon: <FaChartLine />, roles: ['ADMIN', 'SALES_AGENT'],
+        type: 'group', name: 'Sales Staff', icon: <FaChartLine />, roles: [ 'SALES_AGENT'],
         children: [
-          { name: 'Sales Dashboard', icon: <FaTachometerAlt />, path: '/admin/salesdash', roles: ['ADMIN', 'SALES_AGENT'] },
-          { name: 'Sales Staff Create Order', icon: <FaPlusCircle />, path: '/admin/salescreateorder', roles: ['ADMIN', 'SALES_AGENT'] },
-          { name: 'Sales Staff Order', icon: <FaList />, path: '/admin/salesorder', roles: ['ADMIN', 'SALES_AGENT'] },
-          { type: 'link', name: 'Blog Management', icon: <FaUsers />, path: '/admin/blog', roles: ['ADMIN', 'SALES_AGENT'] },
+          { name: 'Sales Dashboard', icon: <FaTachometerAlt />, path: '/admin/salesdash', roles: [ 'SALES_AGENT'] },
+          { name: 'Sales Staff Create Order', icon: <FaPlusCircle />, path: '/admin/salescreateorder', roles: [ 'SALES_AGENT'] },
+          { name: 'Sales Staff Order', icon: <FaList />, path: '/admin/salesorder', roles: [ 'SALES_AGENT'] },
+          { type: 'link', name: 'Blog Management', icon: <FaUsers />, path: '/admin/blog', roles: [ 'SALES_AGENT'] },
         ],
       },
 //       {
@@ -122,25 +122,25 @@ const NAV_SECTIONS = [
 //   ]
 // },
           {
-        type: 'group', name: 'Agent', icon: <FaChartLine />, roles: ['ADMIN', 'AGENT'],
+        type: 'group', name: 'Agent', icon: <FaChartLine />, roles: [ 'AGENT'],
         children: [
-          { name: 'Agent Dashboard', icon: <FaTachometerAlt />, path: '/admin/agentdashboard', roles: ['ADMIN', 'AGENT'] },
-          { name: 'Agent Create Order', icon: <FaPlusCircle />, path: '/admin/agentorder', roles: ['ADMIN', 'AGENT'] },
-          { name: 'Agent Order', icon: <FaList />, path: '/admin/agentfetchorder', roles: ['ADMIN', 'AGENT'] },
+          { name: 'Agent Dashboard', icon: <FaTachometerAlt />, path: '/admin/agentdashboard', roles: [ 'AGENT'] },
+          { name: 'Agent Create Order', icon: <FaPlusCircle />, path: '/admin/agentorder', roles: [ 'AGENT'] },
+          { name: 'Agent Order', icon: <FaList />, path: '/admin/agentfetchorder', roles: [ 'AGENT'] },
         ],
       },
       {
-        type: 'group', name: 'Delivery Agent', icon: <FaTruck />, roles: ['ADMIN', 'DELIVERY_AGENT'],
+        type: 'group', name: 'Delivery Agent', icon: <FaTruck />, roles: [ 'DELIVERY_AGENT'],
         children: [
-          { name: 'Delivery Dashboard', icon: <FaTachometerAlt />, path: '/admin/deliverydashboard', roles: ['ADMIN', 'DELIVERY_AGENT'] },
-          { name: 'Delivery Agent Order', icon: <FaShippingFast />, path: '/admin/deliveryorder', roles: ['ADMIN', 'DELIVERY_AGENT'] },
+          { name: 'Delivery Dashboard', icon: <FaTachometerAlt />, path: '/admin/deliverydashboard', roles: [ 'DELIVERY_AGENT'] },
+          { name: 'Delivery Agent Order', icon: <FaShippingFast />, path: '/admin/deliveryorder', roles: [ 'DELIVERY_AGENT'] },
         ],
       },
       {
-        type: 'group', name: 'Driver', icon: <FaCar />, roles: ['ADMIN', 'DRIVER'],
+        type: 'group', name: 'Driver', icon: <FaCar />, roles: [ 'DRIVER'],
         children: [
-          { name: 'Driver Dashboard', icon: <FaTachometerAlt />, path: '/admin/driverdashboard', roles: ['ADMIN', 'DRIVER'] },
-          { name: 'Driver Order', icon: <FaReceipt />, path: '/admin/driverorder', roles: ['ADMIN', 'DRIVER'] },
+          { name: 'Driver Dashboard', icon: <FaTachometerAlt />, path: '/admin/driverdashboard', roles: [ 'DRIVER'] },
+          { name: 'Driver Order', icon: <FaReceipt />, path: '/admin/driverorder', roles: [ 'DRIVER'] },
           // { name: 'Driver Settlement', icon: <FaMoneyCheckAlt />, path: '/admin/driversettlement', roles: ['ADMIN'] },
         ],
       },

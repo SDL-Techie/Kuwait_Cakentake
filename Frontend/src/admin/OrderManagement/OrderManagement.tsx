@@ -54,6 +54,7 @@ interface OrderItem {
   addOnPriceTotal: number;
   lineTotal?: number;
   selectedVariant?: string;
+  selectedFlavour?: string;  
   selectedAddOns: string[];
   imageUrl?: string;
   isAgentExclusive?: boolean; 
@@ -67,15 +68,13 @@ interface TimelineEntry {
 }
 
 interface CustomCakeDetails {
-  flavour?: string;
-  weight?: string;
-  shape?: string;
-  size?: string;
-  colour?: string;
-  message?: string;
+  productName?: string;
   image?: string;
-  notes?: string;
+  shape?: string;
+  flavour?: string;
+  variant?: string;
   price?: number;
+  message?: string;
 }
 
 interface DetailedAddress {
@@ -273,6 +272,55 @@ function mapTimelineEntry(h: any): TimelineEntry {
   };
 }
 
+// ── Simplified timeline labels for the Order History display ──
+const TIMELINE_STAGE_LABELS: Record<string, string> = {
+  pending:            'Order Placed',
+  accepted:           'Order Accepted',
+  rejected:           'Order Rejected',
+  cancelled:          'Order Cancelled',
+  assigned_to_kitchen:'Assigned to Kitchen',
+  preparing:          'Processing',
+  ready:              'Ready',
+  out_for_delivery:   'Out for Delivery',
+  delivered:          'Delivered',
+};
+
+// Raw statuses that get folded into another stage instead of showing their own row
+const TIMELINE_HIDDEN_STATUSES = new Set([
+  'assigned_to_agent',   // folded into "out_for_delivery"
+  'assigned_to_driver',  // folded into "out_for_delivery"
+  'delivery_submitted',  // folded into "delivered"
+]);
+
+// For pickup orders, everything from "ready" onward collapses into one final step
+const PICKUP_HIDDEN_STATUSES = new Set([
+  'ready',
+  'assigned_to_agent',
+  'assigned_to_driver',
+  'out_for_delivery',
+  'delivery_submitted',
+]);
+
+function getSimplifiedTimeline(timeline: TimelineEntry[], isPickup?: boolean): TimelineEntry[] {
+  const hiddenSet = isPickup ? PICKUP_HIDDEN_STATUSES : TIMELINE_HIDDEN_STATUSES;
+  const filtered = timeline.filter(tl => !hiddenSet.has(tl.status));
+
+  // Collapse consecutive entries that map to the same status (e.g. duplicate
+  // OUT_FOR_DELIVERY rows logged back-to-back) — keep only the first occurrence.
+  const deduped: TimelineEntry[] = [];
+  for (const tl of filtered) {
+    const prev = deduped[deduped.length - 1];
+    if (prev && prev.status === tl.status) continue;
+    deduped.push(tl);
+  }
+
+  return deduped.map(tl => {
+    let label = TIMELINE_STAGE_LABELS[tl.status] ?? tl.status.replace(/_/g, ' ').toUpperCase();
+    if (isPickup && tl.status === 'delivered') label = 'Pickup Order Delivered';
+    return { ...tl, status: label };
+  });
+}
+
 function normalizeOrder(raw: any): Order {
   const rawStatus = String(raw?.status ?? '').toUpperCase();
   const status: OrderStatus = STATUS_API_TO_LOCAL[rawStatus] ?? 'pending';
@@ -372,6 +420,10 @@ function normalizeOrder(raw: any): Order {
       addOnPriceTotal: Number(it?.add_on_total ?? customJson?.add_on_total ?? 0),
       lineTotal: it?.line_total != null ? Number(it.line_total) : undefined,
       selectedVariant: customJson?.variant_name ?? customJson?.variant ?? it?.variant ?? undefined,
+      // selectedFlavour: customJson?.flavour_name ?? customJson?.flavour ?? customJson?.flavor ?? it?.flavour ?? undefined,
+      selectedFlavour:
+  customJson?.flavor_name ?? customJson?.flavour_name ??
+  customJson?.flavor ?? customJson?.flavour ?? it?.flavour ?? undefined,
       selectedAddOns:  customJson?.addons ?? customJson?.add_ons ?? it?.add_ons ?? [],
       imageUrl: source?.image_url ?? source?.imageUrl ?? source?.image ?? undefined,
       isAgentExclusive,
@@ -455,19 +507,17 @@ function normalizeOrder(raw: any): Order {
     (orderSource === 'AGENT' || createdByRole === 'AGENT');
 
   // ── Custom cake order ──
-  const customCakeRaw = raw?.custom_cake_json ?? null;
-  const isCustomCakeOrder = !!customCakeRaw;
-  const customCake: CustomCakeDetails | null = customCakeRaw ? {
-    flavour: customCakeRaw?.flavour || undefined,
-    weight:  customCakeRaw?.weight  || undefined,
-    shape:   customCakeRaw?.shape   || undefined,
-    size:    customCakeRaw?.size    || undefined,
-    colour:  customCakeRaw?.colour  || undefined,
-    message: customCakeRaw?.message || undefined,
-    image:   customCakeRaw?.image   || undefined,
-    notes:   customCakeRaw?.notes   || undefined,
-    price:   customCakeRaw?.price != null ? Number(customCakeRaw.price) : undefined,
-  } : null;
+  const customCakeRaw = raw?.custom_cake_json ?? raw?.custom_cake ?? null;
+const isCustomCakeOrder = !!customCakeRaw;
+const customCake: CustomCakeDetails | null = customCakeRaw ? {
+  productName: customCakeRaw?.product_name || customCakeRaw?.productName || undefined,
+  image:       customCakeRaw?.image || undefined,
+  shape:       customCakeRaw?.shape || undefined,
+  flavour:     customCakeRaw?.flavour || undefined,
+  variant:     customCakeRaw?.variant || undefined,
+  price:       customCakeRaw?.price != null ? Number(customCakeRaw.price) : undefined,
+  message:     customCakeRaw?.message || undefined,
+} : null;
 
   // ── Delivery scheduling ──
   const deliveryDate     = raw?.delivery_date ?? undefined;
@@ -1455,6 +1505,7 @@ export const OrderManagement: React.FC = () => {
                         <div className="op-fd-item-meta">
                           <span>Qty: {item.quantity}</span>
                           <span>Unit: {formatMoney(item.price, fullDetailsOrder.currency)}</span>
+                          {item.selectedFlavour && <span>Flavour: {item.selectedFlavour}</span>}  
                           {item.selectedVariant && <span>Variant: {item.selectedVariant}</span>}
                           {item.selectedAddOns.length > 0 && <span>Add-ons: {item.selectedAddOns.join(', ')}</span>}
                         </div>
@@ -1469,11 +1520,11 @@ export const OrderManagement: React.FC = () => {
                 <p className="no-couriers">No standard catalog items on this order (custom cake order below).</p>
               )}
 
-              {fullDetailsOrder.orderAddons?.length > 0 && (
+              {(fullDetailsOrder.orderAddons?.length ?? 0) > 0 && (
                 <div className="op-fd-order-addons">
                   <h4>Order Add-ons</h4>
                   <div className="op-fd-addons-list">
-                    {fullDetailsOrder.orderAddons.map((addon, idx) => (
+                    {fullDetailsOrder.orderAddons?.map((addon, idx) => (
                       <div key={`${addon.addonId}-${idx}`} className="op-fd-addon-row">
                         <div className="op-fd-addon-thumb-wrapper">
                           {addon.imageUrl ? (
@@ -1503,7 +1554,7 @@ export const OrderManagement: React.FC = () => {
                     ))}
                     <div className="op-fd-addon-total">
                       <strong>Total Add-ons:</strong>
-                      <span>{formatMoney(fullDetailsOrder.orderAddonsTotal ?? fullDetailsOrder.orderAddons.reduce((sum, addon) => sum + addon.total, 0), fullDetailsOrder.currency)}</span>
+                      <span>{formatMoney(fullDetailsOrder.orderAddonsTotal ?? (fullDetailsOrder.orderAddons ?? []).reduce((sum, addon) => sum + addon.total, 0), fullDetailsOrder.currency)}</span>
                     </div>
                   </div>
                 </div>
@@ -1518,20 +1569,19 @@ export const OrderManagement: React.FC = () => {
                   {fullDetailsOrder.customCake.image && (
                     <img src={fullDetailsOrder.customCake.image} alt="Custom cake reference" className="op-fd-cake-image" />
                   )}
-                  <div className="op-fd-grid">
-                    <div><span className="lbl">Flavour</span><span>{fullDetailsOrder.customCake.flavour ?? '—'}</span></div>
-                    <div><span className="lbl">Weight</span><span>{fullDetailsOrder.customCake.weight ?? '—'}</span></div>
-                    <div><span className="lbl">Shape</span><span>{fullDetailsOrder.customCake.shape ?? '—'}</span></div>
-                    <div><span className="lbl">Size</span><span>{fullDetailsOrder.customCake.size ?? '—'}</span></div>
-                    <div><span className="lbl">Colour</span><span>{fullDetailsOrder.customCake.colour ?? '—'}</span></div>
-                    <div><span className="lbl">Est. price</span><span>{fullDetailsOrder.customCake.price != null ? formatMoney(fullDetailsOrder.customCake.price, fullDetailsOrder.currency) : '—'}</span></div>
-                  </div>
-                  {fullDetailsOrder.customCake.message && (
-                    <p className="op-fd-cake-message"><strong>Cake message:</strong> "{fullDetailsOrder.customCake.message}"</p>
-                  )}
-                  {fullDetailsOrder.customCake.notes && (
+               <div className="op-fd-grid">
+  <div><span className="lbl">Product Name</span><span>{fullDetailsOrder.customCake.productName ?? '—'}</span></div>
+  <div><span className="lbl">Flavour</span><span>{fullDetailsOrder.customCake.flavour ?? '—'}</span></div>
+  <div><span className="lbl">Shape</span><span>{fullDetailsOrder.customCake.shape ?? '—'}</span></div>
+  <div><span className="lbl">Variant</span><span>{fullDetailsOrder.customCake.variant ?? '—'}</span></div>
+  <div><span className="lbl">Product Price</span><span>{fullDetailsOrder.customCake.price != null ? formatMoney(fullDetailsOrder.customCake.price, fullDetailsOrder.currency) : '—'}</span></div>
+</div>
+{fullDetailsOrder.customCake.message && (
+  <p className="op-fd-cake-message"><strong>Cake message:</strong> "{fullDetailsOrder.customCake.message}"</p>
+)}
+                  {/* {fullDetailsOrder.customCake.notes && (
                     <p className="op-fd-cake-message"><strong>Customization notes:</strong> {fullDetailsOrder.customCake.notes}</p>
-                  )}
+                  )} */}
                 </div>
               </div>
             )}
@@ -1562,8 +1612,8 @@ export const OrderManagement: React.FC = () => {
               </div>
               <div className="drawer-cost-breakdown">
                 <div className="cost-row"><span>Subtotal:</span><span>{formatMoney(fullDetailsOrder.subtotal, fullDetailsOrder.currency)}</span></div>
-                {fullDetailsOrder.orderAddonsTotal && fullDetailsOrder.orderAddonsTotal > 0 && (
-                  <div className="cost-row"><span>Add-ons:</span><span>{formatMoney(fullDetailsOrder.orderAddonsTotal, fullDetailsOrder.currency)}</span></div>
+                {(fullDetailsOrder.orderAddonsTotal ?? 0) > 0 && (
+                  <div className="cost-row"><span>Add-ons:</span><span>{formatMoney(fullDetailsOrder.orderAddonsTotal ?? 0, fullDetailsOrder.currency)}</span></div>
                 )}
                 {fullDetailsOrder.discount > 0 && (
                   <div className="cost-row discount">
@@ -2024,12 +2074,19 @@ export const OrderManagement: React.FC = () => {
             <div className="drawer-spec-block">
               <h4>Order History</h4>
               <div className="timeline-trail">
-                {selectedOrder.timeline.length > 0 ? (
+                {/* {selectedOrder.timeline.length > 0 ? (
                   [...selectedOrder.timeline].reverse().map((tl, idx) => (
                     <div key={idx} className="timeline-node">
                       <div className="node-marker" />
                       <div className="node-pane">
-                        <strong>{tl.status.replace(/_/g, ' ').toUpperCase()}</strong>
+                        <strong>{tl.status.replace(/_/g, ' ').toUpperCase()}</strong> */}
+
+                        {selectedOrder.timeline.length > 0 ? (
+  [...getSimplifiedTimeline(selectedOrder.timeline, selectedOrder.isPickup)].reverse().map((tl, idx) => (
+    <div key={idx} className="timeline-node">
+      <div className="node-marker" />
+      <div className="node-pane">
+        <strong>{tl.status.toUpperCase()}</strong>
                         <span className="ts">
                           {tl.timestamp ? new Date(tl.timestamp).toLocaleString() : ''}
                         </span>
@@ -2380,10 +2437,11 @@ export const OrderManagement: React.FC = () => {
                   </span>
                 </div>
               ))}
-              {selectedOrder.orderAddons?.length > 0 && (
+              
+              {(selectedOrder.orderAddons?.length ?? 0) > 0 && (
                 <>
                   <p className="divider">- - - - - - - - - - - - - - - - - - -</p>
-                  {selectedOrder.orderAddons.map((addon, idx) => (
+                  {selectedOrder.orderAddons?.map((addon, idx) => (
                     <div key={`receipt-addon-${idx}`} className="receipt-tr receipt-addon-row">
                       <span className="qty-name">{addon.quantity} × {addon.addonName || `Addon #${addon.addonId}`}</span>
                       <span className="sum-p">{formatMoney(addon.total, selectedOrder.currency)}</span>
@@ -2391,12 +2449,36 @@ export const OrderManagement: React.FC = () => {
                   ))}
                 </>
               )}
-              <p className="divider">- - - - - - - - - - - - - - - - - - -</p>
+             
+              {selectedOrder.isCustomCakeOrder && selectedOrder.customCake && (
+                
+  <>
+     <p className="custom_divider">- - - - - - - - - - - - - - - - - - -</p>
+    <div className="receipt-tr">
+      <span className="qty-name"><strong>Custom Cake:</strong> {selectedOrder.customCake.productName || '—'}</span>
+      {selectedOrder.customCake.price != null && (
+        <span className="sum-p">{formatMoney(selectedOrder.customCake.price, selectedOrder.currency)}</span>
+      )}
+    </div>
+    {selectedOrder.customCake.flavour && (
+      <div className="receipt-tr"><span className="qty-name">Flavour: {selectedOrder.customCake.flavour}</span></div>
+    )}
+    {selectedOrder.customCake.shape && (
+      <div className="receipt-tr"><span className="qty-name">Shape: {selectedOrder.customCake.shape}</span></div>
+    )}
+    {selectedOrder.customCake.variant && (
+      <div className="receipt-tr"><span className="qty-name">Variant: {selectedOrder.customCake.variant}</span></div>
+    )}
+    {/* {selectedOrder.customCake.message && (
+      <p className="qty-name" style={{ fontStyle: 'italic', marginTop: 4 }}>"{selectedOrder.customCake.message}"</p>
+    )} */}
+  </>
+)}
             </div>
             <div className="receipt-financials">
               <div className="calc-row"><span>Subtotal:</span><span>{formatMoney(selectedOrder.subtotal, selectedOrder.currency)}</span></div>
-              {selectedOrder.orderAddonsTotal && selectedOrder.orderAddonsTotal > 0 && (
-                <div className="calc-row"><span>Add-ons:</span><span>{formatMoney(selectedOrder.orderAddonsTotal, selectedOrder.currency)}</span></div>
+              {(selectedOrder.orderAddonsTotal ?? 0) > 0 && (
+                <div className="calc-row"><span>Add-ons:</span><span>{formatMoney(selectedOrder.orderAddonsTotal ?? 0, selectedOrder.currency)}</span></div>
               )}
               {selectedOrder.discount > 0 && (
                 <div className="calc-row">

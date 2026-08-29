@@ -4227,8 +4227,11 @@ const DriverOrder: React.FC<Props> = ({ driverId: propDriverId }) => {
         customer_confirmation_name:  proofCustName  || undefined,
         customer_confirmation_phone: proofCustPhone || undefined,
       });
-      showSuccess(
-        `Proof submitted for order #${proofOrder.order_number}. Awaiting confirmation.`
+      // showSuccess(
+      //   `Proof submitted for order #${proofOrder.order_number}. Awaiting confirmation.`
+      // );
+            showSuccess(
+        `Order #${proofOrder.order_number} delivered successfully! 🎉`
       );
       clearProofState();
       setDetailOrder(null);
@@ -4388,7 +4391,7 @@ const DriverOrder: React.FC<Props> = ({ driverId: propDriverId }) => {
 
   const isNewOrder  = (s: string) => s?.toUpperCase() === "ASSIGNED_TO_DRIVER";
   const isOnTheWay  = (s: string) => s?.toUpperCase() === "OUT_FOR_DELIVERY";
-  const isSubmitted = (s: string) => s?.toUpperCase() === "DELIVERY_SUBMITTED";
+  // const isSubmitted = (s: string) => s?.toUpperCase() === "DELIVERY_SUBMITTED";
   const isCODPending = (o: any) =>
     o?.payment_method === "COD" && o?.payment_status === "PENDING";
 
@@ -4662,12 +4665,12 @@ const DriverOrder: React.FC<Props> = ({ driverId: propDriverId }) => {
                 </div>
 
                 {/* Submitted notice */}
-                {isSubmitted(status) && (
+                {/* {isSubmitted(status) && (
                   <div className="do-notice notice-info">
                     {Ico.check}
                     <span>Proof submitted — awaiting agent confirmation</span>
                   </div>
-                )}
+                )} */}
 
                 {/* Action buttons */}
                 {tab === "active" && (
@@ -4737,7 +4740,7 @@ const DriverOrder: React.FC<Props> = ({ driverId: propDriverId }) => {
                             </div>
                           )}
                         </div>
-
+{/* 
                         <button
                           className="do-btn btn-proof"
                           disabled={busy}
@@ -4748,13 +4751,28 @@ const DriverOrder: React.FC<Props> = ({ driverId: propDriverId }) => {
                           ) : (
                             <>{Ico.camera} Submit Proof</>
                           )}
-                        </button>
+                        </button> */}
+
+
+                        <button
+  className="do-btn btn-proof"
+  disabled={busy}
+  onClick={() => openProof(order)}
+>
+  {busy ? (
+    <><div className="do-spinner sm" /> Loading…</>
+  ) : (
+    <>{Ico.camera} Mark Delivered</>
+  )}
+</button>
+
+
                       </>
                     )}
 
-                    {isSubmitted(status) && (
+                    {/* {isSubmitted(status) && (
                       <span className="do-waiting-chip">Awaiting confirmation…</span>
-                    )}
+                    )} */}
                   </div>
                 )}
 
@@ -5152,7 +5170,7 @@ const DriverOrder: React.FC<Props> = ({ driverId: propDriverId }) => {
                     disabled={actionId === detailOrder.id}
                     onClick={() => { setDetailOrder(null); openProof(detailOrder); }}
                   >
-                    {Ico.camera} Submit Proof
+                    {Ico.camera} Mark Delivered
                   </button>
                 </>
               )}

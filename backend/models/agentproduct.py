@@ -40,6 +40,9 @@ class AgentProduct(db.Model):
         nullable=True,
     )
 
+    variants = db.Column(db.JSON, nullable=True)
+    flavours = db.Column(db.JSON, nullable=True)
+
     price = db.Column(
         db.Numeric(10, 3),
         nullable=False,
@@ -95,6 +98,8 @@ class AgentProduct(db.Model):
             "name": self.name,
             "description": self.description,
             "price": float(self.price) if self.price is not None else 0,
+            "variants": self.variants or [],
+            "flavours": self.flavours or [],
             "image": self.image,
             "cloudinary_public_id": self.cloudinary_public_id,
             "is_active": self.is_active,
