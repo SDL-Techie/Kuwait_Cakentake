@@ -8,6 +8,7 @@ import toast, { Toaster } from 'react-hot-toast';
 import { getProductById, getAllAddons } from '../../services/productService'; // Using your service layer
 import { addToCart } from '../../services/cartService'; // ADJUST THIS PATH IF NECESSARY
 import "./ProductDetails.css";
+import { useCurrency } from '../../context/CurrencyContext';
 
 // --- UPDATED TYPE DEFINITIONS MATCHING FLASK API PAYLOAD ---
 interface Flavor {
@@ -114,29 +115,30 @@ const ProductDetails: React.FC = () => {
   // whenever it changes, and (b) react to it being changed by other tabs/
   // components (e.g. a currency switcher) via the 'storage' event and a
   // custom 'currencychange' event, if your app dispatches one. ──
-  const [currency, setCurrency] = useState<string>(
-    () => localStorage.getItem('currency') || 'KWD'
-  );
+  // const [currency, setCurrency] = useState<string>(
+  //   () => localStorage.getItem('currency') || 'KWD'
+  // );
 
-  useEffect(() => {
-    const syncCurrency = () => {
-      const stored = localStorage.getItem('currency') || 'KWD';
-      setCurrency(prev => (prev === stored ? prev : stored));
-    };
+  // useEffect(() => {
+  //   const syncCurrency = () => {
+  //     const stored = localStorage.getItem('currency') || 'KWD';
+  //     setCurrency(prev => (prev === stored ? prev : stored));
+  //   };
 
-    // Fires when currency is changed in another browser tab.
-    window.addEventListener('storage', syncCurrency);
-    // Fires if your currency-switcher component dispatches this manually
-    // after calling localStorage.setItem('currency', ...) in the SAME tab
-    // (the native 'storage' event does not fire in the tab that made the
-    // change, only in other tabs).
-    window.addEventListener('currencychange', syncCurrency);
+  //   // Fires when currency is changed in another browser tab.
+  //   window.addEventListener('storage', syncCurrency);
+  //   // Fires if your currency-switcher component dispatches this manually
+  //   // after calling localStorage.setItem('currency', ...) in the SAME tab
+  //   // (the native 'storage' event does not fire in the tab that made the
+  //   // change, only in other tabs).
+  //   window.addEventListener('currencychange', syncCurrency);
 
-    return () => {
-      window.removeEventListener('storage', syncCurrency);
-      window.removeEventListener('currencychange', syncCurrency);
-    };
-  }, []);
+  //   return () => {
+  //     window.removeEventListener('storage', syncCurrency);
+  //     window.removeEventListener('currencychange', syncCurrency);
+  //   };
+  // }, []);
+  const { currency } = useCurrency();
 
   useEffect(() => {
     const fetchProductAndWishlistStatus = async () => {

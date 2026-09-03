@@ -744,11 +744,17 @@ export const deleteFlavor = async (flavorId: number): Promise<{ message: string 
  * Public — no JWT. Returns only active addons.
  * Returns { addons: Addon[] }
  */
-export const getAllAddons = async (): Promise<Addon[]> => {
-  const res = await api.get("/addons");
-  return res.data.addons;
-};
+// export const getAllAddons = async (): Promise<Addon[]> => {
+//   const res = await api.get("/addons");
+//   return res.data.addons;
+// };
 
+export const getAllAddons = async (currency: string = 'KWD'): Promise<Addon[]> => {
+  const { data } = await api.get('/addons', {
+    headers: { 'X-Currency': currency },
+  });
+  return data.addons;
+};
 /**
  * GET /addons/predefined
  * Public — no JWT. Returns only predefined + active addons.

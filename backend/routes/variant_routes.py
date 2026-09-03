@@ -101,17 +101,30 @@ def delete_flavor(flavor_id):
 
 # ─── ADDONS ──────────────────────────────────────────────────────────────────
 
+# @variant_bp.route("/addons", methods=["GET"])
+# def get_addons():
+#     addons = Addon.query.filter_by(is_active=True).all()
+#     return jsonify({"addons": [a.to_dict() for a in addons]}), 200
+
 @variant_bp.route("/addons", methods=["GET"])
 def get_addons():
+    currency = request.headers.get("X-Currency", "KWD")
     addons = Addon.query.filter_by(is_active=True).all()
-    return jsonify({"addons": [a.to_dict() for a in addons]}), 200
+    return jsonify({"addons": [a.to_dict(currency) for a in addons]}), 200
+
+
+
+# @variant_bp.route("/addons/predefined", methods=["GET"])
+# def get_predefined_addons():
+#     addons = Addon.query.filter_by(is_predefined=True, is_active=True).all()
+#     return jsonify({"addons": [a.to_dict() for a in addons]}), 200
 
 
 @variant_bp.route("/addons/predefined", methods=["GET"])
 def get_predefined_addons():
+    currency = request.headers.get("X-Currency", "KWD")
     addons = Addon.query.filter_by(is_predefined=True, is_active=True).all()
-    return jsonify({"addons": [a.to_dict() for a in addons]}), 200
-
+    return jsonify({"addons": [a.to_dict(currency) for a in addons]}), 200
 
 @variant_bp.route("/addons", methods=["POST"])
 @jwt_required()

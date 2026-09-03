@@ -151,6 +151,466 @@ def assign_order_to_kitchen(order, current_user):
 
 # ─── CREATE ORDER ────────────────────────────────────────────────────────────
 
+# @order_bp.route("/orders", methods=["POST"])
+# @jwt_required()
+# def create_order():
+#     user = get_current_user()
+#     data = request.get_json(silent=True) or {}
+
+#     use_loyalty = data.get("use_loyalty", False)
+
+#     if not user:
+#         return jsonify({
+#             "error": "Authenticated user not found"
+#         }), 401
+
+#     address_id = data.get("address_id")
+#     items_data = data.get("items")
+#     order_addons_data = data.get("order_addons") or []
+
+#     try:
+#         order_addons_total = Decimal(
+#             str(data.get("order_addons_total", 0) or 0)
+#         )
+#     except (InvalidOperation, TypeError, ValueError):
+#         return jsonify({
+#             "error": "Invalid order_addons_total value"
+#         }), 400
+
+#     if not address_id:
+#         return jsonify({
+#             "error": "address_id is required"
+#         }), 400
+
+#     if not isinstance(items_data, list) or not items_data:
+#         return jsonify({
+#             "error": "Order must contain at least one item"
+#         }), 400
+
+#     address = Address.query.get(address_id)
+
+#     if not address:
+#         return jsonify({
+#             "error": "Address not found"
+#         }), 404
+
+#     # Normal customers can use only their own address.
+#     # Staff may create an order for a customer through their own flow.
+#     if (
+#         user.role == "USER"
+#         and address.user_id != user.id
+#     ):
+#         return jsonify({
+#             "error": "This address does not belong to you"
+#         }), 403
+
+#     if not address.area_id:
+#         return jsonify({
+#             "error": (
+#                 "This address does not have a delivery area. "
+#                 "Please update the address and select an area."
+#             )
+#         }), 400
+
+#     area = Area.query.filter_by(
+#         id=address.area_id,
+#         is_active=True
+#     ).first()
+
+#     if not area:
+#         return jsonify({
+#             "error": (
+#                 "Delivery is not available for the selected area. "
+#                 "Please contact CakeNTake customer support."
+#             ),
+#             "delivery_available": False
+#         }), 400
+
+#     payment_method = str(
+#         data.get("payment_method") or "COD"
+#     ).strip().upper()
+
+#     allowed_payment_methods = {
+#         "COD",
+#         "CARD",
+#         "STRIPE",
+#         "KNET",
+#         "UPI",
+#         "LINK"
+#     }
+
+#     if payment_method not in allowed_payment_methods:
+#         return jsonify({
+#             "error": "Invalid payment method",
+#             "allowed_payment_methods": sorted(
+#                 allowed_payment_methods
+#             )
+#         }), 400
+
+#     try:
+#         discount = Decimal(
+#             str(data.get("discount", 0) or 0)
+#         )
+#     except (InvalidOperation, TypeError, ValueError):
+#         return jsonify({
+#             "error": "Invalid discount value"
+#         }), 400
+
+#     if discount < 0:
+#         return jsonify({
+#             "error": "Discount cannot be negative"
+#         }), 400
+
+#     allowed_currencies = {"INR", "KWD", "AED", "USD", "SAR", "SGD"}
+#     currency = str(data.get("currency") or "KWD").strip().upper()
+#     if currency not in allowed_currencies:
+#      currency = "KWD"
+
+#     order = Order(
+#         user_id=address.user_id,
+#         created_by=user.id,
+#         order_number=generate_order_number(),
+#         order_type=data.get(
+#             "order_type",
+#             "direct_order"
+#         ),
+#         delivery_method=str(data.get("delivery_method") or "DELIVERY").strip().upper(),
+#         address_id=address.id,
+#         delivery_area_id=area.id,
+#         delivery_date=(
+#             datetime.strptime(
+#                 data["delivery_date"],
+#                 "%Y-%m-%d"
+#             ).date()
+#             if data.get("delivery_date")
+#             else None
+#         ),
+#         delivery_time_slot=data.get(
+#             "delivery_time_slot"
+#         ),
+#         greeting_message=data.get("greeting_message") or None,
+#         greeting_from=data.get("greeting_from") or None,
+#         greeting_to=data.get("greeting_to") or None,
+#         payment_method=payment_method,
+#         payment_status="PENDING",
+#         status="PENDING",
+#         subtotal=0,
+#         delivery_charge=0,
+#         discount=discount,
+#         grand_total=0,
+#         total=0,
+#         # currency=area.currency
+#         currency=currency  
+#     )
+
+#     try:
+#         db.session.add(order)
+#         db.session.flush()
+#         # Canonical order number is the database order ID.
+#         # All roles therefore see the exact same Order ID.
+#         order.order_number = str(order.id)
+
+#         subtotal = Decimal("0.000")
+
+#         for index, item in enumerate(items_data):
+#             if not isinstance(item, dict):
+#                 raise ValueError(
+#                     f"Invalid item at position {index + 1}"
+#                 )
+
+#             product_id = item.get("product_id")
+
+#             if not product_id:
+#                 raise ValueError(
+#                     f"product_id is required for item {index + 1}"
+#                 )
+
+#             product = Product.query.get(product_id)
+
+#             if not product:
+#                 raise ValueError(
+#                     f"Product {product_id} not found"
+#                 )
+
+#             try:
+#                 quantity = int(
+#                     item.get("quantity", 1)
+#                 )
+#             except (TypeError, ValueError):
+#                 raise ValueError(
+#                     f"Invalid quantity for product {product_id}"
+#                 )
+
+#             if quantity <= 0:
+#                 raise ValueError(
+#                     f"Quantity must be greater than zero "
+#                     f"for product {product_id}"
+#                 )
+
+#             rate = CurrencyRate.query.filter_by(
+#              currency_code=currency
+#             ).first()
+
+#             conversion_rate = Decimal(str(rate.rate if rate else 1))
+
+#             # Prefer incoming item.price (frontend charged unit price) if present,
+#             # otherwise fall back to product.price from catalog converted to order currency.
+#             try:
+#                 incoming_price = item.get("price")
+#                 if incoming_price is not None:
+#                     price = Decimal(str(incoming_price))
+#                 else:
+#                     price = Decimal(str(product.price or 0)) * conversion_rate
+#             except (InvalidOperation, TypeError, ValueError):
+#                 raise ValueError(
+#                     f"Invalid price for product {product_id}"
+#                 )
+
+#             if price < 0:
+#                 raise ValueError(
+#                     f"Price cannot be negative for product {product_id}"
+#                 )
+
+#             # Round price to appropriate currency precision
+#             price_decimals = Decimal("0.001") if currency == "KWD" else Decimal("0.01")
+#             price = price.quantize(price_decimals)
+
+#             # Compute expected line total from price and quantity
+#             item_total = (price * Decimal(quantity)).quantize(price_decimals)
+
+#             # If client supplied a total, validate it; otherwise use computed total
+#             try:
+#                 provided_total = Decimal(str(item.get("total", item_total)))
+#             except (InvalidOperation, TypeError, ValueError):
+#                 provided_total = item_total
+
+#             if provided_total != item_total:
+#                 # Prefer server-computed total to avoid tampering
+#                 total = item_total
+#             else:
+#                 total = provided_total
+
+#             subtotal += total
+
+#             # Preserve/merge custom_json and store pricing details (original/discounted)
+#             custom = item.get("custom_json") or {}
+#             try:
+#                 # original_price / discounted_price may be null or absent
+#                 original_p = item.get("original_price")
+#                 discounted_p = item.get("discounted_price")
+#                 orig_val = float(original_p) if original_p is not None else None
+#                 disc_val = float(discounted_p) if discounted_p is not None else None
+#             except Exception:
+#                 orig_val = None
+#                 disc_val = None
+
+#             if isinstance(custom, dict):
+#                 custom = custom.copy()
+#             else:
+#                 # Ensure custom is a JSON object
+#                 custom = {"raw": custom}
+
+#             custom_pricing = {
+#                 "original_price": orig_val,
+#                 "discounted_price": disc_val
+#             }
+
+#             # preserve any existing pricing key but overwrite with explicit values
+#             custom["pricing"] = custom_pricing
+
+#             order_item = OrderItem(
+#                 order_id=order.id,
+#                 product_id=product.id,
+#                 quantity=quantity,
+#                 price=price,
+#                 line_total=total,
+#                 custom_json=custom
+#             )
+
+#             db.session.add(order_item)
+
+#         # Process optional order-level addons.
+#         if order_addons_data and not isinstance(order_addons_data, list):
+#             raise ValueError("order_addons must be an array")
+
+#         order_addons = []
+#         computed_addons_total = Decimal("0.00")
+
+#         for idx, addon in enumerate(order_addons_data or []):
+#             if not isinstance(addon, dict):
+#                 raise ValueError(
+#                     f"Invalid addon at position {idx + 1}"
+#                 )
+
+#             addon_id = addon.get("addon_id")
+#             if addon_id is None:
+#                 raise ValueError(
+#                     f"addon_id is required for addon {idx + 1}"
+#                 )
+
+#             try:
+#                 quantity = int(addon.get("quantity", 1))
+#             except (TypeError, ValueError):
+#                 raise ValueError(
+#                     f"Invalid quantity for addon {addon_id}"
+#                 )
+
+#             if quantity <= 0:
+#                 raise ValueError(
+#                     f"Addon quantity must be greater than zero for addon {addon_id}"
+#                 )
+
+#             try:
+#                 price = Decimal(str(addon.get("price", 0) or 0))
+#                 total = Decimal(str(addon.get("total", 0) or 0))
+#             except (InvalidOperation, TypeError, ValueError):
+#                 raise ValueError(
+#                     f"Invalid price or total for addon {addon_id}"
+#                 )
+
+#             if price < 0 or total < 0:
+#                 raise ValueError(
+#                     f"Addon price and total cannot be negative for addon {addon_id}"
+#                 )
+
+#             expected_total = (price * Decimal(quantity)).quantize(Decimal("0.01"))
+#             if total != expected_total:
+#                 total = expected_total
+
+#             addon_obj = Addon.query.get(addon_id)
+#             order_addons.append({
+#                 "addon_id": addon_id,
+#                 "addon_name": addon_obj.name if addon_obj else None,
+#                 "quantity": quantity,
+#                 "price": float(price),
+#                 "total": float(total)
+#             })
+#             computed_addons_total += total
+
+#         if order_addons and order_addons_total == 0:
+#             order_addons_total = computed_addons_total
+#         elif order_addons and order_addons_total != computed_addons_total:
+#             order_addons_total = computed_addons_total
+#         elif not order_addons:
+#             order_addons_total = Decimal("0.00")
+
+#         minimum_order = Decimal(
+#             str(area.min_order_value or 0)
+#         )
+
+#         # Minimum order is normally checked against product subtotal,
+#         # before adding delivery charge.
+#         if subtotal < minimum_order:
+#             decimals = (
+#                 3
+#                 if currency == "KWD"
+#                 else 2
+#             )
+
+#             raise ValueError(
+#     f"Subtotal={subtotal}, Minimum={minimum_order}, Currency={currency}"
+# )
+
+#         print("Subtotal:", subtotal)
+#         print("Minimum Order:", minimum_order)
+#         print("Currency:", currency)
+#         print("Area:", area.name)
+
+#         delivery_charge = Decimal(
+#             str(area.delivery_charge or 0)
+#         )
+
+#         grand_total = (
+#             subtotal
+#             + delivery_charge
+#             + order_addons_total
+#             - discount
+#         )
+
+#         if grand_total < 0:
+#             raise ValueError(
+#                 "Discount cannot exceed the order total"
+#             )
+
+#         # Values come only from backend area configuration.
+#         # Frontend delivery_charge and currency are ignored.
+#         order.subtotal = subtotal
+#         order.delivery_charge = delivery_charge
+#         order.discount = discount
+#         order.order_addons_json = order_addons
+#         order.order_addons_total = order_addons_total
+#         order.grand_total = grand_total
+#         order.total = grand_total
+#         order.currency = currency
+#         order.loyalty_coupon = data.get(
+#             "loyalty_coupon"
+#         ) 
+
+#         if use_loyalty:
+          
+#           config = get_loyalty_config()
+
+#           result = redeem_loyalty_points(
+#               customer_id=user.id,
+#               order_total=grand_total,
+#               order_id=order.id
+#              )
+
+
+#           if "error" in result:
+#               db.session.rollback()
+#               return jsonify(result), 400
+        
+#           discount_amount = Decimal(str(result["discount_amount"]))
+
+#           order.discount += discount_amount
+#           order.grand_total -= discount_amount
+#           order.total = order.grand_total 
+
+#         db.session.commit()
+
+#     except ValueError as error:
+#         db.session.rollback()
+
+#         return jsonify({
+#             "error": str(error)
+#         }), 400
+
+#     except Exception as error:
+#         db.session.rollback()
+#         print("Create order error:", str(error))
+
+#         return jsonify({
+#             "error": "Unable to create order"
+#         }), 500
+
+#     try:
+#         send_order_notification(
+#             build_n8n_payload(order)
+#         )
+#     except Exception as error:
+#         print(
+#             "Notification error:",
+#             str(error)
+#         )
+
+#     return jsonify({
+#         "message": "Order created successfully",
+#         "delivery": {
+#             "area": area.to_dict(),
+#             "delivery_charge": float(
+#                 order.delivery_charge or 0
+#             ),
+#             "minimum_order_value": float(
+#                 area.min_order_value or 0
+#             ),
+#             "currency": order.currency
+#         },
+#         "order": order.to_dict()
+#     }), 201
+
+
+
 @order_bp.route("/orders", methods=["POST"])
 @jwt_required()
 def create_order():
@@ -160,134 +620,112 @@ def create_order():
     use_loyalty = data.get("use_loyalty", False)
 
     if not user:
-        return jsonify({
-            "error": "Authenticated user not found"
-        }), 401
+        return jsonify({"error": "Authenticated user not found"}), 401
 
-    address_id = data.get("address_id")
+    delivery_method = str(data.get("delivery_method") or "DELIVERY").strip().upper()
+    if delivery_method not in {"DELIVERY", "PICKUP"}:
+        return jsonify({"error": "Invalid delivery_method. Must be DELIVERY or PICKUP"}), 400
+
     items_data = data.get("items")
     order_addons_data = data.get("order_addons") or []
 
     try:
-        order_addons_total = Decimal(
-            str(data.get("order_addons_total", 0) or 0)
-        )
+        order_addons_total = Decimal(str(data.get("order_addons_total", 0) or 0))
     except (InvalidOperation, TypeError, ValueError):
-        return jsonify({
-            "error": "Invalid order_addons_total value"
-        }), 400
-
-    if not address_id:
-        return jsonify({
-            "error": "address_id is required"
-        }), 400
+        return jsonify({"error": "Invalid order_addons_total value"}), 400
 
     if not isinstance(items_data, list) or not items_data:
-        return jsonify({
-            "error": "Order must contain at least one item"
-        }), 400
+        return jsonify({"error": "Order must contain at least one item"}), 400
 
-    address = Address.query.get(address_id)
+    address = None
+    area = None
 
-    if not address:
-        return jsonify({
-            "error": "Address not found"
-        }), 404
+    # ── DELIVERY: address + serviceable area are required ──
+    if delivery_method == "DELIVERY":
+        address_id = data.get("address_id")
+        if not address_id:
+            return jsonify({"error": "address_id is required for delivery orders"}), 400
 
-    # Normal customers can use only their own address.
-    # Staff may create an order for a customer through their own flow.
-    if (
-        user.role == "USER"
-        and address.user_id != user.id
-    ):
-        return jsonify({
-            "error": "This address does not belong to you"
-        }), 403
+        address = Address.query.get(address_id)
+        if not address:
+            return jsonify({"error": "Address not found"}), 404
 
-    if not address.area_id:
-        return jsonify({
-            "error": (
-                "This address does not have a delivery area. "
-                "Please update the address and select an area."
-            )
-        }), 400
+        if user.role == "USER" and address.user_id != user.id:
+            return jsonify({"error": "This address does not belong to you"}), 403
 
-    area = Area.query.filter_by(
-        id=address.area_id,
-        is_active=True
-    ).first()
+        if not address.area_id:
+            return jsonify({
+                "error": (
+                    "This address does not have a delivery area. "
+                    "Please update the address and select an area."
+                )
+            }), 400
 
-    if not area:
-        return jsonify({
-            "error": (
-                "Delivery is not available for the selected area. "
-                "Please contact CakeNTake customer support."
-            ),
-            "delivery_available": False
-        }), 400
+        area = Area.query.filter_by(id=address.area_id, is_active=True).first()
+        if not area:
+            return jsonify({
+                "error": (
+                    "Delivery is not available for the selected area. "
+                    "Please contact CakeNTake customer support."
+                ),
+                "delivery_available": False
+            }), 400
 
-    payment_method = str(
-        data.get("payment_method") or "COD"
-    ).strip().upper()
+    # ── PICKUP: no address/area needed, but pickup date + time are required ──
+    else:
+        pickup_date_raw = data.get("pickup_date")
+        pickup_time_slot = data.get("pickup_time_slot")
+        if not pickup_date_raw:
+            return jsonify({"error": "pickup_date is required for pickup orders"}), 400
+        if not pickup_time_slot:
+            return jsonify({"error": "pickup_time_slot is required for pickup orders"}), 400
 
-    allowed_payment_methods = {
-        "COD",
-        "CARD",
-        "STRIPE",
-        "KNET",
-        "UPI",
-        "LINK"
-    }
-
+    payment_method = str(data.get("payment_method") or "COD").strip().upper()
+    allowed_payment_methods = {"COD", "CARD", "STRIPE", "KNET", "UPI", "LINK"}
     if payment_method not in allowed_payment_methods:
         return jsonify({
             "error": "Invalid payment method",
-            "allowed_payment_methods": sorted(
-                allowed_payment_methods
-            )
+            "allowed_payment_methods": sorted(allowed_payment_methods)
         }), 400
 
     try:
-        discount = Decimal(
-            str(data.get("discount", 0) or 0)
-        )
+        discount = Decimal(str(data.get("discount", 0) or 0))
     except (InvalidOperation, TypeError, ValueError):
-        return jsonify({
-            "error": "Invalid discount value"
-        }), 400
+        return jsonify({"error": "Invalid discount value"}), 400
 
     if discount < 0:
-        return jsonify({
-            "error": "Discount cannot be negative"
-        }), 400
+        return jsonify({"error": "Discount cannot be negative"}), 400
 
     allowed_currencies = {"INR", "KWD", "AED", "USD", "SAR", "SGD"}
     currency = str(data.get("currency") or "KWD").strip().upper()
     if currency not in allowed_currencies:
-     currency = "KWD"
+        currency = "KWD"
 
     order = Order(
-        user_id=address.user_id,
+        user_id=address.user_id if address else user.id,
         created_by=user.id,
         order_number=generate_order_number(),
-        order_type=data.get(
-            "order_type",
-            "direct_order"
-        ),
-        delivery_method=str(data.get("delivery_method") or "DELIVERY").strip().upper(),
-        address_id=address.id,
-        delivery_area_id=area.id,
+        order_type=data.get("order_type", "direct_order"),
+        delivery_method=delivery_method,
+
+        # DELIVERY fields — None for pickup orders
+        address_id=address.id if address else None,
+        delivery_area_id=area.id if area else None,
         delivery_date=(
-            datetime.strptime(
-                data["delivery_date"],
-                "%Y-%m-%d"
-            ).date()
-            if data.get("delivery_date")
+            datetime.strptime(data["delivery_date"], "%Y-%m-%d").date()
+            if delivery_method == "DELIVERY" and data.get("delivery_date")
             else None
         ),
-        delivery_time_slot=data.get(
-            "delivery_time_slot"
+        delivery_time_slot=data.get("delivery_time_slot") if delivery_method == "DELIVERY" else None,
+
+        # PICKUP fields — None for delivery orders
+        pickup_date=(
+            datetime.strptime(data["pickup_date"], "%Y-%m-%d").date()
+            if delivery_method == "PICKUP" and data.get("pickup_date")
+            else None
         ),
+        pickup_time_slot=data.get("pickup_time_slot") if delivery_method == "PICKUP" else None,
+
         greeting_message=data.get("greeting_message") or None,
         greeting_from=data.get("greeting_from") or None,
         greeting_to=data.get("greeting_to") or None,
@@ -299,62 +737,39 @@ def create_order():
         discount=discount,
         grand_total=0,
         total=0,
-        # currency=area.currency
-        currency=currency  
+        currency=currency
     )
 
     try:
         db.session.add(order)
         db.session.flush()
-        # Canonical order number is the database order ID.
-        # All roles therefore see the exact same Order ID.
         order.order_number = str(order.id)
 
         subtotal = Decimal("0.000")
 
         for index, item in enumerate(items_data):
             if not isinstance(item, dict):
-                raise ValueError(
-                    f"Invalid item at position {index + 1}"
-                )
+                raise ValueError(f"Invalid item at position {index + 1}")
 
             product_id = item.get("product_id")
-
             if not product_id:
-                raise ValueError(
-                    f"product_id is required for item {index + 1}"
-                )
+                raise ValueError(f"product_id is required for item {index + 1}")
 
             product = Product.query.get(product_id)
-
             if not product:
-                raise ValueError(
-                    f"Product {product_id} not found"
-                )
+                raise ValueError(f"Product {product_id} not found")
 
             try:
-                quantity = int(
-                    item.get("quantity", 1)
-                )
+                quantity = int(item.get("quantity", 1))
             except (TypeError, ValueError):
-                raise ValueError(
-                    f"Invalid quantity for product {product_id}"
-                )
+                raise ValueError(f"Invalid quantity for product {product_id}")
 
             if quantity <= 0:
-                raise ValueError(
-                    f"Quantity must be greater than zero "
-                    f"for product {product_id}"
-                )
+                raise ValueError(f"Quantity must be greater than zero for product {product_id}")
 
-            rate = CurrencyRate.query.filter_by(
-             currency_code=currency
-            ).first()
-
+            rate = CurrencyRate.query.filter_by(currency_code=currency).first()
             conversion_rate = Decimal(str(rate.rate if rate else 1))
 
-            # Prefer incoming item.price (frontend charged unit price) if present,
-            # otherwise fall back to product.price from catalog converted to order currency.
             try:
                 incoming_price = item.get("price")
                 if incoming_price is not None:
@@ -362,40 +777,25 @@ def create_order():
                 else:
                     price = Decimal(str(product.price or 0)) * conversion_rate
             except (InvalidOperation, TypeError, ValueError):
-                raise ValueError(
-                    f"Invalid price for product {product_id}"
-                )
+                raise ValueError(f"Invalid price for product {product_id}")
 
             if price < 0:
-                raise ValueError(
-                    f"Price cannot be negative for product {product_id}"
-                )
+                raise ValueError(f"Price cannot be negative for product {product_id}")
 
-            # Round price to appropriate currency precision
             price_decimals = Decimal("0.001") if currency == "KWD" else Decimal("0.01")
             price = price.quantize(price_decimals)
-
-            # Compute expected line total from price and quantity
             item_total = (price * Decimal(quantity)).quantize(price_decimals)
 
-            # If client supplied a total, validate it; otherwise use computed total
             try:
                 provided_total = Decimal(str(item.get("total", item_total)))
             except (InvalidOperation, TypeError, ValueError):
                 provided_total = item_total
 
-            if provided_total != item_total:
-                # Prefer server-computed total to avoid tampering
-                total = item_total
-            else:
-                total = provided_total
-
+            total = item_total if provided_total != item_total else provided_total
             subtotal += total
 
-            # Preserve/merge custom_json and store pricing details (original/discounted)
             custom = item.get("custom_json") or {}
             try:
-                # original_price / discounted_price may be null or absent
                 original_p = item.get("original_price")
                 discounted_p = item.get("discounted_price")
                 orig_val = float(original_p) if original_p is not None else None
@@ -404,32 +804,18 @@ def create_order():
                 orig_val = None
                 disc_val = None
 
-            if isinstance(custom, dict):
-                custom = custom.copy()
-            else:
-                # Ensure custom is a JSON object
-                custom = {"raw": custom}
+            custom = custom.copy() if isinstance(custom, dict) else {"raw": custom}
+            custom["pricing"] = {"original_price": orig_val, "discounted_price": disc_val}
 
-            custom_pricing = {
-                "original_price": orig_val,
-                "discounted_price": disc_val
-            }
-
-            # preserve any existing pricing key but overwrite with explicit values
-            custom["pricing"] = custom_pricing
-
-            order_item = OrderItem(
+            db.session.add(OrderItem(
                 order_id=order.id,
                 product_id=product.id,
                 quantity=quantity,
                 price=price,
                 line_total=total,
                 custom_json=custom
-            )
+            ))
 
-            db.session.add(order_item)
-
-        # Process optional order-level addons.
         if order_addons_data and not isinstance(order_addons_data, list):
             raise ValueError("order_addons must be an array")
 
@@ -438,40 +824,28 @@ def create_order():
 
         for idx, addon in enumerate(order_addons_data or []):
             if not isinstance(addon, dict):
-                raise ValueError(
-                    f"Invalid addon at position {idx + 1}"
-                )
+                raise ValueError(f"Invalid addon at position {idx + 1}")
 
             addon_id = addon.get("addon_id")
             if addon_id is None:
-                raise ValueError(
-                    f"addon_id is required for addon {idx + 1}"
-                )
+                raise ValueError(f"addon_id is required for addon {idx + 1}")
 
             try:
                 quantity = int(addon.get("quantity", 1))
             except (TypeError, ValueError):
-                raise ValueError(
-                    f"Invalid quantity for addon {addon_id}"
-                )
+                raise ValueError(f"Invalid quantity for addon {addon_id}")
 
             if quantity <= 0:
-                raise ValueError(
-                    f"Addon quantity must be greater than zero for addon {addon_id}"
-                )
+                raise ValueError(f"Addon quantity must be greater than zero for addon {addon_id}")
 
             try:
                 price = Decimal(str(addon.get("price", 0) or 0))
                 total = Decimal(str(addon.get("total", 0) or 0))
             except (InvalidOperation, TypeError, ValueError):
-                raise ValueError(
-                    f"Invalid price or total for addon {addon_id}"
-                )
+                raise ValueError(f"Invalid price or total for addon {addon_id}")
 
             if price < 0 or total < 0:
-                raise ValueError(
-                    f"Addon price and total cannot be negative for addon {addon_id}"
-                )
+                raise ValueError(f"Addon price and total cannot be negative for addon {addon_id}")
 
             expected_total = (price * Decimal(quantity)).quantize(Decimal("0.01"))
             if total != expected_total:
@@ -494,46 +868,24 @@ def create_order():
         elif not order_addons:
             order_addons_total = Decimal("0.00")
 
-        minimum_order = Decimal(
-            str(area.min_order_value or 0)
-        )
+        # ── Minimum order + delivery charge only apply to DELIVERY orders.
+        #    Pickup orders have no area, so there's nothing to check against
+        #    and delivery_charge is always 0. ──
+        if delivery_method == "DELIVERY":
+            minimum_order = Decimal(str(area.min_order_value or 0))
+            if subtotal < minimum_order:
+                raise ValueError(
+                    f"Subtotal={subtotal}, Minimum={minimum_order}, Currency={currency}"
+                )
+            delivery_charge = Decimal(str(area.delivery_charge or 0))
+        else:
+            delivery_charge = Decimal("0.00")
 
-        # Minimum order is normally checked against product subtotal,
-        # before adding delivery charge.
-        if subtotal < minimum_order:
-            decimals = (
-                3
-                if currency == "KWD"
-                else 2
-            )
-
-            raise ValueError(
-    f"Subtotal={subtotal}, Minimum={minimum_order}, Currency={currency}"
-)
-
-        print("Subtotal:", subtotal)
-        print("Minimum Order:", minimum_order)
-        print("Currency:", currency)
-        print("Area:", area.name)
-
-        delivery_charge = Decimal(
-            str(area.delivery_charge or 0)
-        )
-
-        grand_total = (
-            subtotal
-            + delivery_charge
-            + order_addons_total
-            - discount
-        )
+        grand_total = subtotal + delivery_charge + order_addons_total - discount
 
         if grand_total < 0:
-            raise ValueError(
-                "Discount cannot exceed the order total"
-            )
+            raise ValueError("Discount cannot exceed the order total")
 
-        # Values come only from backend area configuration.
-        # Frontend delivery_charge and currency are ignored.
         order.subtotal = subtotal
         order.delivery_charge = delivery_charge
         order.discount = discount
@@ -542,68 +894,46 @@ def create_order():
         order.grand_total = grand_total
         order.total = grand_total
         order.currency = currency
-        order.loyalty_coupon = data.get(
-            "loyalty_coupon"
-        ) 
+        order.loyalty_coupon = data.get("loyalty_coupon")
 
         if use_loyalty:
-          
-          config = get_loyalty_config()
+            config = get_loyalty_config()
+            result = redeem_loyalty_points(
+                customer_id=user.id,
+                order_total=grand_total,
+                order_id=order.id
+            )
+            if "error" in result:
+                db.session.rollback()
+                return jsonify(result), 400
 
-          result = redeem_loyalty_points(
-              customer_id=user.id,
-              order_total=grand_total,
-              order_id=order.id
-             )
-
-
-          if "error" in result:
-              db.session.rollback()
-              return jsonify(result), 400
-        
-          discount_amount = Decimal(str(result["discount_amount"]))
-
-          order.discount += discount_amount
-          order.grand_total -= discount_amount
-          order.total = order.grand_total 
+            discount_amount = Decimal(str(result["discount_amount"]))
+            order.discount += discount_amount
+            order.grand_total -= discount_amount
+            order.total = order.grand_total
 
         db.session.commit()
 
     except ValueError as error:
         db.session.rollback()
-
-        return jsonify({
-            "error": str(error)
-        }), 400
+        return jsonify({"error": str(error)}), 400
 
     except Exception as error:
         db.session.rollback()
         print("Create order error:", str(error))
-
-        return jsonify({
-            "error": "Unable to create order"
-        }), 500
+        return jsonify({"error": "Unable to create order"}), 500
 
     try:
-        send_order_notification(
-            build_n8n_payload(order)
-        )
+        send_order_notification(build_n8n_payload(order))
     except Exception as error:
-        print(
-            "Notification error:",
-            str(error)
-        )
+        print("Notification error:", str(error))
 
     return jsonify({
         "message": "Order created successfully",
         "delivery": {
-            "area": area.to_dict(),
-            "delivery_charge": float(
-                order.delivery_charge or 0
-            ),
-            "minimum_order_value": float(
-                area.min_order_value or 0
-            ),
+            "area": area.to_dict() if area else None,
+            "delivery_charge": float(order.delivery_charge or 0),
+            "minimum_order_value": float(area.min_order_value or 0) if area else 0,
             "currency": order.currency
         },
         "order": order.to_dict()

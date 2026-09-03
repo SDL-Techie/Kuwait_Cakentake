@@ -50,6 +50,28 @@ class Flavor(db.Model):
         }
 
 
+# class Addon(db.Model):
+#     __tablename__ = "addons"
+
+#     id = db.Column(db.Integer, primary_key=True)
+#     name = db.Column(db.String(100), nullable=False)
+#     price = db.Column(db.Numeric(10, 2), default=0)
+#     image_url = db.Column(db.String(500), nullable=True)  
+#     is_predefined = db.Column(db.Boolean, default=False)
+#     is_active = db.Column(db.Boolean, default=True)
+#     created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+#     def to_dict(self):
+#         return {
+#             "id": self.id,
+#             "name": self.name,
+#             "price": float(self.price),
+#             "image_url": self.image_url,
+#             "is_predefined": self.is_predefined,
+#             "is_active": self.is_active
+#         }
+
+
 class Addon(db.Model):
     __tablename__ = "addons"
 
@@ -61,11 +83,21 @@ class Addon(db.Model):
     is_active = db.Column(db.Boolean, default=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
-    def to_dict(self):
+    def to_dict(self, currency="KWD"):
+        from models.currency_rate import CurrencyRate
+
+        rate = CurrencyRate.query.filter_by(currency_code=currency).first()
+        conversion_rate = float(rate.rate) if rate else 1
+
+        price = float(self.price) * conversion_rate if self.price is not None else None
+        decimals = 3 if str(currency).upper() == "KWD" else 2
+        price = round(price, decimals) if price is not None else None
+
         return {
             "id": self.id,
             "name": self.name,
-            "price": float(self.price),
+            "price": price,
+            "currency": currency,
             "image_url": self.image_url,
             "is_predefined": self.is_predefined,
             "is_active": self.is_active

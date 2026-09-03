@@ -16,7 +16,6 @@ import CustomerSessionMonitor
 import CategoryProduct from './pages/Categoryproducts/CategoryProduct';
 import Pincode from './admin/Pincode/Pincode';
 import Point from './admin/PointManagement/Point';
-import Retailerorder from './pages/Retailerorder/Retailerorder';
 import Userpoint from './pages/Userpoints/Userpoint';
 import AdminProtectedRoute from "./components/AdminProtectedRoute";
 import ProtectedRoute from "./components/ProtectedRoute";
@@ -149,7 +148,7 @@ const AppContent: React.FC = () => {
               <Route path="/checkout" element={<Checkout />} />
               <Route path="/agentproduct" element={<AgentProduct/>}/>
 
-              <Route path="/retailerorder" element={<Retailerorder />} />
+              
               <Route path="/coupon-user-points" element={<Userpoint/>} />
               <Route path="/categoryproduct/:id" element={<CategoryProduct />} />
               <Route path="/payment-success" element={<PaymentSuccess/>}/>
