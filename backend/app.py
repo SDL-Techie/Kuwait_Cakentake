@@ -110,7 +110,7 @@ cloudinary.config(
 )
 
 # ─── CORS ────────────────────────────────────────────────────────────────────
-CORS(app, resources={r"/*": {"origins": "*"}})
+CORS(app, resources={r"/*": {"origins": Config.CORS_ORIGINS}})
 
 # ─── JWT ─────────────────────────────────────────────────────────────────────
 app.config["JWT_SECRET_KEY"] = os.getenv("JWT_SECRET_KEY")

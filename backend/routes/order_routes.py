@@ -1008,6 +1008,10 @@ def get_order(id):
     if not order:
         return jsonify({"error": "Order not found"}), 404
 
+    current_user = get_current_user()
+    if current_user and current_user.role == "USER" and order.user_id != current_user.id:
+        return jsonify({"error": "This order does not belong to you"}), 403
+
     payload = order.to_dict()
 
     # Canonical proof and settlement fields for driver/order details screens.
