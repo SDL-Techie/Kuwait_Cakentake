@@ -23,6 +23,7 @@ import Coupon from './pages/Coupon/Coupon';
 import NotFound from './components/NotFound';
 import BackupRestore from './admin/BackupRestore/BackupRestore';
 import PaymentSuccess from './pages/Checkout/PaymentSuccess';
+import PaymentFailed from './pages/Checkout/PaymentFailed';
 import StaffManagement from './admin/Staffmanagement/StaffManagement';
 import {MenuManagement} from './admin/MenuManagement/MenuManagement';
 import {OrderManagement } from './admin/OrderManagement/OrderManagement';
@@ -152,7 +153,10 @@ const AppContent: React.FC = () => {
               <Route path="/coupon-user-points" element={<Userpoint/>} />
               <Route path="/categoryproduct/:id" element={<CategoryProduct />} />
               <Route path="/payment-success" element={<PaymentSuccess/>}/>
-              <Route path="/payment-cancel" element={<h2>Payment Cancelled</h2>}/>
+              <Route path="/payment-success/:transactionId" element={<PaymentSuccess/>}/>
+              <Route path="/payment-failed" element={<PaymentFailed/>}/>
+              <Route path="/payment-failed/:transactionId" element={<PaymentFailed/>}/>
+              <Route path="/payment-cancel" element={<PaymentFailed/>}/>
               <Route path="/coupon-user" element={<Coupon/>}/>
               <Route path="/promo" element={<Promocode  />} />
               <Route path="/userblog" element={<UserBlog/>}/>

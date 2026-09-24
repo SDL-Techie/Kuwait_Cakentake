@@ -5779,9 +5779,24 @@ useEffect(() => {
         linkRes?.payment_url || linkRes?.url || linkRes?.link ||
         linkRes?.redirect_url || linkRes?.transaction?.url;
 
+      const tapStatus = String(linkRes?.tap_status || linkRes?.payment_status || '').toUpperCase();
+      const transactionId =
+        linkRes?.transaction_id || linkRes?.gateway_transaction_id || linkRes?.tap_charge_id;
+
+      // Some card flows can be captured immediately and therefore do not return
+      // a hosted payment URL. Treat the verified paid response as success instead
+      // of incorrectly showing "payment page could not be opened".
+      if (["CAPTURED", "PAID", "COMPLETED"].includes(tapStatus) && transactionId) {
+        setCreatingPaymentLink(false);
+        navigate(
+          `/payment-success/${encodeURIComponent(String(transactionId))}?order_id=${order.id}`
+        );
+        return;
+      }
+
       if (paymentUrl) {
         showToast('Redirecting you to the secure payment page…', 'info');
-        window.location.href = paymentUrl;
+        window.location.assign(paymentUrl);
       } else {
         setCreatingPaymentLink(false);
         showToast('Order placed, but the payment page could not be opened. Try again from Orders.', 'error');

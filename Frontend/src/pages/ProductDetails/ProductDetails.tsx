@@ -262,25 +262,27 @@ const ProductDetails: React.FC = () => {
   // --- CALCULATION LOGIC INCORPORATING BACKEND MODIFIERS ---
   // NOTE: promotion discount is already baked into product.price by the backend.
   // This function is untouched — it does NOT apply any promotion math.
-  const getCalculatedPrice = () => {
-    if (!product) return 0;
+ const getCalculatedPrice = () => {
+  if (!product) return 0;
 
-    let base = isRetailer
-      ? (product.wholesaleprice ?? product.price)
-      : product.price;
+  let base = isRetailer
+    ? Number(product.wholesaleprice ?? product.price ?? 0)
+    : Number(product.price ?? 0);
 
-    if (selectedVariant)
-      base += Number(selectedVariant.price_modifier || 0);
+  if (selectedVariant) {
+    base += Number(selectedVariant.price_modifier ?? 0);
+  }
 
-    if (selectedFlavor)
-      base += Number(selectedFlavor.price_modifier || 0);
+  if (selectedFlavor) {
+    base += Number(selectedFlavor.price_modifier ?? 0);
+  }
 
-    selectedAddons.forEach((addon) => {
-      base += Number(addon.price);
-    });
+  selectedAddons.forEach((addon) => {
+    base += Number(addon?.price ?? 0);
+  });
 
-    return base;
-  };
+  return Number.isFinite(base) ? base : 0;
+};
 
   const displayPrice = getCalculatedPrice();
   const currencySymbol = product?.currency || currency;
@@ -489,12 +491,13 @@ const ProductDetails: React.FC = () => {
               {/* Dynamic Price Box */}
               <div className="bakery-pd-price-box" style={{ display: 'flex', gap: '12px', alignItems: 'baseline', flexWrap: 'wrap' }}>
                 <h2 className="bakery-pd-price" style={{ margin: 0 }}>
-                  {displayPrice.toFixed(2)} {currencySymbol}
+{Number(displayPrice ?? 0).toFixed(2)} {currencySymbol}
                   {product.unit ? <span className="bakery-pd-unit"> / {product.unit}</span> : null}
                 </h2>
                 {product.original_price && product.original_price > displayPrice && (
                   <span className="bakery-pd-original-price" style={{ textDecoration: 'line-through', color: '#888', fontSize: '1.2rem' }}>
-                    {product.original_price.toFixed(2)} {currencySymbol}
+{Number(product.original_price ?? 0).toFixed(2)} {currencySymbol}
+
                   </span>
                 )}
                 {isRetailer && <span className="wholesale-label" style={{ marginLeft: '4px' }}>Wholesale Price Active</span>}

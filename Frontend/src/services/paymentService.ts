@@ -29,7 +29,7 @@
 //   tapId: string
 // ): Promise<any> => {
 //   const res = await api.get(
-//     `/payments/${orderId}/verify?tap_id=${tapId}`
+//     `/payments/${orderId}/verify?tap_id=${encodeURIComponent(tapId)}&format=json`
 //   );
 
 //   return res.data;
@@ -96,7 +96,9 @@ export const createPaymentLink = async (orderIds: number | number[]) => {
 
   const res = await api.post(
     "/payments/create-link",
-    ids.length === 1 ? { order_id: ids[0] } : { order_ids: ids }
+    ids.length === 1
+      ? { order_id: ids[0], client_platform: "web" }
+      : { order_ids: ids, client_platform: "web" }
   );
 
   return res.data;
@@ -126,7 +128,7 @@ export const verifyPayment = async (
   tapId: string
 ): Promise<any> => {
   const res = await api.get(
-    `/payments/${orderId}/verify?tap_id=${tapId}`
+    `/payments/${orderId}/verify?tap_id=${encodeURIComponent(tapId)}&format=json`
   );
 
   return res.data;
@@ -139,7 +141,9 @@ export const verifyPayment = async (
  * shared Tap charge id rather than a single order_id.
  */
 export const verifyBatchPayment = async (tapId: string): Promise<any> => {
-  const res = await api.get(`/payments/batch/verify?tap_id=${tapId}`);
+  const res = await api.get(
+    `/payments/batch/verify?tap_id=${encodeURIComponent(tapId)}&format=json`
+  );
   return res.data;
 };
 

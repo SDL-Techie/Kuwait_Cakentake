@@ -1,0 +1,334 @@
+.country-phone { position: relative; width: 100%; }
+.country-phone-control {
+  min-height: 48px;
+  display: flex;
+  align-items: stretch;
+  overflow: hidden;
+  border: 1.5px solid #e5e1da;
+  border-radius: 12px;
+  background: #f8f6f1;
+  transition: border-color .18s ease, box-shadow .18s ease, background .18s ease;
+}
+.country-phone-control:focus-within,
+.country-phone-control-open {
+  border-color: #7e9a67;
+  box-shadow: 0 0 0 3px rgba(111, 142, 87, .12);
+  background: #fff;
+}
+.country-phone-trigger {
+  min-width: 118px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 11px;
+  border: 0;
+  background: #f1eee5;
+  color: #1c3125;
+  cursor: pointer;
+  font: inherit;
+}
+.country-phone-trigger:disabled { cursor: not-allowed; opacity: .65; }
+.country-phone-flag { font-size: 20px; line-height: 1; }
+.country-phone-country { min-width: 42px; display: flex; flex-direction: column; align-items: flex-start; line-height: 1.08; }
+.country-phone-country strong { font-size: 11px; letter-spacing: .03em; }
+.country-phone-country small { margin-top: 3px; color: #697268; font-size: 10px; font-weight: 700; }
+.country-phone-chevron { margin-left: auto; color: #546552; font-size: 16px; transform: translateY(-1px); transition: transform .18s ease; }
+.country-phone-chevron.is-open { transform: rotate(180deg) translateY(1px); }
+.country-phone-divider { align-self: center; width: 1px; height: 28px; background: #ddd8cd; }
+.country-phone-input {
+  min-width: 0;
+  flex: 1;
+  padding: 0 10px;
+  border: 0 !important;
+  outline: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  color: #1b2c21;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 650;
+}
+.country-phone-input::placeholder { color: #aaa79f; font-weight: 400; }
+.country-phone-count { align-self: center; padding-right: 10px; color: #8a8d85; font-size: 10px; font-weight: 700; white-space: nowrap; }
+.country-phone-hint { margin: 5px 2px 0; color: #777b73; font-size: 10px; line-height: 1.35; }
+.country-phone-menu {
+  position: absolute;
+  top: calc(100% - 15px);
+  left: 0;
+  width: min(390px, 100%);
+  z-index: 3000;
+  padding: 7px;
+  border: 1px solid #e2ddcf;
+  border-radius: 15px;
+  background: #fffdf8;
+  box-shadow: 0 18px 45px rgba(28, 49, 37, .18);
+}
+.country-phone-option {
+  width: 100%;
+  min-height: 54px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 9px;
+  border: 0;
+  border-radius: 11px;
+  background: transparent;
+  color: #1c3125;
+  cursor: pointer;
+  text-align: left;
+}
+.country-phone-option:hover { background: #f5f5ec; }
+.country-phone-option.is-selected { background: #eef3e8; }
+.country-phone-option-flag { width: 28px; font-size: 22px; text-align: center; }
+.country-phone-option-copy { flex: 1; display: flex; flex-direction: column; }
+.country-phone-option-copy strong { font-size: 13px; }
+.country-phone-option-copy small { margin-top: 3px; color: #7a7e76; font-size: 10px; }
+.country-phone-option-code { color: #334f39; font-size: 12px; font-weight: 800; }
+.country-phone-option-check { width: 18px; color: #527248; font-size: 14px; font-weight: 900; text-align: center; }
+@media (max-width: 480px) {
+  .country-phone-trigger { min-width: 104px; padding: 0 8px; }
+  .country-phone-flag { font-size: 18px; }
+  .country-phone-country small { font-size: 9px; }
+  .country-phone-count { display: none; }
+}
+
+.country-phone {
+  position: relative;
+  width: 100%;
+}
+
+/* ── Main control ── */
+.country-phone .country-phone-control {
+  display: flex;
+  align-items: center;
+  height: 54px;
+  background: #f5f3ee;
+  border: 1px solid #e6e2d9;
+  border-radius: 14px;
+  overflow: hidden;
+  transition: border-color 0.15s, box-shadow 0.15s, background 0.15s;
+}
+
+.country-phone .country-phone-control:focus-within,
+.country-phone .country-phone-control-open {
+  border-color: #6f8a4f;
+  background: #fff;
+  box-shadow: 0 0 0 3px rgba(111, 138, 79, 0.18);
+}
+
+/* ── Country trigger ── */
+.country-phone .country-phone-trigger {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 100%;
+  padding: 0 12px 0 14px;
+  border: none;
+  background: #ece8de;
+  color: #2b3325;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.country-phone .country-phone-trigger:hover:not(:disabled) {
+  background: #e3dfd2;
+}
+
+.country-phone .country-phone-trigger:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.country-phone .country-phone-flag,
+.country-phone .country-phone-option-flag,
+.country-phone .country-phone-hint-flag {
+  display: block;
+  flex-shrink: 0;
+  width: 24px;
+  height: 18px;
+  object-fit: cover;
+  border-radius: 3px;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.12);
+}
+
+.country-phone .country-phone-dial {
+  font-size: 15px;
+  font-variant-numeric: tabular-nums;
+}
+
+.country-phone .country-phone-chevron {
+  color: #6b7563;
+  transition: transform 0.2s;
+}
+
+.country-phone .country-phone-chevron.is-open {
+  transform: rotate(180deg);
+}
+
+.country-phone .country-phone-divider {
+  width: 1px;
+  align-self: stretch;
+  background: #e0dbcf;
+}
+
+/* ── Number input ── */
+.country-phone .country-phone-input {
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  padding: 0 14px;
+  border: none;
+  outline: none;
+  background: transparent;
+  color: #1f261b;
+  font: inherit;
+  font-size: 16px;
+  letter-spacing: 0.02em;
+  font-variant-numeric: tabular-nums;
+}
+
+.country-phone .country-phone-input::placeholder {
+  color: #a8a89f;
+  letter-spacing: 0;
+}
+
+.country-phone .country-phone-count {
+  padding-right: 14px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #9a9a90;
+  font-variant-numeric: tabular-nums;
+}
+
+.country-phone .country-phone-count.is-complete {
+  color: #4f7a34;
+}
+
+/* ── Dropdown ── */
+.country-phone .country-phone-menu {
+  position: absolute;
+  top: calc(54px + 6px);
+  left: 0;
+  right: 0;
+  z-index: 50;
+  background: #fff;
+  border: 1px solid #e6e2d9;
+  border-radius: 14px;
+  box-shadow: 0 16px 40px rgba(30, 40, 20, 0.16);
+  overflow: hidden;
+}
+
+.country-phone .country-phone-search {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  border-bottom: 1px solid #eeebe3;
+  color: #8a9282;
+}
+
+.country-phone .country-phone-search input {
+  flex: 1;
+  border: none;
+  outline: none;
+  background: transparent;
+  font: inherit;
+  font-size: 14px;
+  color: #1f261b;
+}
+
+.country-phone .country-phone-list {
+  max-height: 260px;
+  overflow-y: auto;
+  padding: 6px;
+}
+
+.country-phone .country-phone-option {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 10px 10px;
+  border: none;
+  border-radius: 10px;
+  background: transparent;
+  text-align: left;
+  font: inherit;
+  cursor: pointer;
+  transition: background 0.12s;
+}
+
+.country-phone .country-phone-option:hover {
+  background: #f5f3ee;
+}
+
+.country-phone .country-phone-option.is-selected {
+  background: #eef3e6;
+}
+
+.country-phone .country-phone-option-copy {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+}
+
+.country-phone .country-phone-option-copy strong {
+  font-size: 14px;
+  font-weight: 600;
+  color: #1f261b;
+}
+
+.country-phone .country-phone-option-copy small {
+  font-size: 12px;
+  color: #8a8f83;
+}
+
+.country-phone .country-phone-option-code {
+  font-size: 14px;
+  font-weight: 600;
+  color: #4a5443;
+  font-variant-numeric: tabular-nums;
+}
+
+.country-phone .country-phone-option-check {
+  width: 16px;
+  text-align: center;
+  color: #4f7a34;
+  font-weight: 700;
+}
+
+.country-phone .country-phone-empty {
+  padding: 18px 12px;
+  text-align: center;
+  font-size: 13px;
+  color: #8a8f83;
+}
+
+/* ── Hint ── */
+.country-phone .country-phone-hint {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 8px;
+  font-size: 12px;
+  color: #7d8377;
+}
+
+.country-phone .country-phone-hint-flag {
+  width: 16px;
+  height: 12px;
+  border-radius: 2px;
+}
+
+@media (max-width: 480px) {
+  .country-phone .country-phone-trigger {
+    padding: 0 8px 0 10px;
+    gap: 6px;
+  }
+  .country-phone .country-phone-count {
+    display: none;
+  }
+}
