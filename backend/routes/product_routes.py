@@ -25,6 +25,7 @@ def create_product():
         product = Product(
             name=data.get("name"),
             category_id=data.get("category_id"),
+            subcategory_id=data.get("subcategory_id"),
             price=data.get("price"),
             original_price=data.get("original_price"),
             stock=data.get("stock", 0),
@@ -72,39 +73,95 @@ def create_product():
 #     ]), 200
 
 
+# @product_bp.route("/products", methods=["GET"])
+# def get_products():
+
+#     currency = request.headers.get(
+#         "X-Currency",
+#         "KWD"
+#     )
+
+#     is_admin = request.args.get("admin") == "true"
+
+#     # Admin views (menu management / owner UI) should always display the
+#     # original stored price (DB is KWD). Ignore the X-Currency header when
+#     # the admin flag is present so the admin sees the raw KWD values.
+#     if is_admin:
+#         currency = "KWD"
+#     is_agent = request.args.get("agent") == "true"
+
+#     if is_admin or is_agent:
+#         # Admins see everything (Active + Inactive)
+#         # query = Product.query
+#         query = Product.query
+#         currency = "KWD"    
+#     else:
+#         # Users/Customers only see active products
+#         query = Product.query.filter_by(is_active=True)
+
+#     # ─── Optional filters (used by the chatbot's product search, and by the
+#     #     storefront search bar). Additive only — existing behaviour when no
+#     #     query params are supplied is unchanged. ─────────────────────────────
+
+#     search = request.args.get("search", "").strip()
+#     if search:
+#         like = f"%{search}%"
+#         query = query.filter(
+#             db.or_(
+#                 Product.name.ilike(like),
+#                 Product.description.ilike(like),
+#                 Product.ingredients.ilike(like)
+#             )
+#         )
+
+#     category_id = request.args.get("category_id", type=int)
+#     if category_id:
+#         query = query.filter(Product.category_id == category_id)
+
+#     subcategory_id = request.args.get("subcategory_id", type=int)
+
+#     if subcategory_id:
+#        query = query.filter(Product.subcategory_id == subcategory_id)
+
+#     max_price = request.args.get("max_price", type=float)
+#     if max_price is not None:
+#         query = query.filter(Product.price <= max_price)
+
+#     min_price = request.args.get("min_price", type=float)
+#     if min_price is not None:
+#         query = query.filter(Product.price >= min_price)
+
+#     in_stock_only = request.args.get("in_stock") == "true"
+#     if in_stock_only:
+#         query = query.filter(Product.stock > 0)
+
+#     products = query.all()
+
+#     return jsonify([
+#         product.to_dict(currency)
+#         for product in products
+#     ]), 200
+
+
 @product_bp.route("/products", methods=["GET"])
 def get_products():
-
-    currency = request.headers.get(
-        "X-Currency",
-        "KWD"
-    )
+    currency = request.headers.get("X-Currency", "KWD")
 
     is_admin = request.args.get("admin") == "true"
-
-    # Admin views (menu management / owner UI) should always display the
-    # original stored price (DB is KWD). Ignore the X-Currency header when
-    # the admin flag is present so the admin sees the raw KWD values.
-    if is_admin:
-        currency = "KWD"
     is_agent = request.args.get("agent") == "true"
 
     if is_admin or is_agent:
-        # Admins see everything (Active + Inactive)
-        # query = Product.query
         query = Product.query
-        currency = "KWD"    
+        currency = "KWD"
     else:
-        # Users/Customers only see active products
         query = Product.query.filter_by(is_active=True)
 
-    # ─── Optional filters (used by the chatbot's product search, and by the
-    #     storefront search bar). Additive only — existing behaviour when no
-    #     query params are supplied is unchanged. ─────────────────────────────
-
+    # Search
     search = request.args.get("search", "").strip()
+
     if search:
         like = f"%{search}%"
+
         query = query.filter(
             db.or_(
                 Product.name.ilike(like),
@@ -113,21 +170,45 @@ def get_products():
             )
         )
 
+    # Category filter
     category_id = request.args.get("category_id", type=int)
-    if category_id:
-        query = query.filter(Product.category_id == category_id)
 
+    if category_id is not None:
+        query = query.filter(
+            Product.category_id == category_id
+        )
+
+    # Subcategory filter
+    subcategory_id = request.args.get("subcategory_id", type=int)
+
+    if subcategory_id is not None:
+        query = query.filter(
+            Product.subcategory_id == subcategory_id
+        )
+
+    # Maximum price
     max_price = request.args.get("max_price", type=float)
+
     if max_price is not None:
-        query = query.filter(Product.price <= max_price)
+        query = query.filter(
+            Product.price <= max_price
+        )
 
+    # Minimum price
     min_price = request.args.get("min_price", type=float)
-    if min_price is not None:
-        query = query.filter(Product.price >= min_price)
 
+    if min_price is not None:
+        query = query.filter(
+            Product.price >= min_price
+        )
+
+    # In-stock filter
     in_stock_only = request.args.get("in_stock") == "true"
+
     if in_stock_only:
-        query = query.filter(Product.stock > 0)
+        query = query.filter(
+            Product.stock > 0
+        )
 
     products = query.all()
 
@@ -135,9 +216,6 @@ def get_products():
         product.to_dict(currency)
         for product in products
     ]), 200
-
-
-
 
 # Get Single Product
 # @product_bp.route("/products/<int:id>", methods=["GET"])
@@ -191,6 +269,11 @@ def update_product(id):
     product.description = data.get("description", product.description)
 
     product.category_id = data.get("category_id", product.category_id)
+
+    product.subcategory_id = data.get(
+    "subcategory_id",
+    product.subcategory_id
+)
 
     product.price = data.get("price", product.price)
     product.original_price = data.get("original_price", product.original_price)

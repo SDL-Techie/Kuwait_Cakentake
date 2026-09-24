@@ -1,14 +1,32 @@
 import { api } from './api';
 
 export const menuManagementService = {
-  getProducts: (categoryId?: string) => {
-    const params = new URLSearchParams();
-    params.set('admin', 'true');
-    if (categoryId && categoryId !== 'all') {
-      params.set('category_id', categoryId);
-    }
-    return api.get(`/products?${params.toString()}`);
-  },
+  // getProducts: (categoryId?: string) => {
+  //   const params = new URLSearchParams();
+  //   params.set('admin', 'true');
+  //   if (categoryId && categoryId !== 'all') {
+  //     params.set('category_id', categoryId);
+  //   }
+  //   return api.get(`/products?${params.toString()}`);
+  // },
+  getProducts: (
+  categoryId?: string,
+  subcategoryId?: string
+) => {
+  const params = new URLSearchParams();
+
+  params.set('admin', 'true');
+
+  if (categoryId && categoryId !== 'all') {
+    params.set('category_id', categoryId);
+  }
+
+  if (subcategoryId && subcategoryId !== 'all') {
+    params.set('subcategory_id', subcategoryId);
+  }
+
+  return api.get(`/products?${params.toString()}`);
+},
   getCategories: () => api.get('/category'),
   getSubcategories: () => api.get('/subcategories'),
   getVariants: () => api.get('/variants'),

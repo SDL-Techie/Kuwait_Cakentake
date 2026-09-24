@@ -33,26 +33,14 @@ class Config:
     CLOUDINARY_API_KEY = os.getenv("CLOUDINARY_API_KEY")
     CLOUDINARY_API_SECRET = os.getenv("CLOUDINARY_API_SECRET")
 
-    API_BASE_URL = (os.getenv("API_BASE_URL") or "").rstrip("/")
+    API_BASE_URL = os.getenv("API_BASE_URL")
 
     TAP_SECRET_KEY = os.getenv("TAP_SECRET_KEY")
     TAP_PUBLIC_KEY = os.getenv("TAP_PUBLIC_KEY")
     TAP_MERCHANT_ID = os.getenv("TAP_MERCHANT_ID")
-    TAP_REDIRECT_BASE_URL = (os.getenv("TAP_REDIRECT_BASE_URL") or "").strip().rstrip("/")
-    # Legacy web return URLs are still supported, but WEB_APP_URL is preferred.
+
     TAP_SUCCESS_URL = os.getenv("TAP_SUCCESS_URL")
     TAP_CANCEL_URL = os.getenv("TAP_CANCEL_URL")
-
-    # Public deployment URLs used by Tap hosted checkout redirects.
-    # API_BASE_URL must be the externally reachable HTTPS Flask URL in production.
-    WEB_APP_URL = (os.getenv("WEB_APP_URL") or "").rstrip("/")
-    APP_DEEP_LINK_SCHEME = (os.getenv("APP_DEEP_LINK_SCHEME") or "cakentake").strip().rstrip(":/")
-    TAP_POST_URL = (os.getenv("TAP_POST_URL") or "").strip()
-    CORS_ORIGINS = [
-        origin.strip()
-        for origin in (os.getenv("CORS_ORIGINS") or "*").split(",")
-        if origin.strip()
-    ]
 
 
     EXPO_PUSH_URL = os.getenv("EXPO_PUSH_URL", "https://exp.host/--/api/v2/push/send")
