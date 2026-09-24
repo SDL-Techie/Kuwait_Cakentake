@@ -193,14 +193,21 @@ def _json_result(orders, charge_id, tap_status, payment_status, transaction_id):
 def _can_manage_orders(orders):
     identity = int(get_jwt_identity())
     role = str((get_jwt() or {}).get("role") or "").upper()
+
     if role in {"ADMIN", "SHOP_MANAGER"}:
         return True
+
+    if role == "DRIVER":
+        return all(
+            int(order.driver_id or 0) == identity
+            for order in orders
+        )
+
     return all(
         int(order.user_id or 0) == identity
         or int(order.created_by or 0) == identity
         for order in orders
     )
-
 
 def _stored_create_attempt(orders):
     responses = [
