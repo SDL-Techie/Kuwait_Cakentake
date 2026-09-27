@@ -41,7 +41,8 @@ import Finance from './admin/Finane/Finance';
 import KitchenInventory from './kitchen/kitcheninventory/KitchenInventory';
 import Loyalty from './admin/Loyality/Loyality';
 import DriverSettlement from './driver/Driversettlement/DriverSettlement';
-import PromotionalCode from './pages/Promocode/Promotionalcode';
+import DeleteAccount from './pages/DeleteAccount/DeleteAccount';
+// import PromotionalCode from './pages/Promocode/Promotionalcode';
 import DriverDashboard from './driver/DriverDashboard/DriverDashboard';
 import SalesAgentDashboard from './salesagent/salesagentdashboard/Salesagentdash';
 import SalesAgentOrders from './salesagent/salesagentorder/Salesagentorder';
@@ -61,6 +62,7 @@ import Unauthorized from './components/Unauthorized';
 import RoleProtectedRoute from './components/RoleProtectedRoute';
 import KitchenOrderCalendar from './kitchen/kitchencalender/Kitchenordercalender';
 import InventoryManagement from './admin/InventoryManagement/Inventorymanagement';
+import AccountDeletionRequests from './admin/AccountDeletion/AccountDeletionRequests';
 
 
 
@@ -143,6 +145,7 @@ const AppContent: React.FC = () => {
               <Route path="/wishlist" element={<Wishlist />} />
               <Route path="/about" element={<About />} />
               <Route path="/privacy" element={<PrivacyPolicy />} />
+              <Route path="/delete-account" element={<DeleteAccount />} />
               <Route path="/terms" element={<Terms />} />
               <Route path="/profile" element={<Profile />} />
               <Route path="/contact" element={<Contact />} />
@@ -220,6 +223,7 @@ const AppContent: React.FC = () => {
       <Route path="supplier" element={<SupplierManagement/>}/> */}
       <Route path="inventory" element={<InventoryManagement/>}/>
       <Route path="loyality" element={<Loyalty/>}/>
+      <Route path="account-deletion-requests" element={<AccountDeletionRequests/>}/>
     </Route>
 
     <Route element={<RoleProtectedRoute allowedRoles={['ADMIN','SALES_AGENT','SHOP_MANAGER']} />}>

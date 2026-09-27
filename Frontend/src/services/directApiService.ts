@@ -37,6 +37,15 @@ export const storefrontApi = {
   profile: (userId: string | number, config?: unknown) => api.get(`/user/${userId}`, config as never),
   updateProfile: (payload: unknown, config?: unknown) => api.put("/profile", payload, config as never),
   order: <T>(id: string | number, config?: unknown) => api.get<T>(`/orders/${id}`, config as never),
+  requestAccountDeletion: (payload: { password: string; reason: string }, config?: unknown) =>
+    api.post("/account/delete-request", payload, config as never),
+};
+
+export const accountDeletionApi = {
+  list: (status: string = "PENDING") => api.get(`/admin/account-deletion-requests?status=${status}`),
+  approve: (id: number) => api.put(`/admin/account-deletion-requests/${id}/approve`),
+  reject: (id: number, adminNote?: string) =>
+    api.put(`/admin/account-deletion-requests/${id}/reject`, { admin_note: adminNote }),
 };
 
 export const wishlistApi = {

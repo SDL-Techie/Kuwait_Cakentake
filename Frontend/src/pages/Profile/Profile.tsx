@@ -93,6 +93,12 @@ const Profile: React.FC = () => {
   const [savingAddr, setSavingAddr] = useState(false);
   const [deletingId, setDeletingId] = useState<number | null>(null);
 
+  const [deleteStep, setDeleteStep] = useState<'closed' | 'password' | 'reason' | 'done'>('closed');
+const [deletePassword, setDeletePassword] = useState('');
+const [deleteReason, setDeleteReason] = useState('');
+const [deleteSubmitting, setDeleteSubmitting] = useState(false);
+const [deleteError, setDeleteError] = useState('');
+
   /* Toast */
   const [toast, setToast] = useState({ show: false, msg: '' });
   const showToast = (msg: string) => setToast({ show: true, msg });
@@ -231,6 +237,38 @@ const Profile: React.FC = () => {
     setAddrErrors(errs);
     return Object.keys(errs).length === 0;
   };
+
+
+  const handleSubmitDeletion = async () => {
+  setDeleteError('');
+  if (!deletePassword) {
+    setDeleteError('Please enter your password');
+    return;
+  }
+  if (!deleteReason.trim()) {
+    setDeleteError('Please tell us the reason');
+    return;
+  }
+  setDeleteSubmitting(true);
+  try {
+    await storefrontApi.requestAccountDeletion({
+      password: deletePassword,
+      reason: deleteReason.trim(),
+    });
+    setDeleteStep('done');
+  } catch (error: any) {
+    setDeleteError(error?.response?.data?.error || 'Failed to submit request');
+  } finally {
+    setDeleteSubmitting(false);
+  }
+};
+
+const finishDeletionFlow = () => {
+  localStorage.removeItem('token');
+  localStorage.removeItem('user');
+  navigate('/login');
+};
+
 
   /* ── Address: Save (POST or PUT) ── */
   const handleSaveAddr = async () => {
@@ -383,8 +421,20 @@ const Profile: React.FC = () => {
               <button className="prof-logout-btn" onClick={handleLogout}>
                 <LogOut size={16} /> Sign Out
               </button>
+<button
+  className="prof-logout-btn"
+  style={{ marginTop: 8, background: '#b3261e', color: '#fff' }}
+  onClick={() => navigate('/delete-account')}
+>
+  <Trash2 size={16} /> Delete Account
+</button>
             </div>
           </aside>
+{/* 
+          <button className="prof-logout-btn" onClick={handleLogout}>
+  <LogOut size={16} /> Sign Out
+</button> */}
+
 
           {/* RIGHT: Tab Content */}
           <main className="prof-main">
@@ -766,6 +816,92 @@ const Profile: React.FC = () => {
           </motion.div>
         )}
       </AnimatePresence>
+
+      <AnimatePresence>
+  {deleteStep !== 'closed' && (
+    <motion.div className="prof-modal-overlay" initial={{opacity:0}} animate={{opacity:1}} exit={{opacity:0}}>
+      <motion.div className="prof-modal" initial={{y:60,opacity:0}} animate={{y:0,opacity:1}} exit={{y:60,opacity:0}}>
+        {deleteStep === 'password' && (
+          <>
+            <div className="prof-modal-header">
+              <h3>Confirm Your Password</h3>
+              <button className="prof-modal-close" onClick={() => setDeleteStep('closed')}><X size={18} /></button>
+            </div>
+            <div className="prof-modal-body">
+              <p>For your security, please confirm your password to continue.</p>
+              <div className="prof-field">
+                <label>Password</label>
+                <input
+                  type="password"
+                  value={deletePassword}
+                  onChange={e => setDeletePassword(e.target.value)}
+                />
+              </div>
+              {deleteError && <span className="prof-err"><AlertCircle size={12} /> {deleteError}</span>}
+            </div>
+            <div className="prof-modal-footer">
+              <button className="prof-btn-secondary" onClick={() => setDeleteStep('closed')}>Cancel</button>
+              <button
+                className="prof-btn-primary"
+                onClick={() => {
+                  if (!deletePassword) { setDeleteError('Please enter your password'); return; }
+                  setDeleteError('');
+                  setDeleteStep('reason');
+                }}
+              >
+                Continue
+              </button>
+            </div>
+          </>
+        )}
+
+        {deleteStep === 'reason' && (
+          <>
+            <div className="prof-modal-header">
+              <h3>Why are you leaving?</h3>
+              <button className="prof-modal-close" onClick={() => setDeleteStep('closed')}><X size={18} /></button>
+            </div>
+            <div className="prof-modal-body">
+              <div className="prof-field">
+                <label>Reason for deleting your account *</label>
+                <textarea
+                  rows={4}
+                  value={deleteReason}
+                  onChange={e => setDeleteReason(e.target.value)}
+                  placeholder="Tell us why you want to delete your account..."
+                />
+              </div>
+              {deleteError && <span className="prof-err"><AlertCircle size={12} /> {deleteError}</span>}
+            </div>
+            <div className="prof-modal-footer">
+              <button className="prof-btn-secondary" onClick={() => setDeleteStep('password')}>Back</button>
+              <button className="prof-btn-primary" onClick={handleSubmitDeletion} disabled={deleteSubmitting}>
+                {deleteSubmitting ? 'Submitting...' : 'Submit Request'}
+              </button>
+            </div>
+          </>
+        )}
+
+        {deleteStep === 'done' && (
+          <>
+            <div className="prof-modal-header"><h3>Request Submitted</h3></div>
+            <div className="prof-modal-body">
+              <p>
+                Your account will be permanently deleted within a week once our
+                team reviews your request. You've been logged out and won't be
+                able to log back in while this is pending.
+              </p>
+            </div>
+            <div className="prof-modal-footer">
+              <button className="prof-btn-primary" onClick={finishDeletionFlow}>OK</button>
+            </div>
+          </>
+        )}
+      </motion.div>
+    </motion.div>
+  )}
+</AnimatePresence>
+
     </div>
   );
 };

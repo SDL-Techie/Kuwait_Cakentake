@@ -1,0 +1,280 @@
+/* ════════════════════════════════════════════════════════════════
+   ACCOUNT DELETION REQUESTS — uses AdminLayout's shared tokens
+   (--green-*, --ink-*, --danger-500, --font-*, --radius-*, --shadow-*)
+════════════════════════════════════════════════════════════════ */
+
+.adr-container {
+  padding: 1.5rem;
+  font-family: var(--font-body, 'Inter', sans-serif);
+  color: var(--ink-900, #263021);
+}
+
+/* ── Header ── */
+.adr-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  padding-bottom: 1.25rem;
+  border-bottom: 1px solid var(--green-100, #eef3e6);
+}
+
+.adr-header-text h1 {
+  margin: 0 0 0.35rem;
+  font-family: var(--font-display, 'Fraunces', serif);
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--green-900, #2f4a2f);
+}
+
+.adr-header-text p {
+  margin: 0;
+  font-size: 0.875rem;
+  color: var(--ink-600, #5c6b52);
+}
+
+.adr-count-badge {
+  background: var(--green-100, #eef3e6);
+  color: var(--green-700, #4b6b3f);
+  padding: 0.4rem 0.9rem;
+  border-radius: 99px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  white-space: nowrap;
+  text-transform: capitalize;
+}
+
+/* ── Status Tabs ── */
+.adr-tabs {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1.25rem;
+  flex-wrap: wrap;
+}
+
+.adr-tab {
+  border: 1px solid var(--green-100, #eef3e6);
+  background: var(--white, #fff);
+  color: var(--ink-600, #5c6b52);
+  padding: 0.5rem 1rem;
+  border-radius: var(--radius-md, 12px);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--transition, all 0.2s ease);
+}
+
+.adr-tab:hover {
+  background: var(--green-50, #f6f9f2);
+}
+
+.adr-tab.active {
+  background: var(--green-700, #4b6b3f);
+  border-color: var(--green-700, #4b6b3f);
+  color: var(--white, #fff);
+}
+
+/* ── Table Card ── */
+.adr-table-card {
+  background: var(--white, #fff);
+  border: 1px solid var(--green-100, #eef3e6);
+  border-radius: var(--radius-lg, 16px);
+  box-shadow: var(--shadow-sm, 0 1px 2px rgba(47, 74, 47, 0.06));
+  overflow: hidden;
+}
+
+.adr-table-scroll {
+  overflow-x: auto;
+}
+
+.adr-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.875rem;
+}
+
+.adr-table thead th {
+  text-align: left;
+  padding: 0.9rem 1.1rem;
+  background: var(--green-50, #f6f9f2);
+  color: var(--ink-600, #5c6b52);
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  border-bottom: 1px solid var(--green-100, #eef3e6);
+  white-space: nowrap;
+}
+
+.adr-table tbody tr {
+  border-bottom: 1px solid var(--green-50, #f6f9f2);
+  transition: var(--transition, all 0.2s ease);
+}
+
+.adr-table tbody tr:last-child {
+  border-bottom: none;
+}
+
+.adr-table tbody tr:hover {
+  background: var(--green-50, #f6f9f2);
+}
+
+.adr-table td {
+  padding: 0.85rem 1.1rem;
+  vertical-align: middle;
+  color: var(--ink-900, #263021);
+}
+
+/* ── User cell ── */
+.adr-user-cell {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.adr-avatar {
+  width: 32px;
+  height: 32px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: var(--green-200, #d8e4c7);
+  color: var(--green-900, #2f4a2f);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.7rem;
+  font-weight: 700;
+}
+
+.adr-user-name {
+  font-weight: 600;
+}
+
+.adr-contact-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  font-size: 0.8125rem;
+}
+
+.adr-reason-cell {
+  max-width: 260px;
+  white-space: normal;
+  line-height: 1.4;
+  color: var(--ink-600, #5c6b52);
+}
+
+.adr-muted {
+  color: var(--ink-400, #93a186);
+  font-size: 0.8125rem;
+}
+
+/* ── Status pills ── */
+.adr-status-pill {
+  display: inline-block;
+  padding: 0.3rem 0.7rem;
+  border-radius: 99px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  text-transform: capitalize;
+}
+
+.adr-status-pending {
+  background: #fdf3e0;
+  color: #b8791a;
+}
+
+.adr-status-approved {
+  background: var(--green-100, #eef3e6);
+  color: var(--green-700, #4b6b3f);
+}
+
+.adr-status-rejected {
+  background: #fbe9e8;
+  color: var(--danger-500, #c1443f);
+}
+
+/* ── Action buttons ── */
+.adr-actions {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.adr-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  border: none;
+  border-radius: var(--radius-sm, 8px);
+  padding: 0.45rem 0.75rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: var(--transition, all 0.2s ease);
+}
+
+.adr-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.adr-btn-approve {
+  background: var(--danger-500, #c1443f);
+  color: var(--white, #fff);
+}
+
+.adr-btn-approve:hover:not(:disabled) {
+  filter: brightness(0.92);
+}
+
+.adr-btn-reject {
+  background: var(--green-50, #f6f9f2);
+  color: var(--ink-600, #5c6b52);
+  border: 1px solid var(--green-100, #eef3e6);
+}
+
+.adr-btn-reject:hover:not(:disabled) {
+  background: var(--green-100, #eef3e6);
+}
+
+/* ── Loading / Empty states ── */
+.adr-loading,
+.adr-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  padding: 3rem 1rem;
+  color: var(--ink-400, #93a186);
+  font-size: 0.875rem;
+}
+
+.adr-spin {
+  animation: adr-spin-anim 0.8s linear infinite;
+}
+
+@keyframes adr-spin-anim {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* ── Responsive ── */
+@media (max-width: 640px) {
+  .adr-container {
+    padding: 1rem;
+  }
+
+  .adr-reason-cell {
+    max-width: 160px;
+  }
+
+  .adr-actions {
+    flex-direction: column;
+  }
+}

@@ -5,6 +5,7 @@ from extensions import db
 from models.user import User
 from middleware.role import role_required
 from constants.roles import ROLES
+from models.account_deletion_request import AccountDeletionRequest
 
 from flask_jwt_extended import (
     create_access_token,
@@ -164,6 +165,15 @@ def login():
         return jsonify({
             "error": "Invalid credentials"
         }), 401
+
+    pending_deletion = AccountDeletionRequest.query.filter_by(
+    user_id=user.id, status="PENDING"
+    ).first()
+    if pending_deletion:
+     return jsonify({
+        "error": "Your account is scheduled for deletion and pending admin review.",
+        "code": "ACCOUNT_DELETION_PENDING"
+     }), 403
 
     if not bool(getattr(user, "is_active", True)):
         return jsonify({

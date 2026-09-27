@@ -1,0 +1,304 @@
+/* ════════════════════════════════════════════════════════════════
+   DELETE ACCOUNT — mobile-first, full-screen flow (iOS-friendly)
+   Uses the same green palette as Profile.css so it matches exactly
+════════════════════════════════════════════════════════════════ */
+
+.da-page,
+.da-page * {
+  box-sizing: border-box;
+}
+
+.da-page {
+  /* ── Brand tokens (mirrors .prof-page) ── */
+  --green-1: #8FAF6E;
+  --green-2: #6F8E57;
+  --green-3: #526A45;
+  --green-4: #314631;
+  --green-gradient: linear-gradient(
+    135deg,
+    #8FAF6E 0%,
+    #6F8E57 30%,
+    #526A45 65%,
+    #314631 100%
+  );
+
+  --ink: #000000;
+  --body: #1a1a1a;
+  --muted: #5c5c5c;
+  --white: #ffffff;
+  --bg: #faf9f6;
+  --card: #ffffff;
+  --border: #e6e3da;
+  --danger: #c0392b;
+  --danger-bg: #fdf1f0;
+  --danger-border: #f3cfc9;
+
+  min-height: 100vh;
+  min-height: 100dvh;
+  background: var(--bg);
+  display: flex;
+  flex-direction: column;
+  padding: env(safe-area-inset-top, 20px) 20px calc(env(safe-area-inset-bottom, 20px) + 20px);
+  font-family: 'Inter', -apple-system, sans-serif;
+  color: var(--body);
+  position: relative;
+}
+
+.da-back-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  background: var(--white);
+  box-shadow: 0 2px 8px rgba(49, 70, 49, 0.08);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--green-3);
+  cursor: pointer;
+  margin-bottom: 12px;
+  flex-shrink: 0;
+}
+
+.da-back-btn:active {
+  transform: scale(0.94);
+}
+
+/* ── Progress dots ── */
+.da-progress {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 24px;
+}
+
+.da-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--border);
+  transition: all 0.25s ease;
+}
+
+.da-dot.active {
+  width: 24px;
+  border-radius: 4px;
+  background: var(--green-gradient);
+}
+
+.da-dot.done {
+  background: var(--green-1);
+}
+
+/* ── Content wrapper ── */
+.da-content {
+  flex: 1;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+}
+
+.da-card {
+  width: 100%;
+  max-width: 420px;
+  display: flex;
+  flex-direction: column;
+  padding-top: 8px;
+}
+
+.da-card-done {
+  align-items: center;
+  text-align: center;
+  margin: auto 0;
+}
+
+/* ── Icon badge ── */
+.da-icon-badge {
+  width: 56px;
+  height: 56px;
+  border-radius: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 20px;
+}
+
+.da-icon-lock {
+  background: var(--green-gradient);
+  color: var(--white);
+}
+
+.da-icon-message {
+  background: var(--green-gradient);
+  color: var(--white);
+}
+
+.da-icon-warning {
+  background: var(--danger-bg);
+  color: var(--danger);
+}
+
+/* ── Typography ── */
+.da-card h1 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--green-4);
+  margin: 0 0 8px;
+  line-height: 1.25;
+  letter-spacing: -0.01em;
+}
+
+.da-subtitle {
+  font-size: 0.9rem;
+  line-height: 1.5;
+  color: var(--muted);
+  margin: 0 0 24px;
+}
+
+/* ── Fields ── */
+.da-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 16px;
+}
+
+.da-field label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--green-4);
+}
+
+.da-field input,
+.da-field textarea {
+  width: 100%;
+  border: 1.5px solid var(--border);
+  border-radius: 12px;
+  padding: 14px;
+  font-size: 1rem;
+  font-family: inherit;
+  background: var(--card);
+  color: var(--body);
+  outline: none;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  resize: vertical;
+  -webkit-appearance: none;
+}
+
+.da-field input:focus,
+.da-field textarea:focus {
+  border-color: var(--green-2);
+  box-shadow: 0 0 0 3px rgba(111, 142, 87, 0.15);
+}
+
+/* ── Reason chips ── */
+.da-reason-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+
+.da-reason-chip {
+  border: 1.5px solid var(--border);
+  background: var(--card);
+  color: var(--body);
+  padding: 10px 14px;
+  border-radius: 99px;
+  font-size: 0.825rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.da-reason-chip.active {
+  background: var(--green-gradient);
+  border-color: var(--green-3);
+  color: var(--white);
+}
+
+/* ── Error ── */
+.da-error {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--danger);
+  background: var(--danger-bg);
+  border: 1px solid var(--danger-border);
+  padding: 10px 12px;
+  border-radius: 10px;
+  font-size: 0.825rem;
+  margin-bottom: 16px;
+}
+
+/* ── Buttons ── */
+.da-btn-primary,
+.da-btn-danger,
+.da-btn-ghost {
+  width: 100%;
+  border: none;
+  border-radius: 14px;
+  padding: 15px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: transform 0.15s ease, opacity 0.2s ease, filter 0.2s ease;
+}
+
+.da-btn-primary {
+  background: var(--green-gradient);
+  color: var(--white);
+  margin-bottom: 10px;
+  box-shadow: 0 6px 16px rgba(82, 106, 69, 0.25);
+}
+
+.da-btn-danger {
+  background: var(--danger);
+  color: var(--white);
+  margin-bottom: 10px;
+  box-shadow: 0 6px 16px rgba(192, 57, 43, 0.2);
+}
+
+.da-btn-danger:disabled,
+.da-btn-primary:disabled {
+  opacity: 0.6;
+  box-shadow: none;
+}
+
+.da-btn-primary:hover:not(:disabled),
+.da-btn-danger:hover:not(:disabled) {
+  filter: brightness(1.05);
+}
+
+.da-btn-ghost {
+  background: transparent;
+  color: var(--muted);
+  padding: 10px;
+}
+
+.da-btn-primary:active,
+.da-btn-danger:active {
+  transform: scale(0.98);
+}
+
+.da-spin {
+  animation: da-spin-anim 0.8s linear infinite;
+}
+
+@keyframes da-spin-anim {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* ── Small screens tweak ── */
+@media (min-width: 480px) {
+  .da-content {
+    align-items: center;
+    padding-top: 40px;
+  }
+}

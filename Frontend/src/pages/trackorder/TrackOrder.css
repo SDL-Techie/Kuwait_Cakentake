@@ -332,7 +332,7 @@
 /* Receipt Micro Styling - Thermal Paper Mimicry */
 .to-receipt-print-area {
   padding: 30px 24px;
-  max-height: 75vh;
+  max-height: 90vh;
   overflow-y: auto;
 }
 

@@ -294,6 +294,23 @@ const Products: React.FC = () => {
       },
     });
 
+
+   // ─── Pagination ─────────────────────────────────────────────────────────────
+const ITEMS_PER_PAGE = 6;
+const [currentPage, setCurrentPage] = useState<number>(1);
+
+// Reset to page 1 whenever filters/sort change
+useEffect(() => {
+  setCurrentPage(1);
+}, [selectedCategory, selectedSubcategory, selectedVariantName, selectedFlavorName, minPrice, maxPrice, sortBy]);
+
+const totalPages = Math.max(1, Math.ceil(filteredProducts.length / ITEMS_PER_PAGE));
+
+const paginatedProducts = useMemo(() => {
+  const start = (currentPage - 1) * ITEMS_PER_PAGE;
+  return filteredProducts.slice(start, start + ITEMS_PER_PAGE);
+}, [filteredProducts, currentPage]); 
+
   // ─── Render ─────────────────────────────────────────────────────────────────
 
   return (
@@ -560,31 +577,50 @@ const Products: React.FC = () => {
                 Loading deliciousness...
               </div>
             ) : (
-              <div className="pg-grid">
-                <AnimatePresence>
-                  {filteredProducts.map((product, idx) => (
-                    <ProductCard
-                      key={product.id}
-                      product={product as any}
-                      index={idx}
-                      isRetailer={isRetailer}
-                      userId={userId}
-                    />
-                  ))}
-                </AnimatePresence>
-              </div>
+            <div className="pg-grid">
+  <AnimatePresence>
+    {paginatedProducts.map((product, idx) => (
+      <ProductCard
+        key={product.id}
+        product={product as any}
+        index={idx}
+        isRetailer={isRetailer}
+        userId={userId}
+      />
+    ))}
+  </AnimatePresence>
+</div>
             )}
 
-            {!loading && filteredProducts.length === 0 && (
-              <div className="pg-no-results">
-                <p>No treats found for this selection.</p>
-                {activeFilterCount > 0 && (
-                  <button className="pg-clear-btn" onClick={handleClearAll}>
-                    Clear all filters
-                  </button>
-                )}
-              </div>
-            )}
+           {!loading && filteredProducts.length > 0 && totalPages > 1 && (
+  <div className="pg-pagination">
+    <button
+      className="pg-page-btn"
+      onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+      disabled={currentPage === 1}
+    >
+      Prev
+    </button>
+
+    {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+      <button
+        key={page}
+        className={`pg-page-btn ${currentPage === page ? 'pg-page-btn-active' : ''}`}
+        onClick={() => setCurrentPage(page)}
+      >
+        {page}
+      </button>
+    ))}
+
+    <button
+      className="pg-page-btn"
+      onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+      disabled={currentPage === totalPages}
+    >
+      Next
+    </button>
+  </div>
+)}
           </main>
         </div>
       </div>

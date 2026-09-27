@@ -69,6 +69,7 @@ from routes.pointsetting_routes import point_setting_bp
 from routes.payment_rotes import payment_bp
 from routes.agent_routes import agent_bp
 from routes.ownerpaymentstatus_routes import owner_payment_bp
+from routes.account_deletion_routes import account_deletion_bp
 
 # ─── New Routes ──────────────────────────────────────────────────────────────
 from routes.users_routes import users_bp
@@ -174,6 +175,7 @@ app.register_blueprint(bank_charges_bp)
 app.register_blueprint(delivery_charges_bp)
 app.register_blueprint(blog_bp)
 app.register_blueprint(notification_campaign_bp)
+app.register_blueprint(account_deletion_bp)
 app.register_blueprint(backup_bp)
 
 

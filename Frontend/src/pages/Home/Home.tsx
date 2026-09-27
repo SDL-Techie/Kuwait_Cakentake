@@ -334,7 +334,7 @@ const Home: FC = () => {
       <AppPromo/>
 
       <div className="home-back-to-top-wrapper">
-        <button
+        {/* <button
           type="button"
           className="home-back-to-top-btn"
           onClick={scrollToTop}
@@ -342,7 +342,7 @@ const Home: FC = () => {
           aria-label="Back to top"
         >
           <ArrowUp size={18} />
-        </button>
+        </button> */}
       </div>
 
       <ChatWidget />
