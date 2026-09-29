@@ -143,16 +143,19 @@ def _apply_tap_result(orders, result, charge_id):
 
 
 def _web_base(success):
+    # Shared KNET links can be opened on a different phone/browser, so hosted
+    # checkout always returns to the public CakeNTake website instead of a
+    # device-specific deep link. WEB_APP_URL is the production source of truth.
+    if Config.WEB_APP_URL:
+        return (
+            f"{Config.WEB_APP_URL}/success-payment"
+            if success
+            else f"{Config.WEB_APP_URL}/payment-failed"
+        )
     if success and Config.TAP_SUCCESS_URL:
         return Config.TAP_SUCCESS_URL.rstrip("/")
     if (not success) and Config.TAP_CANCEL_URL:
         return Config.TAP_CANCEL_URL.rstrip("/")
-    if Config.WEB_APP_URL:
-        return (
-            f"{Config.WEB_APP_URL}/payment-success"
-            if success
-            else f"{Config.WEB_APP_URL}/payment-failed"
-        )
     return ""
 
 
@@ -194,20 +197,81 @@ def _can_manage_orders(orders):
     identity = int(get_jwt_identity())
     role = str((get_jwt() or {}).get("role") or "").upper()
 
-    if role in {"ADMIN", "SHOP_MANAGER"}:
+    if role in {"ADMIN", "OWNER", "SHOP_MANAGER"}:
         return True
 
+    if role == "DELIVERY_AGENT":
+        return all(int(order.delivery_agent_id or 0) == identity for order in orders)
+
     if role == "DRIVER":
+        return all(int(order.driver_id or 0) == identity for order in orders)
+
+    if role == "KITCHEN_STAFF":
+        visible_statuses = {"ASSIGNED_TO_KITCHEN", "PREPARING", "READY", "READY_FOR_DELIVERY"}
         return all(
-            int(order.driver_id or 0) == identity
+            str(order.status or "").upper() in visible_statuses
+            and (
+                not order.kitchen_staff_id
+                or int(order.kitchen_staff_id or 0) == identity
+            )
             for order in orders
         )
 
-    return all(
-        int(order.user_id or 0) == identity
-        or int(order.created_by or 0) == identity
-        for order in orders
-    )
+    # Customer, Sales Agent and Agent access is limited to orders they own or
+    # created. Unknown roles never receive broader access through this fallback.
+    if role in {"USER", "CUSTOMER", "SALES_AGENT", "AGENT"}:
+        return all(
+            int(order.user_id or 0) == identity
+            or int(order.created_by or 0) == identity
+            for order in orders
+        )
+
+    return False
+
+def _can_create_shared_payment_link(orders):
+    """Allow every authenticated app role to create/share a KNET link only for
+    orders that are appropriate for that role. This is deliberately separate
+    from _can_manage_orders so broader payment/admin permissions are not granted.
+    """
+    identity = int(get_jwt_identity())
+    role = str((get_jwt() or {}).get("role") or "").upper()
+
+    if role in {"ADMIN", "OWNER", "SHOP_MANAGER"}:
+        return True
+
+    if role in {"USER", "CUSTOMER"}:
+        return all(int(order.user_id or 0) == identity for order in orders)
+
+    if role in {"SALES_AGENT", "AGENT"}:
+        return all(
+            int(order.created_by or 0) == identity
+            or int(order.user_id or 0) == identity
+            for order in orders
+        )
+
+    # Kitchen staff can create/share a link only for orders in the kitchen queue.
+    # Once another staff member has started an order, only that assigned staff
+    # member can operate its payment link. This prevents guessed order IDs from
+    # becoming a cross-order payment capability.
+    if role == "KITCHEN_STAFF":
+        visible_statuses = {"ASSIGNED_TO_KITCHEN", "PREPARING", "READY", "READY_FOR_DELIVERY"}
+        return all(
+            str(order.status or "").upper() in visible_statuses
+            and (
+                not order.kitchen_staff_id
+                or int(order.kitchen_staff_id or 0) == identity
+            )
+            for order in orders
+        )
+
+    if role == "DELIVERY_AGENT":
+        return all(int(order.delivery_agent_id or 0) == identity for order in orders)
+
+    if role == "DRIVER":
+        return all(int(order.driver_id or 0) == identity for order in orders)
+
+    return False
+
 
 def _stored_create_attempt(orders):
     responses = [
@@ -279,10 +343,9 @@ def _existing_charge_response(orders, client_platform, force_new_attempt=False):
             "client_platform": client_platform,
         }), 200
 
-    # APP-ONLY retry behavior:
-    # after verifying that the previous charge is not paid, explicitly allow
-    # the mobile app to create a fresh Tap/KNET charge instead of reopening
-    # an already-consumed hosted-payment URL. Web behavior remains unchanged.
+    # Explicit retry behavior: after verifying that the previous charge is not
+    # paid, allow a fresh Tap/KNET charge instead of reopening an already-used
+    # hosted-payment URL. Authorization is enforced before this helper is called.
     if force_new_attempt:
         return None
 
@@ -347,18 +410,64 @@ def get_payment(order_id):
     }), 200
 
 
+@payment_bp.route("/payments/public-result/<string:reference>", methods=["GET"])
+def public_payment_result(reference):
+    """Return a privacy-safe payment receipt for a shared hosted-payment browser.
+
+    No customer name, email, phone, address or authentication data is exposed.
+    The opaque Tap transaction/charge id is required to look up the order.
+    """
+    ref = str(reference or "").strip()
+    if not ref:
+        return jsonify({"error": "Payment reference is required"}), 400
+
+    order = Order.query.filter(
+        (Order.gateway_transaction_id == ref)
+        | (Order.gateway_order_id == ref)
+        | (Order.gateway_payment_id == ref)
+    ).order_by(Order.id.desc()).first()
+
+    if not order:
+        return jsonify({"error": "Payment result is not available yet"}), 404
+
+    return jsonify({
+        "order": {
+            "id": order.id,
+            "order_number": order.order_number,
+            "status": order.status,
+            "payment_method": order.payment_method,
+            "payment_status": order.payment_status,
+            "payment_gateway": order.payment_gateway,
+            "gateway_transaction_id": order.gateway_transaction_id,
+            "total": float(order.total or 0),
+            "subtotal": float(order.subtotal or 0),
+            "discount": float(order.discount or 0),
+            "delivery_charge": float(order.delivery_charge or 0),
+            "grand_total": float(order.grand_total or 0),
+            "currency": order.currency or "KWD",
+            "delivery_method": order.delivery_method,
+            "pickup_date": order.pickup_date.isoformat() if order.pickup_date else None,
+            "pickup_time_slot": order.pickup_time_slot,
+            "delivery_date": order.delivery_date.isoformat() if order.delivery_date else None,
+            "delivery_time_slot": order.delivery_time_slot,
+        }
+    }), 200
+
+
 @payment_bp.route("/payments/create-link", methods=["POST"])
 @jwt_required()
 def create_payment_link():
     data = request.get_json() or {}
     client_platform = _platform(data.get("client_platform"))
 
-    # IMPORTANT: force_new_attempt is intentionally APP-ONLY.
-    # A web request can never activate this behavior, even if it sends the flag.
-    force_new_attempt = (
-        client_platform == "app"
-        and data.get("force_new_attempt") is True
-    )
+    # A caller may explicitly request a fresh hosted-payment attempt after an
+    # existing Tap/KNET charge has been verified as not paid. This endpoint is
+    # authenticated and role/order scoped, so the retry flag is safe for both
+    # native-app initiated shared links (which intentionally use web redirects)
+    # and authenticated web staff flows. Keeping client_platform="web" for the
+    # mobile app is important because a copied link must return to the public
+    # CakeNTake success/failure page on whichever phone completes the payment.
+    force_new_attempt = data.get("force_new_attempt") is True
 
     # Fail before creating an order-side payment attempt if deployment URLs or
     # Tap credentials are incomplete. In production API_BASE_URL must be the
@@ -414,9 +523,9 @@ def create_payment_link():
             db.session.rollback()
             return jsonify({"error": "One or more orders were not found"}), 404
 
-        if not _can_manage_orders(orders):
+        if not _can_create_shared_payment_link(orders):
             db.session.rollback()
-            return jsonify({"error": "You cannot create payment for one or more orders."}), 403
+            return jsonify({"error": "You cannot create a payment link for one or more orders."}), 403
 
         creator_ids = {order.created_by for order in orders}
         if len(orders) > 1 and len(creator_ids) > 1:
@@ -455,8 +564,9 @@ def create_payment_link():
         if existing is not None:
             return existing
 
-        # Normal web flow keeps the exact existing idempotency behavior.
-        # Only an explicit mobile-app retry gets a brand-new attempt key.
+        # Normal link generation keeps idempotent reuse. Only an explicit retry
+        # receives a brand-new merchant attempt key after the previous charge was
+        # verified above as not paid.
         attempt_key = None if force_new_attempt else _stored_create_attempt(orders)
         if not attempt_key:
             attempt_key = f"ct-{orders[0].id}-{uuid4().hex}"

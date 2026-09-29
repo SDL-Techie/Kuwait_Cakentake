@@ -34,7 +34,7 @@ const AccountDeletionRequests: React.FC = () => {
   useEffect(() => { load(); }, [statusFilter]);
 
   const handleApprove = async (id: number) => {
-    if (!window.confirm('This will PERMANENTLY delete this account. Continue?')) return;
+    if (!window.confirm("This will complete the customer's account deletion request and permanently remove/anonymize personal data. Continue?")) return;
     setActingId(id);
     try {
       await accountDeletionApi.approve(id);
@@ -45,7 +45,7 @@ const AccountDeletionRequests: React.FC = () => {
   };
 
   const handleReject = async (id: number) => {
-    const note = window.prompt('Optional note for rejecting this request:') || '';
+    const note = window.prompt('Reason this deletion request cannot be completed (optional):') || '';
     setActingId(id);
     try {
       await accountDeletionApi.reject(id, note);
@@ -60,7 +60,7 @@ const AccountDeletionRequests: React.FC = () => {
       <div className="adr-header">
         <div className="adr-header-text">
           <h1>Account Deletion Requests</h1>
-          <p>Review and action account deletion requests submitted by customers.</p>
+          <p>Complete customer-initiated deletion requests within the stated processing window.</p>
         </div>
         <span className="adr-count-badge">{requests.length} {statusFilter.toLowerCase()}</span>
       </div>
@@ -134,7 +134,7 @@ const AccountDeletionRequests: React.FC = () => {
                             onClick={() => handleApprove(r.id)}
                           >
                             {actingId === r.id ? <Loader2 size={14} className="adr-spin" /> : <Trash2 size={14} />}
-                            Approve &amp; Delete
+                            Complete Deletion
                           </button>
                           <button
                             className="adr-btn adr-btn-reject"
@@ -142,7 +142,7 @@ const AccountDeletionRequests: React.FC = () => {
                             onClick={() => handleReject(r.id)}
                           >
                             <UserX size={14} />
-                            Reject
+                            Unable to Complete
                           </button>
                         </div>
                       ) : (

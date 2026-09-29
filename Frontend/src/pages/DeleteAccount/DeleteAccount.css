@@ -302,3 +302,41 @@
     padding-top: 40px;
   }
 }
+/* Production deletion status additions */
+.da-warning-note,
+.da-status-hint {
+  margin: 0.85rem 0;
+  padding: 0.8rem 0.9rem;
+  border-radius: 12px;
+  background: #f7f4e8;
+  color: #5f674f;
+  font-size: 0.82rem;
+  line-height: 1.5;
+  border: 1px solid #e7ddbd;
+}
+
+.da-icon-success {
+  background: #e8f3e2;
+  color: #3f6938;
+}
+
+.da-btn-secondary {
+  width: 100%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  margin-bottom: 0.65rem;
+  border: 1px solid #d8c79e;
+  background: #fffdf8;
+  color: #3f5a37;
+  border-radius: 14px;
+  padding: 0.82rem 1rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.da-btn-secondary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}

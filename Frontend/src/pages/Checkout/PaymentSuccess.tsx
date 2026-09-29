@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 
 import { getOrderById } from "../../services/orderService";
+import { paymentResultApi } from "../../services/directApiService";
 import "./PaymentResult.css";
 
 const upper = (value: unknown) => String(value ?? "").trim().toUpperCase();
@@ -33,31 +34,52 @@ const PaymentSuccess = () => {
   const orderId = Number(params.get("order_id") || 0);
 
   const [order, setOrder] = useState<any>(null);
-  const [loading, setLoading] = useState(Boolean(orderId));
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [copied, setCopied] = useState(false);
 
+  const paymentReference = routeTransactionId || params.get("tap_id") || "";
+
   const loadOrder = useCallback(async () => {
-    if (!orderId) {
-      setLoading(false);
-      return;
-    }
     try {
-      setLoading(true);
+      setLoading(Boolean(orderId || paymentReference));
       setError("");
-      const value = await getOrderById(orderId);
-      setOrder(value?.order ?? value);
+
+      // A shared KNET link may be paid on a different phone where the payer is
+      // not signed in. Load a privacy-safe receipt with the opaque Tap reference.
+      if (paymentReference) {
+        try {
+          const publicResponse = await paymentResultApi.publicPaymentResult(paymentReference);
+          const publicOrder = publicResponse?.data?.order;
+          if (publicOrder) {
+            setOrder(publicOrder);
+            return;
+          }
+        } catch (publicError: any) {
+          // If the customer is signed in, fall through to the richer protected
+          // order endpoint while Apple/Tap propagation catches up.
+          if (!orderId || !localStorage.getItem("token")) throw publicError;
+        }
+      }
+
+      if (orderId) {
+        const value = await getOrderById(orderId);
+        setOrder(value?.order ?? value);
+        return;
+      }
+
+      setError("Payment was confirmed, but order details are still being prepared.");
     } catch (err: any) {
       setError(
         err?.response?.data?.error ||
           err?.response?.data?.message ||
           err?.message ||
-          "Unable to load the latest order details."
+          "Unable to load the latest payment details."
       );
     } finally {
       setLoading(false);
     }
-  }, [orderId]);
+  }, [orderId, paymentReference]);
 
   useEffect(() => {
     void loadOrder();
@@ -227,10 +249,17 @@ const PaymentSuccess = () => {
           ) : null}
 
           <div className="pay-result-actions">
-            <button className="pay-primary" onClick={() => navigate(ordersPath)}>
-              <ReceiptText size={17} />
-              View my orders
-            </button>
+            {localStorage.getItem("token") ? (
+              <button className="pay-primary" onClick={() => navigate(ordersPath)}>
+                <ReceiptText size={17} />
+                View my orders
+              </button>
+            ) : (
+              <button className="pay-primary" onClick={() => navigate("/")}>
+                <Home size={17} />
+                Continue to CakeNTake
+              </button>
+            )}
             <button className="pay-secondary" onClick={() => navigate("/")}>
               <Home size={17} />
               Back to home

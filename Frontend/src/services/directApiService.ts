@@ -37,8 +37,12 @@ export const storefrontApi = {
   profile: (userId: string | number, config?: unknown) => api.get(`/user/${userId}`, config as never),
   updateProfile: (payload: unknown, config?: unknown) => api.put("/profile", payload, config as never),
   order: <T>(id: string | number, config?: unknown) => api.get<T>(`/orders/${id}`, config as never),
-  requestAccountDeletion: (payload: { password: string; reason: string }, config?: unknown) =>
+  requestAccountDeletion: (payload: { password: string; reason?: string }, config?: unknown) =>
     api.post("/account/delete-request", payload, config as never),
+  requestAccountDeletionPublic: (payload: { identifier: string; password: string; reason?: string }) =>
+    api.post("/account/delete-request-public", payload),
+  getAccountDeletionStatus: (statusToken: string) =>
+    api.get(`/account/delete-request-status/${encodeURIComponent(statusToken)}`),
 };
 
 export const accountDeletionApi = {
@@ -98,4 +102,9 @@ export const menuApi = {
 
 export const supplierApiDetails = {
   get: (id: string | number) => api.get(`/suppliers/${id}`),
+};
+
+export const paymentResultApi = {
+  publicPaymentResult: (reference: string) =>
+    api.get(`/payments/public-result/${encodeURIComponent(reference)}`),
 };
