@@ -626,7 +626,7 @@ export default function Navbar({ cartCount, wishlistCount = 0 }: NavbarProps) {
             )}
 
             {/* Download App — visible on both desktop and mobile */}
-            <motion.button
+            {/* <motion.button
               className="mainbar-pwa-btn"
               onClick={triggerPwaInstall}
               whileHover={{ scale: 1.05 }}
@@ -635,7 +635,7 @@ export default function Navbar({ cartCount, wishlistCount = 0 }: NavbarProps) {
             >
               <Download size={16} />
               <span className="mainbar-pwa-text">Download App</span>
-            </motion.button>
+            </motion.button> */}
 
             {/* Hamburger — mobile only */}
             <motion.button

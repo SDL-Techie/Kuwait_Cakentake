@@ -47,17 +47,10 @@ export default function PaymentFailed() {
           </div>
 
           <div className="pay-result-actions">
-            {localStorage.getItem("token") ? (
-              <button className="pay-primary" onClick={() => navigate("/orders")}>
-                <RotateCcw size={17} />
-                Retry from My Orders
-              </button>
-            ) : (
-              <button className="pay-primary" onClick={() => navigate("/")}>
-                <Home size={17} />
-                Continue to CakeNTake
-              </button>
-            )}
+            <button className="pay-primary" onClick={() => navigate("/orders")}>
+              <RotateCcw size={17} />
+              Retry from My Orders
+            </button>
             <button className="pay-secondary" onClick={() => navigate("/")}>
               <Home size={17} />
               Back to home

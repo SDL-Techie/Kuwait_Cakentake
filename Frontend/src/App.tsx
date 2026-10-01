@@ -53,6 +53,7 @@ import AgentManagement from './agent/AgentManagement';
 import AgentMenuManagement from './agent/Agentmenumanagement';
 import AgentProduct from './agent/AgentProduct';
 import AgentOrder from './agent/AgentOrder';
+import ChatWidget from './components/ChatWidget/ChatWidget';
 import Agentfetchorder from './agent/Agentfetchorder';
 import AgentDashboard from './agent/Agentdashboard';
 import AgentPayment from './agent/Agentpayment';
@@ -157,8 +158,6 @@ const AppContent: React.FC = () => {
               <Route path="/categoryproduct/:id" element={<CategoryProduct />} />
               <Route path="/payment-success" element={<PaymentSuccess/>}/>
               <Route path="/payment-success/:transactionId" element={<PaymentSuccess/>}/>
-              <Route path="/success-payment" element={<PaymentSuccess/>}/>
-              <Route path="/success-payment/:transactionId" element={<PaymentSuccess/>}/>
               <Route path="/payment-failed" element={<PaymentFailed/>}/>
               <Route path="/payment-failed/:transactionId" element={<PaymentFailed/>}/>
               <Route path="/payment-cancel" element={<PaymentFailed/>}/>
@@ -225,9 +224,6 @@ const AppContent: React.FC = () => {
       <Route path="supplier" element={<SupplierManagement/>}/> */}
       <Route path="inventory" element={<InventoryManagement/>}/>
       <Route path="loyality" element={<Loyalty/>}/>
-    </Route>
-
-    <Route element={<RoleProtectedRoute allowedRoles={['ADMIN','OWNER']} />}>
       <Route path="account-deletion-requests" element={<AccountDeletionRequests/>}/>
     </Route>
 
@@ -286,6 +282,7 @@ const AppContent: React.FC = () => {
       {!isAdmin && !hideNavAndFooter && (
         <>
           <Footer />
+            <ChatWidget />
         </>
       )}
     </div>

@@ -446,75 +446,8 @@ from models.misc import (
 from models.order import Order
 from middleware.role import role_required
 from sqlalchemy import func
-from config import Config
 
 misc_bp = Blueprint("misc", __name__)
-
-def _version_tuple(value):
-    parts = []
-    for token in str(value or "0").split("."):
-        match = __import__("re").match(r"(\d+)", token)
-        parts.append(int(match.group(1)) if match else 0)
-    return tuple((parts + [0, 0, 0])[:3])
-
-
-def _build_number(value):
-    try:
-        return max(0, int(str(value or "0").strip()))
-    except (TypeError, ValueError):
-        return 0
-
-
-def _is_older_release(current_version, current_build, target_version, target_build):
-    current_v = _version_tuple(current_version)
-    target_v = _version_tuple(target_version)
-    if current_v != target_v:
-        return current_v < target_v
-    # Build numbers are only enforced when production explicitly configures a
-    # target build (> 0), so existing deployments remain backwards compatible.
-    return target_build > 0 and current_build < target_build
-
-
-@misc_bp.route("/app/version", methods=["GET"])
-def get_mobile_app_version_policy():
-    platform = str(request.args.get("platform") or "android").strip().lower()
-    if platform not in {"ios", "android"}:
-        platform = "android"
-
-    current_version = str(request.args.get("current_version") or "0.0.0").strip()
-    current_build = _build_number(request.args.get("current_build"))
-    latest_version = Config.APP_LATEST_VERSION
-    minimum_version = Config.APP_MINIMUM_VERSION
-
-    if platform == "ios":
-        latest_build = Config.APP_LATEST_IOS_BUILD
-        minimum_build = Config.APP_MINIMUM_IOS_BUILD
-        store_url = Config.IOS_STORE_URL
-    else:
-        latest_build = Config.APP_LATEST_ANDROID_BUILD
-        minimum_build = Config.APP_MINIMUM_ANDROID_BUILD
-        store_url = Config.ANDROID_STORE_URL
-
-    return jsonify({
-        "platform": platform,
-        "current_version": current_version,
-        "current_build": current_build,
-        "latest_version": latest_version,
-        "latest_build": latest_build,
-        "minimum_version": minimum_version,
-        "minimum_build": minimum_build,
-        "update_available": _is_older_release(
-            current_version, current_build, latest_version, latest_build
-        ),
-        "force_update": _is_older_release(
-            current_version, current_build, minimum_version, minimum_build
-        ),
-        "store_url": store_url,
-        "message": Config.APP_UPDATE_MESSAGE,
-    }), 200
-
-
-
 
 
 # ─── NOTIFICATIONS ─────────────────────────────────────────────────────────────────

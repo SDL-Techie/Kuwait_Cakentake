@@ -53,7 +53,7 @@ const NAV_SECTIONS = [
       { type: 'link', name: 'Staff Management', icon: <FaUserTie />, path: '/admin/staff', roles: ['ADMIN'] },
       { type: 'link', name: 'Agent Management', icon: <FaUsersCog />, path: '/admin/agentmanagement', roles: ['ADMIN','SHOP_MANAGER'] },
       { type: 'link', name: 'Customer Management', icon: <FaUsers />, path: '/admin/customer', roles: ['ADMIN', 'SALES_AGENT','SHOP_MANAGER'] },
-      { type: 'link', name: 'Deletion Requests', icon: <FaUserSlash />, path: '/admin/account-deletion-requests', roles: ['ADMIN', 'OWNER'] },
+      { type: 'link', name: 'Deletion Requests', icon: <FaUserSlash />, path: '/admin/account-deletion-requests', roles: ['ADMIN'] },
       { type: 'link', name: 'Blog Management', icon: <FaUsers />, path: '/admin/blog', roles: ['ADMIN', 'SALES_AGENT'] },
     ],
   },

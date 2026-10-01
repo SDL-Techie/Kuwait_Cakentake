@@ -97,6 +97,8 @@
 
 import { useEffect, useRef } from "react";
 import "./apppromo.css";
+import playstoreicon from "../../../public/assets/playstore.png";
+import appstoreicon from "../../../public/assets/appstore.png";
 
 const cakes = [
   {
@@ -188,27 +190,30 @@ export function AppPromo() {
             rel="noreferrer"
             className="lp-store"
           >
-            <span className="lp-store-ico">
+            {/* <span className="lp-store-ico">
               <GooglePlayIcon />
             </span>
             <span className="lp-store-text">
               <small>GET IT ON</small>
               <b>Google Play</b>
-            </span>
+            </span> */}
+            <img className="playstoreicon" src={playstoreicon} alt="Google Play" />
           </a>
           <a
-            href="https://www.apple.com/app-store/"
+            href="https://apps.apple.com/in/app/cakentake/id6815976151"
             target="_blank"
             rel="noreferrer"
             className="lp-store"
           >
-            <span className="lp-store-ico">
+            {/* <span className="lp-store-ico">
               <AppleIcon />
             </span>
             <span className="lp-store-text">
               <small>Download on the</small>
               <b>App Store</b>
-            </span>
+            </span> */}
+
+             <img className="appstoreicon" src={appstoreicon} alt="Google Play" />
           </a>
         </div>
       </div>

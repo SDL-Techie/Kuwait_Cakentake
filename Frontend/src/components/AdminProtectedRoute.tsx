@@ -39,7 +39,6 @@ import { Navigate, Outlet, useLocation } from "react-router-dom";
 
 const STAFF_ROLES = [
   "ADMIN",
-  "OWNER",
   "SHOP_MANAGER",
   "KITCHEN_STAFF",
   "SALES_AGENT",

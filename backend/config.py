@@ -6,13 +6,6 @@ from datetime import timedelta
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 load_dotenv(os.path.join(BASE_DIR, ".env"))
 
-def _env_int(name, default=0):
-    try:
-        return int(str(os.getenv(name, default) or default).strip())
-    except (TypeError, ValueError):
-        return int(default)
-
-
 class Config:
     # DB_PASSWORD = quote_plus(os.getenv("DB_PASSWORD"))
     DB_HOST = os.getenv("DB_HOST")
@@ -55,20 +48,6 @@ class Config:
     WEB_APP_URL = (os.getenv("WEB_APP_URL") or "").rstrip("/")
     APP_DEEP_LINK_SCHEME = (os.getenv("APP_DEEP_LINK_SCHEME") or "cakentake").strip().rstrip(":/")
     TAP_POST_URL = (os.getenv("TAP_POST_URL") or "").strip()
-
-    # Mobile update policy. Change these environment values on the server when a
-    # new store build becomes available; no mobile code deployment is required.
-    APP_LATEST_VERSION = (os.getenv("APP_LATEST_VERSION") or "1.0.0").strip()
-    APP_MINIMUM_VERSION = (os.getenv("APP_MINIMUM_VERSION") or "0.0.0").strip()
-    # Optional native store build numbers. Keep 0 to disable build-number-only
-    # prompting. This lets production distinguish 1.0.0 (8) from 1.0.0 (9).
-    APP_LATEST_ANDROID_BUILD = _env_int("APP_LATEST_ANDROID_BUILD", 0)
-    APP_MINIMUM_ANDROID_BUILD = _env_int("APP_MINIMUM_ANDROID_BUILD", 0)
-    APP_LATEST_IOS_BUILD = _env_int("APP_LATEST_IOS_BUILD", 0)
-    APP_MINIMUM_IOS_BUILD = _env_int("APP_MINIMUM_IOS_BUILD", 0)
-    APP_UPDATE_MESSAGE = (os.getenv("APP_UPDATE_MESSAGE") or "A newer CakeNTake experience is available with the latest improvements and fixes.").strip()
-    ANDROID_STORE_URL = (os.getenv("ANDROID_STORE_URL") or "https://play.google.com/store/apps/details?id=com.cakentake.app").strip()
-    IOS_STORE_URL = (os.getenv("IOS_STORE_URL") or "https://apps.apple.com/app/id6815976151").strip()
     CORS_ORIGINS = [
         origin.strip()
         for origin in (os.getenv("CORS_ORIGINS") or "*").split(",")

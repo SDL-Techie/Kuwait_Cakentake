@@ -99,14 +99,14 @@ background: linear-gradient(
   display: inline-flex;
   align-items: center;
   gap: 12px;
-  background: #fff8ec;
-  color: #314631;
+  /* background: #fff8ec; */
+  /* color: #314631; */
   padding: 10px 20px 10px 16px;
   border-radius: 14px;
   text-decoration: none;
   transition: transform .25s ease, box-shadow .25s ease, background .25s ease;
-  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.25);
-  border: 1px solid rgba(200, 169, 107, 0.4);
+  /* box-shadow: 0 8px 22px rgba(0, 0, 0, 0.25);
+  border: 1px solid rgba(200, 169, 107, 0.4); */
 }
 
 .lp-store:hover {
@@ -280,4 +280,16 @@ background: linear-gradient(
   }
   .lp-phone-stage { height: 480px; }
   .lp-phone { width: 240px; height: 460px; }
+}
+
+.playstoreicon{
+  height: 50px;
+  width: 150px;
+  border-radius: 10px;
+}
+
+.appstoreicon{
+  height: 69px;
+  width: 175px;
+  border-radius: 10px;
 }

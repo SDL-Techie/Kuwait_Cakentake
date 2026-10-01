@@ -1,7 +1,6 @@
 import type { FC } from 'react';
 import { useEffect, useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
-import { ArrowUp } from 'lucide-react';
 import axios from 'axios';
 import CategorySlider from '../categoryslider/CategorySlider';
 import ProductCard from '../../components/ProductCard/ProductCard'; // Ensure correct path
@@ -109,10 +108,6 @@ const Home: FC = () => {
 
   const tickerText =
     ' • ARTISAN CAKES • FRESHLY BAKED • PREMIUM INGREDIENTS • HANDCRAFTED WITH LOVE • FRENCH PATISSERIE • ';
-
-  const scrollToTop = () => {
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
 
   // Fetch featured products whenever currency changes
   useEffect(() => {
@@ -332,18 +327,6 @@ const Home: FC = () => {
       </section>
 
       <AppPromo/>
-
-      <div className="home-back-to-top-wrapper">
-        {/* <button
-          type="button"
-          className="home-back-to-top-btn"
-          onClick={scrollToTop}
-          title="Back to top"
-          aria-label="Back to top"
-        >
-          <ArrowUp size={18} />
-        </button> */}
-      </div>
 
       <ChatWidget />
     </div>

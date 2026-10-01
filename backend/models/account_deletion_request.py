@@ -1,6 +1,5 @@
 from extensions import db
 from datetime import datetime
-import uuid
 
 
 class AccountDeletionRequest(db.Model):
@@ -21,16 +20,6 @@ class AccountDeletionRequest(db.Model):
 
     reason = db.Column(db.Text, nullable=False)
     status = db.Column(db.String(20), default="PENDING", nullable=False)  # PENDING, APPROVED, REJECTED
-
-    # Opaque token used by the public deletion page to show request/completion
-    # status without exposing a sequential database ID or personal information.
-    public_token = db.Column(
-        db.String(64),
-        unique=True,
-        nullable=False,
-        index=True,
-        default=lambda: uuid.uuid4().hex,
-    )
 
     requested_at = db.Column(db.DateTime, default=datetime.utcnow)
     reviewed_at = db.Column(db.DateTime, nullable=True)
