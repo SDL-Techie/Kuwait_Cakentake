@@ -14,7 +14,10 @@ import {
   KitchenOrder as KitchenOrderRecord,
 } from '../../services/kitchenService';
 import { createPaymentLink } from '../../services/paymentService';
-
+import {
+  formatKuwaitDate, formatKuwaitTime, formatKuwaitDateTime,
+  toKuwaitDateKey, getKuwaitTodayStr, getKuwaitParts,
+} from '../../utils/kuwaitTime';
 /* ─── SVG Icons ──────────────────────────────────────────────────────────────── */
 const IconChef = ({ size = 20, className = "" }: { size?: number; className?: string }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
@@ -581,6 +584,11 @@ const getCurrentUserId = (): number | null => {
 // selected day, navigable with the arrows or the calendar icon).
 type DateFilterMode = 'all' | 'day';
 
+const kuwaitTodayAsLocalDate = () => {
+  const p = getKuwaitParts();
+  return new Date(p.year, p.month - 1, p.day);
+};
+
 const isSameDay = (a: Date, b: Date) =>
   a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
 
@@ -606,7 +614,8 @@ const KitchenOrder: React.FC = () => {
   // entirely (see applyTabRules). Defaults to 'day' (today) so Pending opens
   // scoped to "what's needed today" rather than every pending order ever.
   const [dateFilterMode, setDateFilterMode] = useState<DateFilterMode>('day');
-  const [selectedDay, setSelectedDay] = useState<Date>(new Date());
+  // const [selectedDay, setSelectedDay] = useState<Date>(new Date());
+  const [selectedDay, setSelectedDay] = useState<Date>(kuwaitTodayAsLocalDate());
   const dateInputRef = useRef<HTMLInputElement>(null);
 
   // Calendar view modal
@@ -688,32 +697,51 @@ const KitchenOrder: React.FC = () => {
   //  off `status` at all here. Instead: if the order carries ANY completion
   //  timestamp, it's been kitchen-completed — use that date. Otherwise it's
   //  still pending/preparing, so use created_at.
-  const getKitchenRelevantDate = (order: any): Date => {
-    const completedRaw =
-      order?.completed_by_kitchen_at ||
-      order?.completed_at ||
-      order?.kitchen_completed_at ||
-      order?.preparation_completed_at ||
-      order?.ready_at;
+  // const getKitchenRelevantDate = (order: any): Date => {
+  //   const completedRaw =
+  //     order?.completed_by_kitchen_at ||
+  //     order?.completed_at ||
+  //     order?.kitchen_completed_at ||
+  //     order?.preparation_completed_at ||
+  //     order?.ready_at;
 
-    if (completedRaw) {
-      return new Date(completedRaw);
-    }
+  //   if (completedRaw) {
+  //     return new Date(completedRaw);
+  //   }
 
-    return new Date(order?.updated_at || order?.created_at);
-  };
+  //   return new Date(order?.updated_at || order?.created_at);
+  // };
 
+  
   // The date a PENDING order should be judged against: kitchen staff care
   // about WHEN THE ORDER IS ACTUALLY NEEDED, not when it happened to be
   // placed. Pickup orders use pickup_date (falling back to delivery_date if
   // pickup_date isn't set on the record); delivery orders use delivery_date.
-  const getPendingRelevantDate = (order: any): Date | null => {
-    const isPickup = (order?.delivery_method || '').toUpperCase() === 'PICKUP';
-    const raw = isPickup
-      ? (order?.pickup_date || order?.delivery_date)
-      : order?.delivery_date;
-    return raw ? new Date(raw) : null;
-  };
+  // const getPendingRelevantDate = (order: any): Date | null => {
+  //   const isPickup = (order?.delivery_method || '').toUpperCase() === 'PICKUP';
+  //   const raw = isPickup
+  //     ? (order?.pickup_date || order?.delivery_date)
+  //     : order?.delivery_date;
+  //   return raw ? new Date(raw) : null;
+  // };
+
+
+  const getKitchenRelevantDate = (order: any): string => {
+  return (
+    order?.completed_by_kitchen_at ||
+    order?.completed_at ||
+    order?.kitchen_completed_at ||
+    order?.preparation_completed_at ||
+    order?.ready_at ||
+    order?.updated_at ||
+    order?.created_at
+  );
+};
+
+const getPendingRelevantDate = (order: any): string | null => {
+  const isPickup = (order?.delivery_method || '').toUpperCase() === 'PICKUP';
+  return (isPickup ? (order?.pickup_date || order?.delivery_date) : order?.delivery_date) || null;
+};
 
   // Apply all business rules on top of the active tab's raw list:
   //  · Delivered orders are never shown on the kitchen board, in any tab.
@@ -745,10 +773,16 @@ const KitchenOrder: React.FC = () => {
         base = base.filter((order: any) => (order.status || '').toUpperCase() === 'PREPARING');
       }
 
+      // if (tab === 'completed') {
+      //   const today = new Date();
+      //   return base.filter((order: any) => isSameDay(getKitchenRelevantDate(order), today));
+      // }
+
       if (tab === 'completed') {
-        const today = new Date();
-        return base.filter((order: any) => isSameDay(getKitchenRelevantDate(order), today));
-      }
+  const todayKey = getKuwaitTodayStr();
+  return base.filter((order: any) => toKuwaitDateKey(getKitchenRelevantDate(order)) === todayKey);
+}
+
 
       if (tab === 'all') {
         return base;
@@ -756,14 +790,20 @@ const KitchenOrder: React.FC = () => {
 
       if (dateFilterMode === 'all') return base;
 
-      if (tab === 'pending') {
-        return base.filter((order: any) => {
-          const relevantDate = getPendingRelevantDate(order);
-          return relevantDate ? isSameDay(relevantDate, selectedDay) : false;
-        });
-      }
+      // if (tab === 'pending') {
+      //   return base.filter((order: any) => {
+      //     const relevantDate = getPendingRelevantDate(order);
+      //     return relevantDate ? isSameDay(relevantDate, selectedDay) : false;
+      //   });
+      // }
 
-      return base.filter((order: any) => isSameDay(new Date(order.created_at), selectedDay));
+      return base.filter((order: any) => {
+  const relevant = getPendingRelevantDate(order);
+  return relevant ? toKuwaitDateKey(relevant) === toDateInputValue(selectedDay) : false;
+});
+
+      // return base.filter((order: any) => isSameDay(new Date(order.created_at), selectedDay));
+      return base.filter((order: any) => toKuwaitDateKey(order.created_at) === toDateInputValue(selectedDay));
     },
     [dateFilterMode, selectedDay]
   );
@@ -1285,7 +1325,8 @@ const KitchenOrder: React.FC = () => {
       ) : (
         <div className="ko-orders-grid">
           {filteredOrders.map((order: any) => {
-            const dateStr = new Date(order.created_at).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
+            // const dateStr = new Date(order.created_at).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
+            const dateStr = formatKuwaitTime(order.created_at);
             const currentStatus = (order.status || 'PENDING').toUpperCase();
             const isMine = order.preparation_started_by === currentUserId;
             const isPickup = (order.delivery_method || '').toUpperCase() === 'PICKUP';
@@ -1871,7 +1912,8 @@ const KitchenOrder: React.FC = () => {
                   <div className="receipt-basics">
                     <p><strong>Order No:</strong> {selectedOrder.order_number ?? selectedOrder.id}</p>
                     <p><strong>Date:</strong> {fmtDate(selectedOrder.created_at)}</p>
-                    <p><strong>Time:</strong> {new Date(selectedOrder.created_at).toLocaleTimeString()}</p>
+                    {/* <p><strong>Time:</strong> {new Date(selectedOrder.created_at).toLocaleTimeString()}</p> */}
+                    <p><strong>Time:</strong> {formatKuwaitTime(selectedOrder.created_at)} (Kuwait)</p>
                     <p><strong>Customer:</strong> {selectedOrder.customer?.first_name} {selectedOrder.customer?.last_name}</p>
                     <p><strong>Phone:</strong> {selectedOrder.customer?.phone_no || selectedOrder.customerPhone}</p>
                     <p><strong>Payment:</strong> {selectedOrder.payment_method || selectedOrder.paymentMethod}</p>

@@ -1,0 +1,202 @@
+/* ─── Kuwait Clock Component ───
+   Styled to harmoniously match CakeNTake Admin Dashboard design system:
+   Clean white card, warm neutral tones (#f6f5f0 canvas, #ecebe6 border),
+   Sage green accents (#437d3f, #dce5ce), and charcoal typography (#1a1a1a).
+─── */
+
+.kc-card {
+  display: inline-flex;
+  align-items: center;
+  gap: 16px;
+  padding: 14px 20px;
+  border-radius: 16px;
+  background-color: #ffffff;
+  color: #1a1a1a;
+  border: 1px solid #ecebe6;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+  box-sizing: border-box;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.kc-card:hover {
+  border-color: #dce5ce;
+  box-shadow: 0 3px 10px rgba(67, 125, 63, 0.06);
+}
+
+/* ─── Analog Clock Face ─── */
+.kc-face-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.kc-face {
+  width: 76px;
+  height: 76px;
+  flex-shrink: 0;
+  display: block;
+}
+
+.kc-ring {
+  fill: #faf9f6;
+  stroke: #e2e0d8;
+  stroke-width: 2.5;
+}
+
+.kc-tick {
+  stroke: #b5b3a8;
+  stroke-width: 1.3;
+  stroke-linecap: round;
+}
+
+.kc-tick-major {
+  stroke: #4B6B3F;
+  stroke-width: 2.4;
+}
+
+.kc-hand {
+  stroke-linecap: round;
+}
+
+.kc-hour {
+  stroke: #1a1a1a;
+  stroke-width: 3.5;
+}
+
+.kc-minute {
+  stroke: #2e2e2e;
+  stroke-width: 2.4;
+}
+
+.kc-second {
+  stroke: #437d3f;
+  stroke-width: 1.5;
+}
+
+.kc-pin {
+  fill: #437d3f;
+}
+
+/* ─── Digital Information Block ─── */
+.kc-digital {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 175px;
+}
+
+.kc-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 2px;
+}
+
+.kc-live-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 10px;
+  font-weight: 700;
+  color: #437d3f;
+  letter-spacing: 0.05em;
+  background-color: #dce5ce;
+  padding: 1px 7px;
+  border-radius: 12px;
+}
+
+.kc-live-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background-color: #437d3f;
+  box-shadow: 0 0 0 2px rgba(67, 125, 63, 0.25);
+  animation: kcDotPulse 2s infinite ease-in-out;
+}
+
+@keyframes kcDotPulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.35; transform: scale(0.8); }
+}
+
+.kc-zone {
+  font-size: 10px;
+  font-weight: 700;
+  color: #737373;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.kc-time {
+  display: flex;
+  align-items: baseline;
+  font-size: 26px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+  color: #1a1a1a;
+}
+
+.kc-num {
+  font-variant-numeric: tabular-nums;
+}
+
+.kc-colon {
+  margin: 0 1.5px;
+  color: #b5b3a8;
+  font-weight: 600;
+}
+
+.kc-sec {
+  font-size: 17px;
+  font-weight: 700;
+  color: #737373;
+  margin-left: 1px;
+}
+
+.kc-ampm {
+  margin-left: 8px;
+  font-size: 10px;
+  font-weight: 700;
+  color: #2f5529;
+  background-color: #e5ede0;
+  padding: 2px 7px;
+  border-radius: 6px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.kc-date {
+  font-size: 11.5px;
+  color: #737373;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+}
+
+/* ─── Responsive Media Queries ─── */
+@media (max-width: 520px) {
+  .kc-card {
+    width: 100%;
+    justify-content: flex-start;
+    padding: 12px 14px;
+    gap: 12px;
+  }
+
+  .kc-face {
+    width: 64px;
+    height: 64px;
+  }
+
+  .kc-time {
+    font-size: 22px;
+  }
+
+  .kc-sec {
+    font-size: 15px;
+  }
+}

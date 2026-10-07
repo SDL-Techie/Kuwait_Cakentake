@@ -20,6 +20,13 @@ import {
 } from '../../services/orderService';
 
 import {
+  formatKuwaitDate,
+  formatKuwaitTime,
+  formatKuwaitShort,
+  formatKuwaitDateTime,
+} from '../../utils/kuwaitTime';
+
+import {
   getDeliveryAgents,
   getKitchenStaff,
   getDrivers,
@@ -252,11 +259,15 @@ function formatMoney(amount: number, currency?: string): string {
   }
 }
 
+// function formatDate(value?: string): string {
+//   if (!value) return '—';
+//   const d = new Date(value);
+//   if (isNaN(d.getTime())) return String(value);
+//   return d.toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' });
+// }
+
 function formatDate(value?: string): string {
-  if (!value) return '—';
-  const d = new Date(value);
-  if (isNaN(d.getTime())) return String(value);
-  return d.toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' });
+  return formatKuwaitDate(value);
 }
 
 function mapTimelineEntry(h: any): TimelineEntry {
@@ -1291,13 +1302,18 @@ export const OrderManagement: React.FC = () => {
                   </div>
                 ),
               },
+              // {
+              //   header: 'Time',
+              //   accessor: (row: Order) =>
+              //     new Date(row.createdAt).toLocaleString([], {
+              //       month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit',
+              //     }),
+              // },
+
               {
-                header: 'Time',
-                accessor: (row: Order) =>
-                  new Date(row.createdAt).toLocaleString([], {
-                    month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit',
-                  }),
-              },
+  header: 'Time (Kuwait)',
+  accessor: (row: Order) => formatKuwaitShort(row.createdAt),
+},
               {
   header: 'Expected',
   accessor: (row: Order) => {
@@ -1440,6 +1456,7 @@ export const OrderManagement: React.FC = () => {
                 <div><span className="lbl">Phone</span><span>{fullDetailsOrder.createdByPhone ?? '—'}</span></div>
                 <div><span className="lbl">Email</span><span>{fullDetailsOrder.createdByEmail ?? '—'}</span></div>
                 <div><span className="lbl">Order source</span><span>{fullDetailsOrder.orderSource ?? fullDetailsOrder.orderType ?? '—'}</span></div>
+                <div><span className="lbl">Placed at (Kuwait)</span><span>{formatKuwaitDateTime(fullDetailsOrder.createdAt)}</span></div>
               </div>
               {fullDetailsOrder.isSalesAgentOrder && (
                 <p className="op-fd-note">This order was logged on behalf of the customer by a sales agent.</p>
@@ -1589,11 +1606,11 @@ export const OrderManagement: React.FC = () => {
             {/* Greeting card block */}
             {(fullDetailsOrder.greetingMessage || fullDetailsOrder.greetingTo || fullDetailsOrder.greetingFrom) && (
               <div className="op-fd-section op-fd-highlight-greeting">
-                <h4><Gift size={14} /> Greeting Card</h4>
-                <div className="op-fd-grid">
+                <h4><Gift size={14} /> Greeting Message</h4>
+                {/* <div className="op-fd-grid">
                   <div><span className="lbl">To</span><span>{fullDetailsOrder.greetingTo ?? '—'}</span></div>
                   <div><span className="lbl">From</span><span>{fullDetailsOrder.greetingFrom ?? '—'}</span></div>
-                </div>
+                </div> */}
                 {fullDetailsOrder.greetingMessage && (
                   <p className="op-fd-greeting-message">
                     <Sparkles size={13} /> "{fullDetailsOrder.greetingMessage}"
@@ -1868,7 +1885,8 @@ export const OrderManagement: React.FC = () => {
                 )}
                 {selectedOrder.driverSubmittedAt && (
                   <p className="profile-row">
-                    <strong>Submitted:</strong> {new Date(selectedOrder.driverSubmittedAt).toLocaleString()}
+                    {/* <strong>Submitted:</strong> {new Date(selectedOrder.driverSubmittedAt).toLocaleString()} */}
+                    <strong>Submitted:</strong> {formatKuwaitDateTime(selectedOrder.driverSubmittedAt)}
                   </p>
                 )}
               </div>
@@ -2088,7 +2106,8 @@ export const OrderManagement: React.FC = () => {
       <div className="node-pane">
         <strong>{tl.status.toUpperCase()}</strong>
                         <span className="ts">
-                          {tl.timestamp ? new Date(tl.timestamp).toLocaleString() : ''}
+                          {/* {tl.timestamp ? new Date(tl.timestamp).toLocaleString() : ''} */}
+                          {tl.timestamp ? formatKuwaitDateTime(tl.timestamp) : ''}
                         </span>
                         {tl.changedBy && <span className="ts"> · by {tl.changedBy}</span>}
                         {tl.note && <p className="notes">"{tl.note}"</p>}
@@ -2415,8 +2434,10 @@ export const OrderManagement: React.FC = () => {
 </div>
             <div className="receipt-basics">
               <p><strong>Order No:</strong> {selectedOrder.orderNumber ?? selectedOrder.id}</p>
-              <p><strong>Date:</strong> {new Date(selectedOrder.createdAt).toLocaleDateString()}</p>
-              <p><strong>Time:</strong> {new Date(selectedOrder.createdAt).toLocaleTimeString()}</p>
+              {/* <p><strong>Date:</strong> {new Date(selectedOrder.createdAt).toLocaleDateString()}</p>
+              <p><strong>Time:</strong> {new Date(selectedOrder.createdAt).toLocaleTimeString()}</p> */}
+              <p><strong>Date:</strong> {formatKuwaitDate(selectedOrder.createdAt)}</p>
+<p><strong>Time:</strong> {formatKuwaitTime(selectedOrder.createdAt)} (Kuwait)</p>
               <p><strong>Customer:</strong> {selectedOrder.customerName}</p>
               <p><strong>Phone:</strong> {selectedOrder.customerPhone}</p>
               <p><strong>Payment:</strong> {selectedOrder.paymentMethod}</p>

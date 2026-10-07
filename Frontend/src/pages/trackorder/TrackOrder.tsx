@@ -1,3 +1,1370 @@
+// // import React, { useState, useEffect, useRef } from 'react';
+// // import { useParams, Link } from 'react-router-dom';
+// // import { motion, AnimatePresence } from 'framer-motion';
+// // import { Loader2, AlertCircle, ArrowLeft, Download, CheckCircle, Clock, ShoppingBag, MapPin, Printer, XCircle, FileDown } from 'lucide-react';
+// // import jsPDF from 'jspdf';
+// // import html2canvas from 'html2canvas';
+// // import './TrackOrder.css';
+// // import { getOrderById, cancelOrder } from '@/src/services/orderService';
+// // import { getDisplayOrderNumber } from '@/src/utils/orderNumber';
+// // import {
+// //   getCustomerStages,
+// //   getCustomerStageIndex,
+// //   getCustomerStatusLabel,
+// //   ACCEPTED_STAGE_INDEX,
+// // } from '../../services/orderStatus';
+
+// // /* ─────────────────────────────────────────
+// //    Type Definitions Match Your API Response
+// // ───────────────────────────────────────── */
+// // interface DeliveryAddress {
+// //   street: string;
+// //   city: string;
+// //   state: string;
+// //   country: string;
+// //   pincode: string;
+// // }
+
+// // interface Product {
+// //   id: number;
+// //   name: string;
+// //   description: string;
+// //   price: number;
+// //   image_url: string;
+// // }
+
+// // interface OrderItem {
+// //   id: number;
+// //   price: number;
+// //   quantity: number;
+// //   line_total: number;
+// //   product: Product;
+// //   selectedAddOns?: string[];
+// //   add_ons?: string[];
+// //   addons?: string[];
+// //   custom_json?: any;
+// // }
+
+// // interface Customer {
+// //   first_name: string;
+// //   last_name: string;
+// //   email: string;
+// //   phone_no: string;
+// // }
+
+// // interface DetailedOrder {
+// //   id: number;
+// //   order_number: string;
+// //   status: string;
+// //   payment_method: string;
+// //   payment_status: string;
+// //   total: number;
+// //   subtotal: number;
+// //   discount: number;
+// //   delivery_charge: number;
+// //   currency?: string;
+// //   delivery_method?: string;
+// //   pickup_date?: string | null;
+// //   pickup_time_slot?: string | null;
+// //   order_addons?: {
+// //     addon_id: number;
+// //     addon_name?: string;
+// //     quantity: number;
+// //     price: number;
+// //     total: number;
+// //   }[];
+// //   order_addons_total?: number;
+// //   created_at: string;
+// //   order_type: string;
+// //   customer: Customer;
+// //   delivery_address: DeliveryAddress;
+// //   items: OrderItem[];
+// // }
+
+// // const extractItemAddOns = (item: OrderItem): string[] => {
+// //   const rawAddOns =
+// //     item.selectedAddOns ||
+// //     item.add_ons ||
+// //     item.addons ||
+// //     item.custom_json?.selectedAddOns ||
+// //     item.custom_json?.add_ons ||
+// //     item.custom_json?.addons ||
+// //     item.custom_json?.selected_add_ons;
+
+// //   if (Array.isArray(rawAddOns)) {
+// //     return rawAddOns.filter(Boolean).map(String);
+// //   }
+
+// //   if (typeof rawAddOns === 'string') {
+// //     return rawAddOns.split(',').map((value) => value.trim()).filter(Boolean);
+// //   }
+
+// //   return [];
+// // };
+
+// // const getCurrencySymbol = (currency?: string): string => {
+// //   const cur = (currency || 'INR').toUpperCase();
+// //   return cur === 'INR' ? '₹' : cur;
+// // };
+
+// // const formatPrice = (amount: number, currency?: string): string =>
+// //   `${getCurrencySymbol(currency)}${Number(amount || 0).toFixed(2)}`;
+
+// // const TrackOrder: React.FC = () => {
+// //   const { id } = useParams<{ id: string }>();
+// //   const [order, setOrder] = useState<DetailedOrder | null>(null);
+// //   const [loading, setLoading] = useState<boolean>(true);
+// //   const [error, setError] = useState<string | null>(null);
+// //   const [showReceipt, setShowReceipt] = useState<boolean>(false);
+
+// //   // Cancel-order state
+// //   const [cancelling, setCancelling] = useState<boolean>(false);
+// //   const [cancelError, setCancelError] = useState<string | null>(null);
+
+// //   // PDF download state
+// //   const [downloadingPdf, setDownloadingPdf] = useState<boolean>(false);
+// //   const [pdfError, setPdfError] = useState<string | null>(null);
+
+// //   const receiptRef = useRef<HTMLDivElement>(null);
+
+// //   useEffect(() => {
+// //     const fetchOrderDetails = async () => {
+// //       try {
+// //         setLoading(true);
+// //         setError(null);
+
+// //         const data = await getOrderById(Number(id));
+// //         setOrder(data);
+// //       } catch (err: any) {
+// //         console.error('Track order fetch error:', err);
+// //         setError(err.response?.data?.message ?? 'Failed to retrieve order tracking information.');
+// //       } finally {
+// //         setLoading(false);
+// //       }
+// //     };
+
+// //     if (id) fetchOrderDetails();
+// //   }, [id]);
+
+// //   /* ─────────────────────────────────────────
+// //      Download the receipt node as a PDF file.
+// //      Renders the receipt DOM node to a canvas via
+// //      html2canvas, then drops that image into a
+// //      jsPDF document sized to a standard receipt
+// //      width (mirrors a thermal-printer style slip).
+// //   ───────────────────────────────────────── */
+// // const handleDownloadPDF = async () => {
+// //   if (!receiptRef.current || !order) return;
+
+// //   let offscreen: HTMLDivElement | null = null;
+
+// //   try {
+// //     setDownloadingPdf(true);
+// //     setPdfError(null);
+
+// //     const original = receiptRef.current;
+
+// //     // Clone the receipt into a hidden, unconstrained container. This is
+// //     // the key fix: the on-screen modal has a scrollable max-height, so
+// //     // html2canvas was only capturing whatever fit in that visible
+// //     // scroll area — cutting off the grand total and footer below it.
+// //     // A clone with no height/overflow limits always renders in full.
+// //     const clone = original.cloneNode(true) as HTMLDivElement;
+
+// //     offscreen = document.createElement('div');
+// //     offscreen.style.position = 'fixed';
+// //     offscreen.style.top = '0';
+// //     offscreen.style.left = '-9999px'; // fully off-screen, not just hidden
+// //     offscreen.style.width = `${original.offsetWidth}px`;
+// //     offscreen.style.height = 'auto';
+// //     offscreen.style.overflow = 'visible';
+// //     offscreen.style.background = '#ffffff';
+
+// //     clone.style.height = 'auto';
+// //     clone.style.maxHeight = 'none';
+// //     clone.style.overflow = 'visible';
+
+// //     offscreen.appendChild(clone);
+// //     document.body.appendChild(offscreen);
+
+// //     // Give the clone's images (logo) a moment to paint before capture
+// //     await new Promise((resolve) => requestAnimationFrame(resolve));
+// //     await new Promise((resolve) => setTimeout(resolve, 50));
+
+// //     const canvas = await html2canvas(clone, {
+// //       scale: 2,
+// //       useCORS: true,
+// //       backgroundColor: '#ffffff',
+// //       logging: false,
+// //       windowWidth: clone.scrollWidth,
+// //       windowHeight: clone.scrollHeight,
+// //     });
+
+// //     const imgData = canvas.toDataURL('image/png');
+
+// //     const pxToMm = (px: number) => px * 0.264583;
+// //     const imgWidthMm = pxToMm(canvas.width / 2);
+// //     const imgHeightMm = pxToMm(canvas.height / 2);
+
+// //     const pdf = new jsPDF({
+// //       orientation: imgHeightMm > imgWidthMm ? 'portrait' : 'landscape',
+// //       unit: 'mm',
+// //       format: [imgWidthMm, imgHeightMm],
+// //     });
+
+// //     pdf.addImage(imgData, 'PNG', 0, 0, imgWidthMm, imgHeightMm);
+
+// //     const orderNumberForFile = getDisplayOrderNumber(order, 15000) || order.id;
+// //     pdf.save(`Receipt-${orderNumberForFile}.pdf`);
+// //   } catch (err) {
+// //     console.error('PDF download error:', err);
+// //     setPdfError('Failed to generate PDF. Please try again.');
+// //   } finally {
+// //     if (offscreen) {
+// //       document.body.removeChild(offscreen);
+// //     }
+// //     setDownloadingPdf(false);
+// //   }
+// // };
+
+// //   // Handle customer-initiated order cancellation
+// //   const handleCancelOrder = async () => {
+// //     if (!order) return;
+
+// //     const confirmed = window.confirm('Are you sure you want to cancel this order? This cannot be undone.');
+// //     if (!confirmed) return;
+
+// //     try {
+// //       setCancelling(true);
+// //       setCancelError(null);
+
+// //       const result = await cancelOrder(order.id);
+// //       const newStatus = result?.status || result?.order?.status || 'CANCELLED';
+
+// //       setOrder((prev) => (prev ? { ...prev, status: newStatus } : prev));
+// //     } catch (err: any) {
+// //       console.error('Cancel order error:', err);
+// //       setCancelError(err.response?.data?.message ?? 'Failed to cancel order.');
+// //     } finally {
+// //       setCancelling(false);
+// //     }
+// //   };
+
+// //   if (loading) {
+// //     return (
+// //       <div className="to-page-center">
+// //         <Loader2 className="to-spinner" size={48} />
+// //         <p>Loading tracking data details...</p>
+// //       </div>
+// //     );
+// //   }
+
+// //   if (error || !order) {
+// //     return (
+// //       <div className="to-error-container">
+// //         <AlertCircle size={48} color="#B95E82" />
+// //         <h2>Tracking Error</h2>
+// //         <p>{error || 'Order record could not be processed.'}</p>
+// //         <Link to="/orders" className="to-btn-primary"><ArrowLeft size={16} /> Back to Orders</Link>
+// //       </div>
+// //     );
+// //   }
+
+// //   const currency = order.currency || 'INR';
+// //   const symbol = getCurrencySymbol(currency);
+
+// //   const orderDate = new Date(order.created_at).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
+// //   const orderTime = new Date(order.created_at).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
+
+// //   const isPickup = (order.delivery_method || 'DELIVERY').toUpperCase() === 'PICKUP';
+// //   const stages = getCustomerStages(isPickup);
+
+// //   const currentStatusIndex = getCustomerStageIndex(order.status, isPickup);
+
+// //   const isCancelled = (order.status ?? '').toUpperCase() === 'CANCELLED';
+// //   const canCancel =
+// //     !isCancelled &&
+// //     currentStatusIndex > -1 &&
+// //     currentStatusIndex < ACCEPTED_STAGE_INDEX;
+// //   const pastCancellationWindow =
+// //     !isCancelled && currentStatusIndex >= ACCEPTED_STAGE_INDEX;
+
+// //   const addonsTotal = Number(order.order_addons_total ?? (order.order_addons?.reduce((s, a) => s + Number(a.total ?? (a.price * a.quantity || 0)), 0) || 0));
+// //   const itemSubtotal = Number(order.subtotal ?? (order.items?.reduce((s, i) => s + Number(i.line_total ?? (i.price * i.quantity || 0)), 0) || 0));
+// //   const computedGrandTotal = Number(order.total ?? (itemSubtotal + addonsTotal - Number(order.discount || 0) + Number(order.delivery_charge || 0)));
+
+// //   return (
+// //     <div className="to-container">
+// //       <div className="to-wrapper">
+
+// //         {/* Top bar Actions */}
+// //         <div className="to-header">
+// //           <Link to="/orders" className="to-back-btn">
+// //             <ArrowLeft size={18} /> <span>Back to Orders</span>
+// //           </Link>
+// //           <div className="to-header-actions">
+// //             {canCancel && (
+// //               <button
+// //                 className="to-btn-danger"
+// //                 onClick={handleCancelOrder}
+// //                 disabled={cancelling}
+// //               >
+// //                 {cancelling ? (
+// //                   <Loader2 size={16} className="to-spinner-inline" />
+// //                 ) : (
+// //                   <XCircle size={16} />
+// //                 )}
+// //                 {cancelling ? 'Cancelling...' : 'Cancel Order'}
+// //               </button>
+// //             )}
+// //             <button className="to-btn-primary" onClick={() => setShowReceipt(true)}>
+// //               <Download size={16} /> Receipt
+// //             </button>
+// //           </div>
+// //         </div>
+
+// //         {/* Dashboard Split Grid Layout */}
+// //         <div className="to-main-grid">
+
+// //           {/* LEFT COLUMN: Tracking metrics & Timeline */}
+// //           <div className="to-panel-left">
+// //             <div className="to-card-header-block">
+// //               <div>
+// //                 <span className="to-badge-status">{getCustomerStatusLabel(order.status, isPickup)}</span>
+// //                 <h2>Order #{getDisplayOrderNumber(order, 15000)}</h2>
+// //                 <p className="to-meta-text">Placed on {orderDate} at {orderTime}</p>
+// //               </div>
+// //             </div>
+
+// //             {cancelError && (
+// //               <div className="to-cancel-error">
+// //                 <AlertCircle size={16} /> {cancelError}
+// //               </div>
+// //             )}
+// //             {isCancelled && (
+// //               <div className="to-cancel-note">
+// //                 This order has been cancelled.
+// //               </div>
+// //             )}
+// //             {pastCancellationWindow && (
+// //               <div className="to-cancel-note">
+// //                 This order is already being prepared and can no longer be cancelled.
+// //               </div>
+// //             )}
+
+// //             <div className="to-timeline-card">
+// //               <h3>Shipment Status</h3>
+// //               <div className="to-timeline">
+// //                 {stages.map((stage, idx) => {
+// //                   const isCompleted = currentStatusIndex > -1 && idx <= currentStatusIndex;
+// //                   const isCurrent = idx === currentStatusIndex;
+
+// //                   return (
+// //                     <div key={stage.key} className={`to-timeline-item ${isCompleted ? 'completed' : ''} ${isCurrent ? 'active' : ''}`}>
+// //                       <div className="to-timeline-icon">
+// //                         {isCompleted ? <CheckCircle size={18} /> : <Clock size={16} />}
+// //                       </div>
+// //                       <div className="to-timeline-content">
+// //                         <h4>{stage.label}</h4>
+// //                         {isCurrent && <p className="to-active-tag">Your package is currently in this stage.</p>}
+// //                       </div>
+// //                     </div>
+// //                   );
+// //                 })}
+// //               </div>
+// //             </div>
+
+// //             {isPickup ? (
+// //               <div className="to-info-card">
+// //                 <div className="to-card-title-with-icon">
+// //                   <ShoppingBag size={18} /> <h3>Store Pickup</h3>
+// //                 </div>
+// //                 <span
+// //                   style={{
+// //                     display: 'inline-flex', alignItems: 'center', gap: 6,
+// //                     padding: '5px 12px', borderRadius: 999,
+// //                     background: '#FCEFD6', color: '#A8641A',
+// //                     fontSize: 11.5, fontWeight: 700, marginBottom: 12,
+// //                   }}
+// //                 >
+// //                   This is a pickup order
+// //                 </span>
+// //                 <p className="to-address-name"><strong>{order.customer.first_name} {order.customer.last_name}</strong></p>
+// //                 <p>Collect from store — no delivery address needed.</p>
+// //                 {order.pickup_date && (
+// //                   <p className="to-meta-text" style={{ marginTop: '8px' }}>
+// //                     Pickup date:{' '}
+// //                     {new Date(order.pickup_date + 'T00:00:00').toLocaleDateString('en-IN', {
+// //                       day: '2-digit', month: 'short', year: 'numeric',
+// //                     })}
+// //                   </p>
+// //                 )}
+// //                 {order.pickup_time_slot && (
+// //                   <p className="to-meta-text">Pickup time: {order.pickup_time_slot}</p>
+// //                 )}
+// //                 <p className="to-meta-text" style={{ marginTop: '8px' }}>Phone: {order.customer.phone_no}</p>
+// //               </div>
+// //             ) : order.delivery_address ? (
+// //               <div className="to-info-card">
+// //                 <div className="to-card-title-with-icon">
+// //                   <MapPin size={18} /> <h3>Delivery Address</h3>
+// //                 </div>
+// //                 <p className="to-address-name"><strong>{order.customer.first_name} {order.customer.last_name}</strong></p>
+// //                 <p>{order.delivery_address.street}</p>
+// //                 <p>{order.delivery_address.city}, {order.delivery_address.state} - {order.delivery_address.pincode}</p>
+// //                 <p>{order.delivery_address.country}</p>
+// //                 <p className="to-meta-text" style={{ marginTop: '8px' }}>Phone: {order.customer.phone_no}</p>
+// //               </div>
+// //             ) : (
+// //               <div className="to-info-card">
+// //                 <div className="to-card-title-with-icon">
+// //                   <MapPin size={18} /> <h3>Delivery Address</h3>
+// //                 </div>
+// //                 <p className="to-meta-text">No delivery address on file for this order.</p>
+// //               </div>
+// //             )}
+// //           </div>
+
+// //           {/* RIGHT COLUMN: Order Items and Cost breakdown */}
+// //           <div className="to-panel-right">
+// //             <div className="to-info-card">
+// //               <div className="to-card-title-with-icon">
+// //                 <ShoppingBag size={18} /> <h3>Items Summary</h3>
+// //               </div>
+// //               <div className="to-items-list">
+// //                 {order.items.map((item) => (
+// //                   <div key={item.id} className="to-product-row">
+// //                     <img src={item.product?.image_url || 'https://via.placeholder.com/60'} alt={item.product?.name} className="to-product-img" />
+// //                     <div className="to-product-details">
+// //                       <h4>{item.product?.name}</h4>
+// //                       <p className="to-meta-text">Qty: {item.quantity}</p>
+// //                     </div>
+// //                     <span className="to-product-price">{formatPrice(item.price, currency)}</span>
+// //                   </div>
+// //                 ))}
+// //               </div>
+
+// //               <div className="to-pricing-breakdown">
+// //                 <div className="to-price-row">
+// //                   <span>Subtotal</span>
+// //                   <span>{formatPrice(itemSubtotal, currency)}</span>
+// //                 </div>
+// //                 {addonsTotal > 0 && (
+// //                   <div className="to-price-row addons">
+// //                     <span>Add-ons</span>
+// //                     <span>{formatPrice(addonsTotal, currency)}</span>
+// //                   </div>
+// //                 )}
+// //                 {order.discount > 0 && (
+// //                   <div className="to-price-row discount">
+// //                     <span>Loyalty Discount</span>
+// //                     <span>-{formatPrice(order.discount, currency)}</span>
+// //                   </div>
+// //                 )}
+// //                 <div className="to-price-row">
+// //                   <span>Delivery Fees</span>
+// //                   <span>{formatPrice(order.delivery_charge, currency)}</span>
+// //                 </div>
+// //                 <hr className="to-divider" />
+// //                 <div className="to-price-row total">
+// //                   <span>Grand Total</span>
+// //                   <span>{formatPrice(computedGrandTotal, currency)}</span>
+// //                 </div>
+// //               </div>
+
+// //               <div className="to-payment-footer">
+// //                 <p><strong>Payment Mode:</strong> {order.payment_method?.toUpperCase()}</p>
+// //                 <p><strong>Status:</strong> <span className={`status-${order.payment_status?.toLowerCase()}`}>{order.payment_status}</span></p>
+// //               </div>
+// //             </div>
+// //           </div>
+
+// //         </div>
+// //       </div>
+
+// //       {/* ─────────────────────────────────────────
+// //          MODAL OVERLAY: PRINTABLE / DOWNLOADABLE BILL RECEIPT
+// //       ───────────────────────────────────────── */}
+// //       <AnimatePresence>
+// //         {showReceipt && (
+// //           <motion.div
+// //             className="to-modal-overlay"
+// //             initial={{ opacity: 0 }}
+// //             animate={{ opacity: 1 }}
+// //             exit={{ opacity: 0 }}
+// //           >
+// //             <motion.div
+// //               className="to-modal-card"
+// //               initial={{ scale: 0.9, y: 20 }}
+// //               animate={{ scale: 1, y: 0 }}
+// //               exit={{ scale: 0.9, y: 20 }}
+// //             >
+// //               <div className="to-modal-actions">
+// //                 <button
+// //                   className="to-print-action-btn"
+// //                   onClick={handleDownloadPDF}
+// //                   disabled={downloadingPdf}
+// //                 >
+// //                   {downloadingPdf ? (
+// //                     <Loader2 size={16} className="to-spinner-inline" />
+// //                   ) : (
+// //                     <FileDown size={16} />
+// //                   )}
+// //                   {downloadingPdf ? 'Preparing PDF...' : 'Download PDF'}
+// //                 </button>
+// //                 <button className="to-close-action-btn" onClick={() => setShowReceipt(false)}>Dismiss</button>
+// //               </div>
+
+// //               {pdfError && (
+// //                 <div className="to-cancel-error" style={{ margin: '0 16px 8px' }}>
+// //                   <AlertCircle size={16} /> {pdfError}
+// //                 </div>
+// //               )}
+
+// //               <div className="to-receipt-print-area" ref={receiptRef}>
+// //                 <div className="receipt-paper">
+// //                   <div className="receipt-center">
+// //                     <div className="receipt-crown-title">
+// //                       <img
+// //                         src="/assets/logo.png"
+// //                         alt="Cake N Take"
+// //                         className="receipt-logo"
+// //                         crossOrigin="anonymous"
+// //                       />
+// //                     </div>
+// //                     <h2 className="receipt-brand">CAKENTAKE</h2>
+// //                     <p className="receipt-address">No.8, Mezzanine Floor, Al Musallam Complex, Al Othman Street, Hawally, Kuwait</p>
+// //                     <p className="receipt-customer">Customer: {order.customer.first_name} {order.customer.last_name}</p>
+// //                     <p className="receipt-contact">PH: {order.customer.phone_no || '+1 (555) 100-2000'}</p>
+// //                   </div>
+
+// //                   <div className="receipt-divider">-----------------------------------------</div>
+
+// //                   <div className="receipt-meta">
+// //                     <p><strong>Order ID:</strong> {order.order_number || order.id}</p>
+// //                     <p><strong>Date:</strong> {orderDate}</p>
+// //                     <p><strong>Time:</strong> {orderTime}</p>
+// //                     <p><strong>Payment Mode:</strong> {order.payment_method?.toUpperCase()}</p>
+// //                     {isPickup && (
+// //                       <p><strong>Order Type:</strong> PICKUP{order.pickup_time_slot ? ` — ${order.pickup_time_slot}` : ''}</p>
+// //                     )}
+// //                   </div>
+
+// //                   <div className="receipt-divider">-----------------------------------------</div>
+
+// //                   <div className="receipt-items-table">
+// //                     {order.items.map((item) => {
+// //                       const itemAddOns = extractItemAddOns(item);
+// //                       return (
+// //                         <div key={item.id} className="receipt-item-row">
+// //                           <div className="receipt-item-main">
+// //                             <span className="receipt-item-name">{item.quantity} x {item.product?.name}</span>
+// //                             <span className="receipt-item-price">
+// //                               {formatPrice(item.line_total || (item.price * item.quantity), currency)}
+// //                             </span>
+// //                           </div>
+// //                           {itemAddOns.length > 0 && (
+// //                             <div className="receipt-item-addons">Add-ons: {itemAddOns.join(', ')}</div>
+// //                           )}
+// //                         </div>
+// //                       );
+// //                     })}
+
+// //                     {order.order_addons && order.order_addons.length > 0 && (
+// //                       <>
+// //                         <div className="receipt-divider">-----------------------------------------</div>
+// //                         {order.order_addons.map((addon) => (
+// //                           <div key={`${addon.addon_id}-${addon.quantity}`} className="receipt-item-row receipt-addon-row">
+// //                             <div className="receipt-item-main">
+// //                               <span className="receipt-item-name">{addon.quantity} × {addon.addon_name || `Addon #${addon.addon_id}`}</span>
+// //                               <span className="receipt-item-price">{formatPrice(addon.total, currency)}</span>
+// //                             </div>
+// //                           </div>
+// //                         ))}
+// //                       </>
+// //                     )}
+// //                   </div>
+
+// //                   <div className="receipt-divider">-----------------------------------------</div>
+
+// //                   <div className="receipt-totals">
+// //                     <div className="receipt-total-row">
+// //                       <span>Subtotal:</span>
+// //                       <span>{formatPrice(itemSubtotal, currency)}</span>
+// //                     </div>
+// //                     {addonsTotal > 0 && (
+// //                       <div className="receipt-total-row">
+// //                         <span>Add-ons:</span>
+// //                         <span>{formatPrice(addonsTotal, currency)}</span>
+// //                       </div>
+// //                     )}
+// //                     {order.discount > 0 && (
+// //                       <div className="receipt-total-row">
+// //                         <span>Loyalty Discount:</span>
+// //                         <span>-{formatPrice(order.discount, currency)}</span>
+// //                       </div>
+// //                     )}
+// //                     <div className="receipt-total-row">
+// //                       <span>Delivery:</span>
+// //                       <span>{formatPrice(order.delivery_charge, currency)}</span>
+// //                     </div>
+
+// //                     <div className="receipt-divider">-----------------------------------------</div>
+
+// //                     <div className="receipt-total-row grand-total">
+// //                       <span>GRAND TOTAL:</span>
+// //                       <span>{formatPrice(computedGrandTotal, currency)}</span>
+// //                     </div>
+// //                   </div>
+
+// //                   <div className="receipt-divider">-----------------------------------------</div>
+
+// //                   <div className="receipt-center receipt-footer-msg">
+// //                     <p>Thank you for dining with CakeNTake!</p>
+// //                     <p>Baked fresh daily, prepared artisanally.</p>
+// //                     <p className="receipt-url">www.cakentake.com</p>
+// //                   </div>
+// //                 </div>
+// //               </div>
+
+// //             </motion.div>
+// //           </motion.div>
+// //         )}
+// //       </AnimatePresence>
+// //     </div>
+// //   );
+// // };
+
+// // export default TrackOrder;
+
+
+// import React, { useState, useEffect, useRef } from 'react';
+// import { useParams, Link } from 'react-router-dom';
+// import { motion, AnimatePresence } from 'framer-motion';
+// import { Loader2, AlertCircle, ArrowLeft, Download, CheckCircle, Clock, ShoppingBag, MapPin, Printer, XCircle, FileDown } from 'lucide-react';
+// import jsPDF from 'jspdf';
+// import html2canvas from 'html2canvas';
+// import './TrackOrder.css';
+// import { getOrderById, cancelOrder } from '@/src/services/orderService';
+// import { getMyAddresses } from '../../services/addressService';
+// import { getDisplayOrderNumber } from '@/src/utils/orderNumber';
+// import {
+//   getCustomerStages,
+//   getCustomerStageIndex,
+//   getCustomerStatusLabel,
+//   ACCEPTED_STAGE_INDEX,
+// } from '../../services/orderStatus';
+
+// /* ─────────────────────────────────────────
+//    Type Definitions Match Your API Response
+// ───────────────────────────────────────── */
+// interface DeliveryAddress {
+//   id?: number;
+//   street: string;
+//   city: string;
+//   state: string;
+//   country: string;
+//   pincode: string;
+//   // Delivery notes (field name may differ per backend — see getDeliveryNotes)
+//   delivery_notes?: string | null;
+//   deliveryNotes?: string | null;
+//   notes?: string | null;
+//   instructions?: string | null;
+// }
+
+// interface Product {
+//   id: number;
+//   name: string;
+//   description: string;
+//   price: number;
+//   image_url: string;
+// }
+
+// interface OrderItem {
+//   id: number;
+//   price: number;
+//   quantity: number;
+//   line_total: number;
+//   product: Product;
+//   selectedAddOns?: string[];
+//   add_ons?: string[];
+//   addons?: string[];
+//   custom_json?: any;
+// }
+
+// interface Customer {
+//   first_name: string;
+//   last_name: string;
+//   email: string;
+//   phone_no: string;
+// }
+
+// interface DetailedOrder {
+//   id: number;
+//   address_id?: number | null;
+//   order_number: string;
+//   status: string;
+//   payment_method: string;
+//   payment_status: string;
+//   total: number;
+//   subtotal: number;
+//   discount: number;
+//   delivery_charge: number;
+//   currency?: string;
+//   delivery_method?: string;
+//   pickup_date?: string | null;
+//   pickup_time_slot?: string | null;
+//   // Order-level notes (fallback if notes are stored on the order itself)
+//   delivery_notes?: string | null;
+//   notes?: string | null;
+//   order_addons?: {
+//     addon_id: number;
+//     addon_name?: string;
+//     quantity: number;
+//     price: number;
+//     total: number;
+//   }[];
+//   order_addons_total?: number;
+//   created_at: string;
+//   order_type: string;
+//   customer: Customer;
+//   delivery_address: DeliveryAddress;
+//   items: OrderItem[];
+// }
+
+// const extractItemAddOns = (item: OrderItem): string[] => {
+//   const rawAddOns =
+//     item.selectedAddOns ||
+//     item.add_ons ||
+//     item.addons ||
+//     item.custom_json?.selectedAddOns ||
+//     item.custom_json?.add_ons ||
+//     item.custom_json?.addons ||
+//     item.custom_json?.selected_add_ons;
+
+//   if (Array.isArray(rawAddOns)) {
+//     return rawAddOns.filter(Boolean).map(String);
+//   }
+
+//   if (typeof rawAddOns === 'string') {
+//     return rawAddOns.split(',').map((value) => value.trim()).filter(Boolean);
+//   }
+
+//   return [];
+// };
+
+// /* Pull delivery notes straight from the order response (address first,
+//    then order-level fields). Returns '' when the API didn't send any. */
+// const getDeliveryNotes = (order: DetailedOrder): string => {
+//   const addr = order.delivery_address;
+//   const raw =
+//     addr?.delivery_notes ??
+//     addr?.deliveryNotes ??
+//     addr?.notes ??
+//     addr?.instructions ??
+//     order.delivery_notes ??
+//     order.notes ??
+//     '';
+//   return typeof raw === 'string' ? raw.trim() : '';
+// };
+
+// const getCurrencySymbol = (currency?: string): string => {
+//   const cur = (currency || 'INR').toUpperCase();
+//   return cur === 'INR' ? '₹' : cur;
+// };
+
+// const formatPrice = (amount: number, currency?: string): string =>
+//   `${getCurrencySymbol(currency)}${Number(amount || 0).toFixed(2)}`;
+
+// const TrackOrder: React.FC = () => {
+//   const { id } = useParams<{ id: string }>();
+//   const [order, setOrder] = useState<DetailedOrder | null>(null);
+//   const [loading, setLoading] = useState<boolean>(true);
+//   const [error, setError] = useState<string | null>(null);
+//   const [showReceipt, setShowReceipt] = useState<boolean>(false);
+
+//   // Delivery notes loaded from the saved address when the order API
+//   // doesn't include them
+//   const [fallbackNotes, setFallbackNotes] = useState<string>('');
+
+//   // Cancel-order state
+//   const [cancelling, setCancelling] = useState<boolean>(false);
+//   const [cancelError, setCancelError] = useState<string | null>(null);
+
+//   // PDF download state
+//   const [downloadingPdf, setDownloadingPdf] = useState<boolean>(false);
+//   const [pdfError, setPdfError] = useState<string | null>(null);
+
+//   const receiptRef = useRef<HTMLDivElement>(null);
+
+//   useEffect(() => {
+//     const fetchOrderDetails = async () => {
+//       try {
+//         setLoading(true);
+//         setError(null);
+
+//         const data = await getOrderById(Number(id));
+//         setOrder(data);
+//       } catch (err: any) {
+//         console.error('Track order fetch error:', err);
+//         setError(err.response?.data?.message ?? 'Failed to retrieve order tracking information.');
+//       } finally {
+//         setLoading(false);
+//       }
+//     };
+
+//     if (id) fetchOrderDetails();
+//   }, [id]);
+
+//   /* If the order response has no delivery notes, look them up on the
+//      customer's saved address that was used for this order. */
+//   useEffect(() => {
+//     if (!order) return;
+
+//     const pickup = (order.delivery_method || 'DELIVERY').toUpperCase() === 'PICKUP';
+//     if (pickup) return;
+//     if (getDeliveryNotes(order)) return; // already have them
+
+//     let cancelled = false;
+
+//     (async () => {
+//       try {
+//         const list: any[] = (await getMyAddresses()) ?? [];
+//         const addrId = order.address_id ?? order.delivery_address?.id;
+
+//         let match = addrId != null ? list.find((a) => a.id === addrId) : undefined;
+
+//         if (!match && order.delivery_address?.street) {
+//           const street = order.delivery_address.street.trim().toLowerCase();
+//           match = list.find((a) => (a.street || '').trim().toLowerCase() === street);
+//         }
+
+//         const notes = typeof match?.delivery_notes === 'string' ? match.delivery_notes.trim() : '';
+//         if (notes && !cancelled) setFallbackNotes(notes);
+//       } catch (err) {
+//         console.error('Could not load delivery notes from saved address:', err);
+//       }
+//     })();
+
+//     return () => {
+//       cancelled = true;
+//     };
+//   }, [order]);
+
+//   /* ─────────────────────────────────────────
+//      Download the receipt node as a PDF file.
+//      Renders the receipt DOM node to a canvas via
+//      html2canvas, then drops that image into a
+//      jsPDF document sized to a standard receipt
+//      width (mirrors a thermal-printer style slip).
+//   ───────────────────────────────────────── */
+//   const handleDownloadPDF = async () => {
+//     if (!receiptRef.current || !order) return;
+
+//     let offscreen: HTMLDivElement | null = null;
+
+//     try {
+//       setDownloadingPdf(true);
+//       setPdfError(null);
+
+//       const original = receiptRef.current;
+
+//       // Clone the receipt into a hidden, unconstrained container so the
+//       // whole receipt (including totals, notes and footer) is captured,
+//       // not just the visible scroll area of the modal.
+//       const clone = original.cloneNode(true) as HTMLDivElement;
+
+//       offscreen = document.createElement('div');
+//       offscreen.style.position = 'fixed';
+//       offscreen.style.top = '0';
+//       offscreen.style.left = '-9999px'; // fully off-screen, not just hidden
+//       offscreen.style.width = `${original.offsetWidth}px`;
+//       offscreen.style.height = 'auto';
+//       offscreen.style.overflow = 'visible';
+//       offscreen.style.background = '#ffffff';
+
+//       clone.style.height = 'auto';
+//       clone.style.maxHeight = 'none';
+//       clone.style.overflow = 'visible';
+
+//       offscreen.appendChild(clone);
+//       document.body.appendChild(offscreen);
+
+//       // Give the clone's images (logo) a moment to paint before capture
+//       await new Promise((resolve) => requestAnimationFrame(resolve));
+//       await new Promise((resolve) => setTimeout(resolve, 50));
+
+//       const canvas = await html2canvas(clone, {
+//         scale: 2,
+//         useCORS: true,
+//         backgroundColor: '#ffffff',
+//         logging: false,
+//         windowWidth: clone.scrollWidth,
+//         windowHeight: clone.scrollHeight,
+//       });
+
+//       const imgData = canvas.toDataURL('image/png');
+
+//       const pxToMm = (px: number) => px * 0.264583;
+//       const imgWidthMm = pxToMm(canvas.width / 2);
+//       const imgHeightMm = pxToMm(canvas.height / 2);
+
+//       const pdf = new jsPDF({
+//         orientation: imgHeightMm > imgWidthMm ? 'portrait' : 'landscape',
+//         unit: 'mm',
+//         format: [imgWidthMm, imgHeightMm],
+//       });
+
+//       pdf.addImage(imgData, 'PNG', 0, 0, imgWidthMm, imgHeightMm);
+
+//       const orderNumberForFile = getDisplayOrderNumber(order, 15000) || order.id;
+//       pdf.save(`Receipt-${orderNumberForFile}.pdf`);
+//     } catch (err) {
+//       console.error('PDF download error:', err);
+//       setPdfError('Failed to generate PDF. Please try again.');
+//     } finally {
+//       if (offscreen) {
+//         document.body.removeChild(offscreen);
+//       }
+//       setDownloadingPdf(false);
+//     }
+//   };
+
+//   // Handle customer-initiated order cancellation
+//   const handleCancelOrder = async () => {
+//     if (!order) return;
+
+//     const confirmed = window.confirm('Are you sure you want to cancel this order? This cannot be undone.');
+//     if (!confirmed) return;
+
+//     try {
+//       setCancelling(true);
+//       setCancelError(null);
+
+//       const result = await cancelOrder(order.id);
+//       const newStatus = result?.status || result?.order?.status || 'CANCELLED';
+
+//       setOrder((prev) => (prev ? { ...prev, status: newStatus } : prev));
+//     } catch (err: any) {
+//       console.error('Cancel order error:', err);
+//       setCancelError(err.response?.data?.message ?? 'Failed to cancel order.');
+//     } finally {
+//       setCancelling(false);
+//     }
+//   };
+
+//   if (loading) {
+//     return (
+//       <div className="to-page-center">
+//         <Loader2 className="to-spinner" size={48} />
+//         <p>Loading tracking data details...</p>
+//       </div>
+//     );
+//   }
+
+//   if (error || !order) {
+//     return (
+//       <div className="to-error-container">
+//         <AlertCircle size={48} color="#B95E82" />
+//         <h2>Tracking Error</h2>
+//         <p>{error || 'Order record could not be processed.'}</p>
+//         <Link to="/orders" className="to-btn-primary"><ArrowLeft size={16} /> Back to Orders</Link>
+//       </div>
+//     );
+//   }
+
+//   const currency = order.currency || 'INR';
+//   const symbol = getCurrencySymbol(currency);
+
+//   const orderDate = new Date(order.created_at).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
+//   const orderTime = new Date(order.created_at).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
+
+//   const isPickup = (order.delivery_method || 'DELIVERY').toUpperCase() === 'PICKUP';
+//   const stages = getCustomerStages(isPickup);
+
+//   const currentStatusIndex = getCustomerStageIndex(order.status, isPickup);
+
+//   const isCancelled = (order.status ?? '').toUpperCase() === 'CANCELLED';
+//   const canCancel =
+//     !isCancelled &&
+//     currentStatusIndex > -1 &&
+//     currentStatusIndex < ACCEPTED_STAGE_INDEX;
+//   const pastCancellationWindow =
+//     !isCancelled && currentStatusIndex >= ACCEPTED_STAGE_INDEX;
+
+//   const addonsTotal = Number(order.order_addons_total ?? (order.order_addons?.reduce((s, a) => s + Number(a.total ?? (a.price * a.quantity || 0)), 0) || 0));
+//   const itemSubtotal = Number(order.subtotal ?? (order.items?.reduce((s, i) => s + Number(i.line_total ?? (i.price * i.quantity || 0)), 0) || 0));
+//   const computedGrandTotal = Number(order.total ?? (itemSubtotal + addonsTotal - Number(order.discount || 0) + Number(order.delivery_charge || 0)));
+
+//   // Delivery notes: from the order response, otherwise from the saved address
+//   const deliveryNotes = getDeliveryNotes(order) || fallbackNotes;
+
+//   return (
+//     <div className="to-container">
+//       <div className="to-wrapper">
+
+//         {/* Top bar Actions */}
+//         <div className="to-header">
+//           <Link to="/orders" className="to-back-btn">
+//             <ArrowLeft size={18} /> <span>Back to Orders</span>
+//           </Link>
+//           <div className="to-header-actions">
+//             {canCancel && (
+//               <button
+//                 className="to-btn-danger"
+//                 onClick={handleCancelOrder}
+//                 disabled={cancelling}
+//               >
+//                 {cancelling ? (
+//                   <Loader2 size={16} className="to-spinner-inline" />
+//                 ) : (
+//                   <XCircle size={16} />
+//                 )}
+//                 {cancelling ? 'Cancelling...' : 'Cancel Order'}
+//               </button>
+//             )}
+//             <button className="to-btn-primary" onClick={() => setShowReceipt(true)}>
+//               <Download size={16} /> Receipt
+//             </button>
+//           </div>
+//         </div>
+
+//         {/* Dashboard Split Grid Layout */}
+//         <div className="to-main-grid">
+
+//           {/* LEFT COLUMN: Tracking metrics & Timeline */}
+//           <div className="to-panel-left">
+//             <div className="to-card-header-block">
+//               <div>
+//                 <span className="to-badge-status">{getCustomerStatusLabel(order.status, isPickup)}</span>
+//                 <h2>Order #{getDisplayOrderNumber(order, 15000)}</h2>
+//                 <p className="to-meta-text">Placed on {orderDate} at {orderTime}</p>
+//               </div>
+//             </div>
+
+//             {cancelError && (
+//               <div className="to-cancel-error">
+//                 <AlertCircle size={16} /> {cancelError}
+//               </div>
+//             )}
+//             {isCancelled && (
+//               <div className="to-cancel-note">
+//                 This order has been cancelled.
+//               </div>
+//             )}
+//             {pastCancellationWindow && (
+//               <div className="to-cancel-note">
+//                 This order is already being prepared and can no longer be cancelled.
+//               </div>
+//             )}
+
+//             <div className="to-timeline-card">
+//               <h3>Shipment Status</h3>
+//               <div className="to-timeline">
+//                 {stages.map((stage, idx) => {
+//                   const isCompleted = currentStatusIndex > -1 && idx <= currentStatusIndex;
+//                   const isCurrent = idx === currentStatusIndex;
+
+//                   return (
+//                     <div key={stage.key} className={`to-timeline-item ${isCompleted ? 'completed' : ''} ${isCurrent ? 'active' : ''}`}>
+//                       <div className="to-timeline-icon">
+//                         {isCompleted ? <CheckCircle size={18} /> : <Clock size={16} />}
+//                       </div>
+//                       <div className="to-timeline-content">
+//                         <h4>{stage.label}</h4>
+//                         {isCurrent && <p className="to-active-tag">Your package is currently in this stage.</p>}
+//                       </div>
+//                     </div>
+//                   );
+//                 })}
+//               </div>
+//             </div>
+
+//             {isPickup ? (
+//               <div className="to-info-card">
+//                 <div className="to-card-title-with-icon">
+//                   <ShoppingBag size={18} /> <h3>Store Pickup</h3>
+//                 </div>
+//                 <span
+//                   style={{
+//                     display: 'inline-flex', alignItems: 'center', gap: 6,
+//                     padding: '5px 12px', borderRadius: 999,
+//                     background: '#FCEFD6', color: '#A8641A',
+//                     fontSize: 11.5, fontWeight: 700, marginBottom: 12,
+//                   }}
+//                 >
+//                   This is a pickup order
+//                 </span>
+//                 <p className="to-address-name"><strong>{order.customer.first_name} {order.customer.last_name}</strong></p>
+//                 <p>Collect from store — no delivery address needed.</p>
+//                 {order.pickup_date && (
+//                   <p className="to-meta-text" style={{ marginTop: '8px' }}>
+//                     Pickup date:{' '}
+//                     {new Date(order.pickup_date + 'T00:00:00').toLocaleDateString('en-IN', {
+//                       day: '2-digit', month: 'short', year: 'numeric',
+//                     })}
+//                   </p>
+//                 )}
+//                 {order.pickup_time_slot && (
+//                   <p className="to-meta-text">Pickup time: {order.pickup_time_slot}</p>
+//                 )}
+//                 <p className="to-meta-text" style={{ marginTop: '8px' }}>Phone: {order.customer.phone_no}</p>
+//               </div>
+//             ) : order.delivery_address ? (
+//               <div className="to-info-card">
+//                 <div className="to-card-title-with-icon">
+//                   <MapPin size={18} /> <h3>Delivery Address</h3>
+//                 </div>
+//                 <p className="to-address-name"><strong>{order.customer.first_name} {order.customer.last_name}</strong></p>
+//                 <p>{order.delivery_address.street}</p>
+//                 <p>{order.delivery_address.city}, {order.delivery_address.state} - {order.delivery_address.pincode}</p>
+//                 <p>{order.delivery_address.country}</p>
+//                 <p className="to-meta-text" style={{ marginTop: '8px' }}>Phone: {order.customer.phone_no}</p>
+//                 {deliveryNotes && (
+//                   <p
+//                     className="to-meta-text"
+//                     style={{ marginTop: '8px', whiteSpace: 'pre-wrap', wordBreak: 'break-word', fontWeight: 700 }}
+//                   >
+//                     <strong>Delivery Notes:</strong> {deliveryNotes}
+//                   </p>
+//                 )}
+//               </div>
+//             ) : (
+//               <div className="to-info-card">
+//                 <div className="to-card-title-with-icon">
+//                   <MapPin size={18} /> <h3>Delivery Address</h3>
+//                 </div>
+//                 <p className="to-meta-text">No delivery address on file for this order.</p>
+//               </div>
+//             )}
+//           </div>
+
+//           {/* RIGHT COLUMN: Order Items and Cost breakdown */}
+//           <div className="to-panel-right">
+//             <div className="to-info-card">
+//               <div className="to-card-title-with-icon">
+//                 <ShoppingBag size={18} /> <h3>Items Summary</h3>
+//               </div>
+//               <div className="to-items-list">
+//                 {order.items.map((item) => (
+//                   <div key={item.id} className="to-product-row">
+//                     <img src={item.product?.image_url || 'https://via.placeholder.com/60'} alt={item.product?.name} className="to-product-img" />
+//                     <div className="to-product-details">
+//                       <h4>{item.product?.name}</h4>
+//                       <p className="to-meta-text">Qty: {item.quantity}</p>
+//                     </div>
+//                     <span className="to-product-price">{formatPrice(item.price, currency)}</span>
+//                   </div>
+//                 ))}
+//               </div>
+
+//               <div className="to-pricing-breakdown">
+//                 <div className="to-price-row">
+//                   <span>Subtotal</span>
+//                   <span>{formatPrice(itemSubtotal, currency)}</span>
+//                 </div>
+//                 {addonsTotal > 0 && (
+//                   <div className="to-price-row addons">
+//                     <span>Add-ons</span>
+//                     <span>{formatPrice(addonsTotal, currency)}</span>
+//                   </div>
+//                 )}
+//                 {order.discount > 0 && (
+//                   <div className="to-price-row discount">
+//                     <span>Loyalty Discount</span>
+//                     <span>-{formatPrice(order.discount, currency)}</span>
+//                   </div>
+//                 )}
+//                 <div className="to-price-row">
+//                   <span>Delivery Fees</span>
+//                   <span>{formatPrice(order.delivery_charge, currency)}</span>
+//                 </div>
+//                 <hr className="to-divider" />
+//                 <div className="to-price-row total">
+//                   <span>Grand Total</span>
+//                   <span>{formatPrice(computedGrandTotal, currency)}</span>
+//                 </div>
+//               </div>
+
+//               <div className="to-payment-footer">
+//                 <p><strong>Payment Mode:</strong> {order.payment_method?.toUpperCase()}</p>
+//                 <p><strong>Status:</strong> <span className={`status-${order.payment_status?.toLowerCase()}`}>{order.payment_status}</span></p>
+//               </div>
+//             </div>
+//           </div>
+
+//         </div>
+//       </div>
+
+//       {/* ─────────────────────────────────────────
+//          MODAL OVERLAY: PRINTABLE / DOWNLOADABLE BILL RECEIPT
+//       ───────────────────────────────────────── */}
+//       <AnimatePresence>
+//         {showReceipt && (
+//           <motion.div
+//             className="to-modal-overlay"
+//             initial={{ opacity: 0 }}
+//             animate={{ opacity: 1 }}
+//             exit={{ opacity: 0 }}
+//           >
+//             <motion.div
+//               className="to-modal-card"
+//               initial={{ scale: 0.9, y: 20 }}
+//               animate={{ scale: 1, y: 0 }}
+//               exit={{ scale: 0.9, y: 20 }}
+//             >
+//               <div className="to-modal-actions">
+//                 <button
+//                   className="to-print-action-btn"
+//                   onClick={handleDownloadPDF}
+//                   disabled={downloadingPdf}
+//                 >
+//                   {downloadingPdf ? (
+//                     <Loader2 size={16} className="to-spinner-inline" />
+//                   ) : (
+//                     <FileDown size={16} />
+//                   )}
+//                   {downloadingPdf ? 'Preparing PDF...' : 'Download PDF'}
+//                 </button>
+//                 <button className="to-close-action-btn" onClick={() => setShowReceipt(false)}>Dismiss</button>
+//               </div>
+
+//               {pdfError && (
+//                 <div className="to-cancel-error" style={{ margin: '0 16px 8px' }}>
+//                   <AlertCircle size={16} /> {pdfError}
+//                 </div>
+//               )}
+
+//               <div className="to-receipt-print-area" ref={receiptRef}>
+//                 <div className="receipt-paper">
+//                   <div className="receipt-center">
+//                     <div className="receipt-crown-title">
+//                       <img
+//                         src="/assets/logo.png"
+//                         alt="Cake N Take"
+//                         className="receipt-logo"
+//                         crossOrigin="anonymous"
+//                       />
+//                     </div>
+//                     <h2 className="receipt-brand">CAKENTAKE</h2>
+//                     <p className="receipt-address">No.8, Mezzanine Floor, Al Musallam Complex, Al Othman Street, Hawally, Kuwait</p>
+//                     <p className="receipt-customer">Customer: {order.customer.first_name} {order.customer.last_name}</p>
+//                     <p className="receipt-contact">PH: {order.customer.phone_no || '+1 (555) 100-2000'}</p>
+//                   </div>
+
+//                   <div className="receipt-divider">-----------------------------------------</div>
+
+//                   <div className="receipt-meta">
+//                     <p><strong>Order ID:</strong> {order.order_number || order.id}</p>
+//                     <p><strong>Date:</strong> {orderDate}</p>
+//                     <p><strong>Time:</strong> {orderTime}</p>
+//                     <p><strong>Payment Mode:</strong> {order.payment_method?.toUpperCase()}</p>
+//                     {isPickup && (
+//                       <p><strong>Order Type:</strong> PICKUP{order.pickup_time_slot ? ` — ${order.pickup_time_slot}` : ''}</p>
+//                     )}
+//                     {!isPickup && deliveryNotes && (
+//                       <p
+//                         className="receipt-delivery-notes"
+//                         style={{
+//                           fontWeight: 700,
+//                           whiteSpace: 'pre-wrap',
+//                           wordBreak: 'break-word',
+//                         }}
+//                       >
+//                         <strong>Delivery Notes: {deliveryNotes}</strong>
+//                       </p>
+//                     )}
+//                   </div>
+
+//                   <div className="receipt-divider">-----------------------------------------</div>
+
+//                   <div className="receipt-items-table">
+//                     {order.items.map((item) => {
+//                       const itemAddOns = extractItemAddOns(item);
+//                       return (
+//                         <div key={item.id} className="receipt-item-row">
+//                           <div className="receipt-item-main">
+//                             <span className="receipt-item-name">{item.quantity} x {item.product?.name}</span>
+//                             <span className="receipt-item-price">
+//                               {formatPrice(item.line_total || (item.price * item.quantity), currency)}
+//                             </span>
+//                           </div>
+//                           {itemAddOns.length > 0 && (
+//                             <div className="receipt-item-addons">Add-ons: {itemAddOns.join(', ')}</div>
+//                           )}
+//                         </div>
+//                       );
+//                     })}
+
+//                     {order.order_addons && order.order_addons.length > 0 && (
+//                       <>
+//                         <div className="receipt-divider">-----------------------------------------</div>
+//                         {order.order_addons.map((addon) => (
+//                           <div key={`${addon.addon_id}-${addon.quantity}`} className="receipt-item-row receipt-addon-row">
+//                             <div className="receipt-item-main">
+//                               <span className="receipt-item-name">{addon.quantity} × {addon.addon_name || `Addon #${addon.addon_id}`}</span>
+//                               <span className="receipt-item-price">{formatPrice(addon.total, currency)}</span>
+//                             </div>
+//                           </div>
+//                         ))}
+//                       </>
+//                     )}
+//                   </div>
+
+//                   <div className="receipt-divider">-----------------------------------------</div>
+
+//                   <div className="receipt-totals">
+//                     <div className="receipt-total-row">
+//                       <span>Subtotal:</span>
+//                       <span>{formatPrice(itemSubtotal, currency)}</span>
+//                     </div>
+//                     {addonsTotal > 0 && (
+//                       <div className="receipt-total-row">
+//                         <span>Add-ons:</span>
+//                         <span>{formatPrice(addonsTotal, currency)}</span>
+//                       </div>
+//                     )}
+//                     {order.discount > 0 && (
+//                       <div className="receipt-total-row">
+//                         <span>Loyalty Discount:</span>
+//                         <span>-{formatPrice(order.discount, currency)}</span>
+//                       </div>
+//                     )}
+//                     <div className="receipt-total-row">
+//                       <span>Delivery:</span>
+//                       <span>{formatPrice(order.delivery_charge, currency)}</span>
+//                     </div>
+
+//                     <div className="receipt-divider">-----------------------------------------</div>
+
+//                     <div className="receipt-total-row grand-total">
+//                       <span>GRAND TOTAL:</span>
+//                       <span>{formatPrice(computedGrandTotal, currency)}</span>
+//                     </div>
+//                   </div>
+
+//                   <div className="receipt-divider">-----------------------------------------</div>
+
+//                   <div className="receipt-center receipt-footer-msg">
+//                     <p>Thank you for dining with CakeNTake!</p>
+//                     <p>Baked fresh daily, prepared artisanally.</p>
+//                     <p className="receipt-url">www.cakentake.com</p>
+//                   </div>
+//                 </div>
+//               </div>
+
+//             </motion.div>
+//           </motion.div>
+//         )}
+//       </AnimatePresence>
+//     </div>
+//   );
+// };
+
+// export default TrackOrder;
+
+
+
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -6,6 +1373,7 @@ import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
 import './TrackOrder.css';
 import { getOrderById, cancelOrder } from '@/src/services/orderService';
+import { getMyAddresses } from '../../services/addressService';
 import { getDisplayOrderNumber } from '@/src/utils/orderNumber';
 import {
   getCustomerStages,
@@ -13,16 +1381,25 @@ import {
   getCustomerStatusLabel,
   ACCEPTED_STAGE_INDEX,
 } from '../../services/orderStatus';
+// Kuwait time: order date/time and pickup date are always shown in Kuwait (GMT+3),
+// whatever time zone the viewer's device is set to.
+import { formatKuwaitDate, formatKuwaitTime } from '@/src/utils/kuwaitTime';
 
 /* ─────────────────────────────────────────
    Type Definitions Match Your API Response
 ───────────────────────────────────────── */
 interface DeliveryAddress {
+  id?: number;
   street: string;
   city: string;
   state: string;
   country: string;
   pincode: string;
+  // Delivery notes (field name may differ per backend — see getDeliveryNotes)
+  delivery_notes?: string | null;
+  deliveryNotes?: string | null;
+  notes?: string | null;
+  instructions?: string | null;
 }
 
 interface Product {
@@ -54,6 +1431,7 @@ interface Customer {
 
 interface DetailedOrder {
   id: number;
+  address_id?: number | null;
   order_number: string;
   status: string;
   payment_method: string;
@@ -66,6 +1444,9 @@ interface DetailedOrder {
   delivery_method?: string;
   pickup_date?: string | null;
   pickup_time_slot?: string | null;
+  // Order-level notes (fallback if notes are stored on the order itself)
+  delivery_notes?: string | null;
+  notes?: string | null;
   order_addons?: {
     addon_id: number;
     addon_name?: string;
@@ -102,6 +1483,21 @@ const extractItemAddOns = (item: OrderItem): string[] => {
   return [];
 };
 
+/* Pull delivery notes straight from the order response (address first,
+   then order-level fields). Returns '' when the API didn't send any. */
+const getDeliveryNotes = (order: DetailedOrder): string => {
+  const addr = order.delivery_address;
+  const raw =
+    addr?.delivery_notes ??
+    addr?.deliveryNotes ??
+    addr?.notes ??
+    addr?.instructions ??
+    order.delivery_notes ??
+    order.notes ??
+    '';
+  return typeof raw === 'string' ? raw.trim() : '';
+};
+
 const getCurrencySymbol = (currency?: string): string => {
   const cur = (currency || 'INR').toUpperCase();
   return cur === 'INR' ? '₹' : cur;
@@ -116,6 +1512,10 @@ const TrackOrder: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [showReceipt, setShowReceipt] = useState<boolean>(false);
+
+  // Delivery notes loaded from the saved address when the order API
+  // doesn't include them
+  const [fallbackNotes, setFallbackNotes] = useState<string>('');
 
   // Cancel-order state
   const [cancelling, setCancelling] = useState<boolean>(false);
@@ -146,6 +1546,41 @@ const TrackOrder: React.FC = () => {
     if (id) fetchOrderDetails();
   }, [id]);
 
+  /* If the order response has no delivery notes, look them up on the
+     customer's saved address that was used for this order. */
+  useEffect(() => {
+    if (!order) return;
+
+    const pickup = (order.delivery_method || 'DELIVERY').toUpperCase() === 'PICKUP';
+    if (pickup) return;
+    if (getDeliveryNotes(order)) return; // already have them
+
+    let cancelled = false;
+
+    (async () => {
+      try {
+        const list: any[] = (await getMyAddresses()) ?? [];
+        const addrId = order.address_id ?? order.delivery_address?.id;
+
+        let match = addrId != null ? list.find((a) => a.id === addrId) : undefined;
+
+        if (!match && order.delivery_address?.street) {
+          const street = order.delivery_address.street.trim().toLowerCase();
+          match = list.find((a) => (a.street || '').trim().toLowerCase() === street);
+        }
+
+        const notes = typeof match?.delivery_notes === 'string' ? match.delivery_notes.trim() : '';
+        if (notes && !cancelled) setFallbackNotes(notes);
+      } catch (err) {
+        console.error('Could not load delivery notes from saved address:', err);
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [order]);
+
   /* ─────────────────────────────────────────
      Download the receipt node as a PDF file.
      Renders the receipt DOM node to a canvas via
@@ -153,79 +1588,77 @@ const TrackOrder: React.FC = () => {
      jsPDF document sized to a standard receipt
      width (mirrors a thermal-printer style slip).
   ───────────────────────────────────────── */
-const handleDownloadPDF = async () => {
-  if (!receiptRef.current || !order) return;
+  const handleDownloadPDF = async () => {
+    if (!receiptRef.current || !order) return;
 
-  let offscreen: HTMLDivElement | null = null;
+    let offscreen: HTMLDivElement | null = null;
 
-  try {
-    setDownloadingPdf(true);
-    setPdfError(null);
+    try {
+      setDownloadingPdf(true);
+      setPdfError(null);
 
-    const original = receiptRef.current;
+      const original = receiptRef.current;
 
-    // Clone the receipt into a hidden, unconstrained container. This is
-    // the key fix: the on-screen modal has a scrollable max-height, so
-    // html2canvas was only capturing whatever fit in that visible
-    // scroll area — cutting off the grand total and footer below it.
-    // A clone with no height/overflow limits always renders in full.
-    const clone = original.cloneNode(true) as HTMLDivElement;
+      // Clone the receipt into a hidden, unconstrained container so the
+      // whole receipt (including totals, notes and footer) is captured,
+      // not just the visible scroll area of the modal.
+      const clone = original.cloneNode(true) as HTMLDivElement;
 
-    offscreen = document.createElement('div');
-    offscreen.style.position = 'fixed';
-    offscreen.style.top = '0';
-    offscreen.style.left = '-9999px'; // fully off-screen, not just hidden
-    offscreen.style.width = `${original.offsetWidth}px`;
-    offscreen.style.height = 'auto';
-    offscreen.style.overflow = 'visible';
-    offscreen.style.background = '#ffffff';
+      offscreen = document.createElement('div');
+      offscreen.style.position = 'fixed';
+      offscreen.style.top = '0';
+      offscreen.style.left = '-9999px'; // fully off-screen, not just hidden
+      offscreen.style.width = `${original.offsetWidth}px`;
+      offscreen.style.height = 'auto';
+      offscreen.style.overflow = 'visible';
+      offscreen.style.background = '#ffffff';
 
-    clone.style.height = 'auto';
-    clone.style.maxHeight = 'none';
-    clone.style.overflow = 'visible';
+      clone.style.height = 'auto';
+      clone.style.maxHeight = 'none';
+      clone.style.overflow = 'visible';
 
-    offscreen.appendChild(clone);
-    document.body.appendChild(offscreen);
+      offscreen.appendChild(clone);
+      document.body.appendChild(offscreen);
 
-    // Give the clone's images (logo) a moment to paint before capture
-    await new Promise((resolve) => requestAnimationFrame(resolve));
-    await new Promise((resolve) => setTimeout(resolve, 50));
+      // Give the clone's images (logo) a moment to paint before capture
+      await new Promise((resolve) => requestAnimationFrame(resolve));
+      await new Promise((resolve) => setTimeout(resolve, 50));
 
-    const canvas = await html2canvas(clone, {
-      scale: 2,
-      useCORS: true,
-      backgroundColor: '#ffffff',
-      logging: false,
-      windowWidth: clone.scrollWidth,
-      windowHeight: clone.scrollHeight,
-    });
+      const canvas = await html2canvas(clone, {
+        scale: 2,
+        useCORS: true,
+        backgroundColor: '#ffffff',
+        logging: false,
+        windowWidth: clone.scrollWidth,
+        windowHeight: clone.scrollHeight,
+      });
 
-    const imgData = canvas.toDataURL('image/png');
+      const imgData = canvas.toDataURL('image/png');
 
-    const pxToMm = (px: number) => px * 0.264583;
-    const imgWidthMm = pxToMm(canvas.width / 2);
-    const imgHeightMm = pxToMm(canvas.height / 2);
+      const pxToMm = (px: number) => px * 0.264583;
+      const imgWidthMm = pxToMm(canvas.width / 2);
+      const imgHeightMm = pxToMm(canvas.height / 2);
 
-    const pdf = new jsPDF({
-      orientation: imgHeightMm > imgWidthMm ? 'portrait' : 'landscape',
-      unit: 'mm',
-      format: [imgWidthMm, imgHeightMm],
-    });
+      const pdf = new jsPDF({
+        orientation: imgHeightMm > imgWidthMm ? 'portrait' : 'landscape',
+        unit: 'mm',
+        format: [imgWidthMm, imgHeightMm],
+      });
 
-    pdf.addImage(imgData, 'PNG', 0, 0, imgWidthMm, imgHeightMm);
+      pdf.addImage(imgData, 'PNG', 0, 0, imgWidthMm, imgHeightMm);
 
-    const orderNumberForFile = getDisplayOrderNumber(order, 15000) || order.id;
-    pdf.save(`Receipt-${orderNumberForFile}.pdf`);
-  } catch (err) {
-    console.error('PDF download error:', err);
-    setPdfError('Failed to generate PDF. Please try again.');
-  } finally {
-    if (offscreen) {
-      document.body.removeChild(offscreen);
+      const orderNumberForFile = getDisplayOrderNumber(order, 15000) || order.id;
+      pdf.save(`Receipt-${orderNumberForFile}.pdf`);
+    } catch (err) {
+      console.error('PDF download error:', err);
+      setPdfError('Failed to generate PDF. Please try again.');
+    } finally {
+      if (offscreen) {
+        document.body.removeChild(offscreen);
+      }
+      setDownloadingPdf(false);
     }
-    setDownloadingPdf(false);
-  }
-};
+  };
 
   // Handle customer-initiated order cancellation
   const handleCancelOrder = async () => {
@@ -273,8 +1706,9 @@ const handleDownloadPDF = async () => {
   const currency = order.currency || 'INR';
   const symbol = getCurrencySymbol(currency);
 
-  const orderDate = new Date(order.created_at).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
-  const orderTime = new Date(order.created_at).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
+  // Always Kuwait time (GMT+3)
+  const orderDate = formatKuwaitDate(order.created_at);
+  const orderTime = formatKuwaitTime(order.created_at);
 
   const isPickup = (order.delivery_method || 'DELIVERY').toUpperCase() === 'PICKUP';
   const stages = getCustomerStages(isPickup);
@@ -292,6 +1726,9 @@ const handleDownloadPDF = async () => {
   const addonsTotal = Number(order.order_addons_total ?? (order.order_addons?.reduce((s, a) => s + Number(a.total ?? (a.price * a.quantity || 0)), 0) || 0));
   const itemSubtotal = Number(order.subtotal ?? (order.items?.reduce((s, i) => s + Number(i.line_total ?? (i.price * i.quantity || 0)), 0) || 0));
   const computedGrandTotal = Number(order.total ?? (itemSubtotal + addonsTotal - Number(order.discount || 0) + Number(order.delivery_charge || 0)));
+
+  // Delivery notes: from the order response, otherwise from the saved address
+  const deliveryNotes = getDeliveryNotes(order) || fallbackNotes;
 
   return (
     <div className="to-container">
@@ -393,10 +1830,7 @@ const handleDownloadPDF = async () => {
                 <p>Collect from store — no delivery address needed.</p>
                 {order.pickup_date && (
                   <p className="to-meta-text" style={{ marginTop: '8px' }}>
-                    Pickup date:{' '}
-                    {new Date(order.pickup_date + 'T00:00:00').toLocaleDateString('en-IN', {
-                      day: '2-digit', month: 'short', year: 'numeric',
-                    })}
+                    Pickup date: {formatKuwaitDate(order.pickup_date)}
                   </p>
                 )}
                 {order.pickup_time_slot && (
@@ -414,6 +1848,14 @@ const handleDownloadPDF = async () => {
                 <p>{order.delivery_address.city}, {order.delivery_address.state} - {order.delivery_address.pincode}</p>
                 <p>{order.delivery_address.country}</p>
                 <p className="to-meta-text" style={{ marginTop: '8px' }}>Phone: {order.customer.phone_no}</p>
+                {deliveryNotes && (
+                  <p
+                    className="to-meta-text"
+                    style={{ marginTop: '8px', whiteSpace: 'pre-wrap', wordBreak: 'break-word', fontWeight: 700 }}
+                  >
+                    <strong>Delivery Notes:</strong> {deliveryNotes}
+                  </p>
+                )}
               </div>
             ) : (
               <div className="to-info-card">
@@ -543,10 +1985,22 @@ const handleDownloadPDF = async () => {
                   <div className="receipt-meta">
                     <p><strong>Order ID:</strong> {order.order_number || order.id}</p>
                     <p><strong>Date:</strong> {orderDate}</p>
-                    <p><strong>Time:</strong> {orderTime}</p>
+                    <p><strong>Time:</strong> {orderTime} (Kuwait)</p>
                     <p><strong>Payment Mode:</strong> {order.payment_method?.toUpperCase()}</p>
                     {isPickup && (
                       <p><strong>Order Type:</strong> PICKUP{order.pickup_time_slot ? ` — ${order.pickup_time_slot}` : ''}</p>
+                    )}
+                    {!isPickup && deliveryNotes && (
+                      <p
+                        className="receipt-delivery-notes"
+                        style={{
+                          fontWeight: 700,
+                          whiteSpace: 'pre-wrap',
+                          wordBreak: 'break-word',
+                        }}
+                      >
+                        <strong>Delivery Notes: {deliveryNotes}</strong>
+                      </p>
                     )}
                   </div>
 

@@ -1,5 +1,6 @@
 from urllib.parse import quote, urlencode
 from uuid import uuid4
+
 from flask import Blueprint, current_app, jsonify, redirect, request
 from flask_jwt_extended import get_jwt, get_jwt_identity, jwt_required
 from sqlalchemy import func
@@ -706,9 +707,7 @@ def create_payment_link():
 )
 def verify_payment(order_id, client_platform):
     order = Order.query.get_or_404(order_id)
-
     charge_id = request.args.get("tap_id") or order.gateway_order_id
-
     if not charge_id:
         return jsonify({
             "success": False,
@@ -722,72 +721,7 @@ def verify_payment(order_id, client_platform):
             "error": "Tap charge does not match this order",
         }), 400
 
-    # ------------------------------------------------------------------
-    # IMPORTANT:
-    # If the payment has already been confirmed as PAID by the webhook,
-    # app polling, or another verification request, do NOT call Tap again.
-    #
-    # This prevents duplicate verify_charge() requests from browser + app
-    # + webhook at nearly the same time, which can cause Tap error:
-    #
-    #   1219 - Too many requests. Request limit exceeded.
-    # ------------------------------------------------------------------
-    if str(order.payment_status or "").upper() == "PAID":
-        stored_result = (
-            order.gateway_response
-            if isinstance(order.gateway_response, dict)
-            else {}
-        )
-
-        # Since DB already says PAID, normally the stored Tap status
-        # will be CAPTURED. Use CAPTURED as safe fallback.
-        tap_status = str(
-            stored_result.get("status") or "CAPTURED"
-        ).upper()
-
-        # Prefer our already-saved transaction/reference IDs.
-        reference = stored_result.get("reference") or {}
-
-        transaction_id = (
-            order.gateway_transaction_id
-            or reference.get("payment")
-            or order.gateway_payment_id
-            or charge_id
-        )
-
-        payload = _json_result(
-            [order],
-            charge_id,
-            tap_status,
-            "PAID",
-            transaction_id,
-        )
-
-        # App/API polling can request JSON response.
-        if request.args.get("format") == "json":
-            return jsonify(payload), 200
-
-        # Browser flow should go directly to the success page.
-        target = _result_redirect(
-            client_platform,
-            True,
-            transaction_id,
-            [order],
-            charge_id,
-            tap_status,
-        )
-
-        if target:
-            return redirect(target, code=302)
-
-        return jsonify(payload), 200
-
-    # ------------------------------------------------------------------
-    # Order is not already PAID.
-    # Retrieve the current status directly from Tap.
-    # ------------------------------------------------------------------
     result = verify_charge(charge_id)
-
     if result.get("errors"):
         return jsonify({
             "success": False,
@@ -797,32 +731,19 @@ def verify_payment(order_id, client_platform):
 
     try:
         tap_status, payment_status, transaction_id = _apply_tap_result(
-            [order],
-            result,
-            charge_id,
+            [order], result, charge_id
         )
-
     except ValueError as exc:
-        return jsonify({
-            "success": False,
-            "error": str(exc),
-        }), 400
+        return jsonify({"success": False, "error": str(exc)}), 400
 
     payload = _json_result(
-        [order],
-        charge_id,
-        tap_status,
-        payment_status,
-        transaction_id,
+        [order], charge_id, tap_status, payment_status, transaction_id
     )
 
-    # JSON response used by app/API polling.
     if request.args.get("format") == "json":
         return jsonify(payload), 200
 
     success = payment_status == "PAID"
-
-    # Browser/app return destination.
     target = _result_redirect(
         client_platform,
         success,
@@ -831,7 +752,6 @@ def verify_payment(order_id, client_platform):
         charge_id,
         tap_status,
     )
-
     if target:
         return redirect(target, code=302)
 

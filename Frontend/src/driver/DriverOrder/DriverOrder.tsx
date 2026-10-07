@@ -3,6 +3,7 @@ import React, {
 } from "react";
 import { QRCodeSVG } from "qrcode.react";
 import "./DriverOrder.css";
+import { formatKuwaitDate, formatKuwaitTime } from '../../utils/kuwaitTime';
 import {
   getDriverAssigned,
   getDriverCompleted,
@@ -29,6 +30,8 @@ interface Props {
 // ─── SVG icons (fixed: explicit width/height on every svg) ─────────────────────
 
 const S = 16; // default icon size
+
+
 
 const Ico = {
   truck: (
@@ -170,14 +173,20 @@ const currencySymbol = (cur?: string) => {
   return c === 'INR' ? '₹' : c;
 };
 
+// const fmt = {
+//   time: (d: string) =>
+//     d ? new Date(d).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' }) : '—',
+//   date: (d: string) =>
+//     d ? new Date(d).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) : '—',
+//   currency: (n: number, cur?: string) => `${currencySymbol(cur)}${Number(n || 0).toFixed(0)}`,
+// };
+
+
 const fmt = {
-  time: (d: string) =>
-    d ? new Date(d).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' }) : '—',
-  date: (d: string) =>
-    d ? new Date(d).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) : '—',
+  time: (d: string) => (d ? formatKuwaitTime(d) : '—'),
+  date: (d: string) => (d ? formatKuwaitDate(d) : '—'),
   currency: (n: number, cur?: string) => `${currencySymbol(cur)}${Number(n || 0).toFixed(0)}`,
 };
-
 /**
  * Reads the first non-empty value found under any of `keys` on `addr`.
  * Kuwait-style address payloads aren't fully standardized across backends

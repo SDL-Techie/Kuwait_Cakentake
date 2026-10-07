@@ -1165,3 +1165,73 @@
     font-size: 12.5px;
   }
 }
+
+
+/* ── Add this to the END of Salesagentorder.css ── */
+
+/* Top buttons: All / Delivery Date Based Order */
+.sao-view-toggle-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: 4px 0 14px;
+}
+
+.sao-view-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 16px;
+  border: 1.5px solid #d9dde3;
+  border-radius: 999px;
+  background: #fff;
+  color: #3a4250;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+}
+
+.sao-view-btn:hover {
+  border-color: #8a94a6;
+}
+
+.sao-view-btn:focus-visible {
+  outline: 2px solid #2f6fed;
+  outline-offset: 2px;
+}
+
+.sao-view-btn.active {
+  background: #1f2a44;
+  border-color: #1f2a44;
+  color: #fff;
+}
+
+.sao-view-count {
+  min-width: 22px;
+  padding: 1px 7px;
+  border-radius: 999px;
+  background: #eef0f4;
+  color: #3a4250;
+  font-size: 12px;
+  font-weight: 700;
+  text-align: center;
+}
+
+.sao-view-btn.active .sao-view-count {
+  background: rgba(255, 255, 255, 0.2);
+  color: #fff;
+}
+
+/* Note shown while "Delivery Date Based Order" is active */
+.sao-delivery-today-note {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 12px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  background: #eef4ff;
+  color: #24407a;
+  font-size: 13px;
+}

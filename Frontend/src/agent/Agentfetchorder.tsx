@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { ShoppingBag, Loader2, AlertCircle, Package, X, CalendarClock, MapPin, Ban } from "lucide-react";
 import "./Agentfetchorder.css";
 import { getAgentOrders, getAgentOrderById, cancelAgentOrder } from "../services/agentService";
-
+import { formatKuwaitDate, formatKuwaitTime } from "../utils/kuwaitTime";
 // Display-only status mapping, per orderStatus.ts (adjust the import path to
 // wherever you saved it in your project, e.g. "../utils/orderStatus").
 import { getCustomerStageIndex, ACCEPTED_STAGE_INDEX } from "../services/orderStatus";
@@ -108,12 +108,17 @@ interface AgentOrder {
    Helpers
 ───────────────────────────────────────── */
 
-const fmtDate = (d?: string) =>
-  d ? new Date(d).toLocaleDateString("en-IN", { day: "2-digit", month: "2-digit", year: "numeric" }) : "—";
+// const fmtDate = (d?: string) =>
+//   d ? new Date(d).toLocaleDateString("en-IN", { day: "2-digit", month: "2-digit", year: "numeric" }) : "—";
 
-const fmtTime = (d?: string) =>
-  d ? new Date(d).toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" }) : "";
+// const fmtTime = (d?: string) =>
+//   d ? new Date(d).toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" }) : "";
 
+
+// new
+const fmtDate = (d?: string) => (d ? formatKuwaitDate(d) : "—");
+
+const fmtTime = (d?: string) => (d ? formatKuwaitTime(d) : "");
 const fmtMoney = (value?: number) => (Number(value) || 0).toFixed(2);
 
 // Display order numbers starting from 15000 (e.g. order id 18 → "#15018").
