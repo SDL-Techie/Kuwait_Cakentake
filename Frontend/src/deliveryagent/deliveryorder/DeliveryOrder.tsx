@@ -3099,7 +3099,7 @@ const DeliveryOrder: React.FC = () => {
 
             <div className="da-modal-footer">
               <button className="da-modal-print" onClick={() => handleOpenReceipt(selectedOrder)}>
-                <IconPrinter size={13} style={{ marginRight: 5 }} /> Print Receipt
+                <IconPrinter size={13}  /> Print Receipt
               </button>
               <button className="da-modal-cancel" onClick={() => setModalOpen(false)}>Close</button>
               {renderActionBtn(selectedOrder, true)}
@@ -3462,7 +3462,7 @@ const DeliveryOrder: React.FC = () => {
 
               <div className="da-modal-footer">
                 <button className="da-modal-print" onClick={() => window.print()}>
-                  <IconPrinter size={13} style={{ marginRight: 5 }} /> Print
+                  <IconPrinter size={13} /> Print
                 </button>
                 <button className="da-modal-cancel" onClick={() => setIsReceiptOpen(false)}>Close</button>
               </div>

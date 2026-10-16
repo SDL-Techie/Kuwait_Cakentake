@@ -2,6 +2,7 @@ from urllib.parse import quote, urlencode
 from uuid import uuid4
 
 from flask import Blueprint, current_app, jsonify, redirect, request
+from itsdangerous import URLSafeTimedSerializer, BadSignature, SignatureExpired
 from flask_jwt_extended import get_jwt, get_jwt_identity, jwt_required
 from sqlalchemy import func
 from decimal import Decimal, InvalidOperation
@@ -158,6 +159,19 @@ def _web_base(success):
     return ""
 
 
+def _receipt_serializer():
+    secret = current_app.config.get("SECRET_KEY") or current_app.config.get("JWT_SECRET_KEY")
+    if not secret:
+        raise RuntimeError("Receipt signing secret is not configured")
+    return URLSafeTimedSerializer(secret, salt="cakentake-payment-receipt-v1")
+
+
+def _receipt_token(orders, charge_id):
+    return _receipt_serializer().dumps({
+        "order_ids": [int(o.id) for o in orders], "charge_id": str(charge_id)
+    })
+
+
 def _result_redirect(platform, success, transaction_id, orders, charge_id, tap_status):
     order_ids = ",".join(str(order.id) for order in orders)
     query = urlencode({
@@ -165,6 +179,7 @@ def _result_redirect(platform, success, transaction_id, orders, charge_id, tap_s
         "order_ids": order_ids if len(orders) > 1 else "",
         "tap_id": charge_id,
         "status": tap_status,
+        "receipt_token": _receipt_token(orders, charge_id) if success else "",
     })
     transaction_path = quote(str(transaction_id or charge_id), safe="")
 
@@ -420,14 +435,71 @@ def public_payment_result(reference):
     if not ref:
         return jsonify({"error": "Payment reference is required"}), 400
 
-    order = Order.query.filter(
-        (Order.gateway_transaction_id == ref)
-        | (Order.gateway_order_id == ref)
-        | (Order.gateway_payment_id == ref)
-    ).order_by(Order.id.desc()).first()
+    receipt_token = str(request.args.get("receipt_token") or "").strip()
+    claims = None
+    if receipt_token:
+        try:
+            claims = _receipt_serializer().loads(receipt_token, max_age=1800)
+        except (BadSignature, SignatureExpired, ValueError, TypeError):
+            return jsonify({"error": "Receipt link expired or invalid. Sign in to see details."}), 403
+
+    # A signed receipt may arrive with only tap_id (and no order_id), or
+    # with the transaction id in the URL path. Resolve from signed IDs
+    # rather than assuming every Tap response uses one reference field.
+    if claims:
+        try:
+            claimed_ids = [int(v) for v in claims.get("order_ids", [])]
+        except (ValueError, TypeError):
+            return jsonify({"error": "Invalid receipt claims"}), 403
+        if not claimed_ids or len(claimed_ids) != len(set(claimed_ids)):
+            return jsonify({"error": "Invalid receipt claims"}), 403
+        order = Order.query.filter(Order.id.in_(claimed_ids)).order_by(Order.id.desc()).first()
+    else:
+        order = Order.query.filter(
+            (Order.gateway_transaction_id == ref)
+            | (Order.gateway_order_id == ref)
+            | (Order.gateway_payment_id == ref)
+        ).order_by(Order.id.desc()).first()
 
     if not order:
         return jsonify({"error": "Payment result is not available yet"}), 404
+
+    # A short-lived signed receipt permits browser checkout without JWT.
+    # Transaction IDs alone never grant access to customer address or items.
+    if claims:
+        try:
+            authorized_ids = [int(v) for v in claims.get("order_ids", [])]
+            charge_id = str(claims.get("charge_id") or "")
+            if (order.id not in authorized_ids or
+                ref not in {charge_id, str(order.gateway_transaction_id or "")} or
+                str(order.payment_status or "").upper() != "PAID"):
+                return jsonify({"error": "Receipt is not available for this payment"}), 403
+        except (BadSignature, SignatureExpired, ValueError, TypeError):
+            return jsonify({"error": "Receipt link expired or invalid. Sign in to see details."}), 403
+        # A signed batch receipt can include multiple orders, but only when
+        # every order belongs to the same paid charge as the signed token.
+        batch_orders = (Order.query.filter(Order.id.in_(authorized_ids)).all()
+                        if authorized_ids else [])
+        if (len(batch_orders) != len(set(authorized_ids)) or
+            any(charge_id not in {str(o.gateway_order_id or ""), str(o.gateway_payment_id or "")} or
+                str(o.payment_status or "").upper() != "PAID"
+                for o in batch_orders)):
+            return jsonify({"error": "Receipt is not available for this payment"}), 403
+        details = order.to_dict()
+        allowed = (
+            "id", "order_number", "status", "payment_method", "payment_status",
+            "payment_gateway", "gateway_transaction_id", "total", "subtotal",
+            "discount", "delivery_charge", "grand_total", "currency", "items",
+            "order_addons", "delivery_method", "pickup_date", "pickup_time_slot",
+            "delivery_date", "delivery_time_slot", "delivery_address_json",
+            "delivery_address", "delivery_notes", "custom_cakes", "custom_cake_json",
+        )
+        receipts = [
+            {key: item.to_dict().get(key) for key in allowed}
+            for item in sorted(batch_orders, key=lambda item: item.id)
+        ]
+        return jsonify({"order": {key: details.get(key) for key in allowed},
+                        "orders": receipts}), 200
 
     return jsonify({
         "order": {

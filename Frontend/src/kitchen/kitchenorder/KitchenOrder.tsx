@@ -1,2218 +1,706 @@
-import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
-import './KitchenOrder.css';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { AnimatePresence, motion } from 'framer-motion';
 import { QRCodeSVG } from 'qrcode.react';
 import {
-  getKitchenPending,
-  getKitchenProcessing,
+  CalendarDays,
+  Cake,
+  Check,
+  ChefHat,
+  ChevronLeft,
+  ChevronRight,
+  Clock,
+  Copy,
+  CreditCard,
+  ExternalLink,
+  Eye,
+  Flame,
+  Loader2,
+  Package,
+  Printer,
+  RefreshCw,
+  ShoppingBag,
+  Truck,
+  User,
+  Users,
+  X,
+} from 'lucide-react';
+import './KitchenOrder.css';
+import './KitchenBoard.css';
+import { AdminDataToolbar, useAdminDataTools } from '../../services/Useadmindatatools';
+import {
+  getKitchenBoard,
   getKitchenOrderDetails,
   startProcessing,
   completeKitchenOrder,
-  getMyCompletedKitchenOrders,
-  markOrderPickedUp,
-  markOrderPaymentPaid,
   completePickupOrder,
-  KitchenOrder as KitchenOrderRecord,
+  type KitchenBoardTab,
 } from '../../services/kitchenService';
 import { createPaymentLink } from '../../services/paymentService';
-import {
-  formatKuwaitDate, formatKuwaitTime, formatKuwaitDateTime,
-  toKuwaitDateKey, getKuwaitTodayStr, getKuwaitParts,
-} from '../../utils/kuwaitTime';
-/* ─── SVG Icons ──────────────────────────────────────────────────────────────── */
-const IconChef = ({ size = 20, className = "" }: { size?: number; className?: string }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
-    <path d="M6 18h12a2 2 0 0 0 2-2v-3H4v3a2 2 0 0 0 2 2z" />
-    <path d="M12 2v3" />
-    <path d="M9 3v2" />
-    <path d="M15 3v2" />
-    <path d="M19 13V7a5 5 0 0 0-10 0v6" />
-  </svg>
-);
+import { getKuwaitTodayStr, formatKuwaitTime } from '../../utils/kuwaitTime';
+import { OrderProducts, OrderNotesBlock, OrderReceiptModal, printOrderReceipt } from '../../components/OrderView';
+import { formatOrderDate, formatOrderMoney, paymentLabel, toOrderView } from '../../utils/orderView';
 
-const IconClock = ({ size = 18 }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" /></svg>
-);
+/* ==========================================================================
+   Kitchen Orders — client correction list (Oct 2026)
 
-const IconCheckCircle = ({ size = 18 }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" /><polyline points="22 4 12 14.01 9 11.01" /></svg>
-);
+   Tabs
+     • Pending    — orders sent to the kitchen and not yet started.
+     • Active     — orders being prepared   (Me / All) for the selected date.
+     • Completed  — orders the kitchen finished (Me / All) for the selected date.
 
-const IconEye = ({ size = 16 }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" /><circle cx="12" cy="12" r="3" /></svg>
-);
+   Everything works on the DELIVERY date (pickup date for pickup orders).
+   The tab count is always the number of orders listed, so "Pending 6"
+   can never show only 2 orders again.
+   ========================================================================== */
 
-const IconImageFallback = ({ size = 22 }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-    <rect x="3" y="3" width="18" height="18" rx="2" />
-    <circle cx="8.5" cy="8.5" r="1.5" />
-    <path d="M21 15l-5-5L5 21" />
-  </svg>
-);
+type Scope = 'mine' | 'all';
 
-const IconPrinter = ({ size = 16 }: { size?: number }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-    <path d="M6 9V2h12v7" />
-    <rect x="6" y="13" width="12" height="9" rx="2" />
-    <path d="M6 18h12" />
-  </svg>
-);
-
-const IconCalendar = ({ size = 16 }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-    <rect x="3" y="4" width="18" height="18" rx="2" />
-    <line x1="16" y1="2" x2="16" y2="6" />
-    <line x1="8" y1="2" x2="8" y2="6" />
-    <line x1="3" y1="10" x2="21" y2="10" />
-  </svg>
-);
-
-const IconChevronLeft = ({ size = 18 }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <polyline points="15 18 9 12 15 6" />
-  </svg>
-);
-
-const IconChevronRight = ({ size = 18 }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <polyline points="9 18 15 12 9 6" />
-  </svg>
-);
-
-const IconCash = ({ size = 14 }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-    <rect x="2" y="6" width="20" height="12" rx="2" />
-    <circle cx="12" cy="12" r="2" />
-    <path d="M6 12h.01M18 12h.01" />
-  </svg>
-);
-
-const IconCake = ({ size = 12 }: { size?: number }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-    <path d="M20 21v-8a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8" />
-    <path d="M4 16s.5-1 2-1 2.5 2 4 2 2.5-2 4-2 2.5 2 4 2 2-1 2-1" />
-    <path d="M12 3v4" />
-    <path d="M12 7c-1.5 0-2-1-2-1.5S10.5 4 12 3c1.5 1 2 1.5 2 2.5S13.5 7 12 7z" />
-  </svg>
-);
-
-// Pickup-bag icon — used to badge / highlight pickup orders on the card and in
-// the order detail modal's fulfilment section.
-const IconBag = ({ size = 12 }: { size?: number }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z" />
-    <path d="M3 6h18" />
-    <path d="M16 10a4 4 0 0 1-8 0" />
-  </svg>
-);
-
-// Delivery-truck icon — used to badge / highlight delivery orders on the card
-// and in the order detail modal's fulfilment section.
-const IconTruck = ({ size = 12 }: { size?: number }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M1 3h15v13H1z" />
-    <path d="M16 8h4l3 3v5h-7V8z" />
-    <circle cx="5.5" cy="18.5" r="2.5" />
-    <circle cx="18.5" cy="18.5" r="2.5" />
-  </svg>
-);
-
-const IconClose = ({ size = 12 }: { size?: number }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
-    <line x1="18" y1="6" x2="6" y2="18" />
-    <line x1="6" y1="6" x2="18" y2="18" />
-  </svg>
-);
-
-// Payment / QR icons — used for the "Payment" action added to each order card
-// and the order detail modal footer.
-const IconCreditCard = ({ size = 16 }: { size?: number }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <rect x="1" y="4" width="22" height="16" rx="2" ry="2" />
-    <line x1="1" y1="10" x2="23" y2="10" />
-  </svg>
-);
-
-const IconCopy = ({ size = 14 }: { size?: number }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
-    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
-  </svg>
-);
-
-const IconCheck = ({ size = 14 }: { size?: number }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
-    <polyline points="20 6 9 17 4 12" />
-  </svg>
-);
-
-const IconExternalLink = ({ size = 13 }: { size?: number }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
-    <polyline points="15 3 21 3 21 9" />
-    <line x1="10" y1="14" x2="21" y2="3" />
-  </svg>
-);
-
-/* ─── Helpers ────────────────────────────────────────────────────────────────── */
-
-interface ItemCustomJson {
-  variant?: string;
-  variant_name?: string;
-  flavour?: string;
-  flavour_name?: string;
-  flavor?: string;
-  flavor_name?: string; 
-  shape?: string;
-  add_ons?: string[];
-  addons?: string[];
-  add_on_total?: number;
-  notes?: string;
-  product_type?: string;
-}
-
-const getCustomJson = (item: any): ItemCustomJson => item?.custom_json || {};
-
-// Flavour/Variant — checks custom_json's *_name fields first (as returned by
-// the newer order endpoints), then the shorter custom_json keys, then falls
-// back to a top-level field directly on the item row. Mirrors the same
-// fallback order used in OrderManagement.tsx / Agentfetchorder.tsx so all
-// three views stay consistent regardless of which endpoint an order came from.
-// const getFlavour = (item: any) => {
-//   const cj = getCustomJson(item);
-//   return (
-//     cj.flavour_name || cj.flavour || cj.flavor ||
-//     item?.flavour_name || item?.flavour || item?.flavor ||
-//     null
-//   );
-// };
-
-const getFlavour = (item: any) => {
-  const cj = getCustomJson(item);
-  return (
-    cj.flavor_name || cj.flavour_name || cj.flavor || cj.flavour ||
-    item?.flavor_name || item?.flavour_name || item?.flavor || item?.flavour ||
-    null
-  );
+const TAB_META: Record<KitchenBoardTab, { label: string; hint: string; icon: React.ReactNode }> = {
+  pending: { label: 'Pending', hint: 'Placed orders the kitchen has not started yet', icon: <Clock size={15} /> },
+  processing: { label: 'Active', hint: 'Orders being prepared right now', icon: <Flame size={15} /> },
+  completed: { label: 'Completed', hint: 'Orders the kitchen has finished', icon: <Check size={15} /> },
 };
 
-const getVariant = (item: any) => {
-  const cj = getCustomJson(item);
-  return (
-    cj.variant_name || cj.variant ||
-    item?.variant_name || item?.variant ||
-    null
-  );
+const addDays = (isoDate: string, days: number): string => {
+  const d = new Date(`${isoDate}T00:00:00`);
+  d.setDate(d.getDate() + days);
+  const pad = (n: number) => String(n).padStart(2, '0');
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
 };
 
-const getShape = (item: any) => {
-  const cj = getCustomJson(item);
-  return cj.shape || item?.shape || null;
+const relativeDayLabel = (isoDate?: string): { label: string; tone: 'today' | 'tomorrow' | 'overdue' | 'future' | 'none' } => {
+  if (!isoDate) return { label: 'No date', tone: 'none' };
+  const today = getKuwaitTodayStr();
+  if (isoDate === today) return { label: 'Today', tone: 'today' };
+  if (isoDate === addDays(today, 1)) return { label: 'Tomorrow', tone: 'tomorrow' };
+  if (isoDate < today) return { label: `Overdue · ${formatOrderDate(isoDate)}`, tone: 'overdue' };
+  return { label: formatOrderDate(isoDate), tone: 'future' };
 };
 
-const getAddOns = (item: any): string[] => {
-  const cj = getCustomJson(item);
-  const list = cj.add_ons || cj.addons || item?.add_ons || item?.selected_add_ons || [];
-  return Array.isArray(list) ? list : [];
-};
-
-const getItemNotes = (item: any) => {
-  const cj = getCustomJson(item);
-  return cj.notes || item?.notes || null;
-};
-
-// Agent-exclusive items (custom_json.product_type === 'AGENT') are returned by the
-// backend under `agent_product` instead of `product` (their `product_id` is null).
-// Always resolve through this helper instead of reading `item.product` directly so
-// agent-exclusive line items render their name/description/image correctly here,
-// the same way OrderManagement.tsx already does.
-const isAgentExclusiveItem = (item: any) => getCustomJson(item)?.product_type === 'AGENT';
-
-const getItemProductSource = (item: any) => {
-  const isAgentExclusive = isAgentExclusiveItem(item);
-  const agentProduct = item?.agent_product ?? {};
-  const product = item?.product ?? {};
-  return isAgentExclusive ? agentProduct : product;
-};
-
-const getItemDisplayName = (item: any) => {
-  const source = getItemProductSource(item);
-  return (
-    source?.name ||
-    item?.product_name ||
-    item?.name ||
-    (isAgentExclusiveItem(item) ? 'Agent Product' : 'Assorted Item')
-  );
-};
-
-const getItemDisplayImage = (item: any) => {
-  const source = getItemProductSource(item);
-  return source?.image_url || source?.imageUrl || source?.image || null;
-};
-
-const getItemDisplayDescription = (item: any) => {
-  const source = getItemProductSource(item);
-  return source?.description || null;
-};
-
-// Compact "Flavour · Variant" label used anywhere space is tight (card
-// preview, receipt line) — full separate labels are still used in the
-// detailed order modal below.
-const getItemVariantLabel = (item: any) => {
-  const flavour = getFlavour(item);
-  const variant = getVariant(item);
-  return [flavour, variant].filter(Boolean).join(' · ');
-};
-
-const currencySymbol = (cur?: string) => {
-  const c = cur || (typeof window !== 'undefined' ? localStorage.getItem('currency') || 'INR' : 'INR');
-  return c === 'INR' ? '₹' : c;
-};
-
-const fmtMoney = (n: number | undefined, cur?: string) => `${currencySymbol(cur)}${Number(n || 0).toFixed(0)}`;
-
-const fmtDateTime = (d?: string | null) =>
-  d ? new Date(d).toLocaleString('en-IN', {
-    day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit',
-  }) : null;
-
-const fmtDate = (d?: string) =>
-  d ? new Date(d).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) : null;
-
-// Same as fmtDate but takes a Date object directly (avoids the UTC round-trip
-// that toISOString() would introduce, which can shift the displayed day near
-// midnight in IST).
-const fmtDateObj = (d: Date) =>
-  d.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
-
-const getDisplayName = (order: any) => {
-  if (order?.customer?.name) return order.customer.name;
-  const nameParts = [order?.customer?.first_name, order?.customer?.last_name].filter(Boolean);
-  return nameParts.length ? nameParts.join(' ') : order?.customer_name || '—';
-};
-
-const getDisplayEmail = (order: any) => order?.customer?.email || order?.customer_email || '—';
-const getDisplayPhone = (order: any) => order?.customer?.phone_no || order?.customer_phone || '—';
-const getDisplayOrderSource = (order: any) => order?.order_source || order?.order_type || '—';
-const getDisplayRole = (order: any) => order?.customer?.role?.toUpperCase() || (order?.order_type ? order.order_type.toUpperCase() : 'USER');
-
-const formatAddressString = (address: any) => {
-  if (!address) return '—';
-  const parts = [
-    address.addressLine1,
-    address.street,
-    address.line1,
-    address.line2,
-    address.area,
-    address.city,
-    address.state,
-    address.pincode,
-    address.country,
-  ].filter(Boolean);
-  return parts.length ? parts.join(', ') : '—';
-};
-
-
-const getAddressAreaName = (address: any) => {
-  const area = address?.area;
-  if (area === undefined || area === null || area === '') return null;
-  if (typeof area === 'object') return area.name ?? area.areaName ?? null;
-  return area;
-};
-
-const getAddressFieldValue = (address: any, keys: string[]) => {
-  for (const k of keys) {
-    const v = address?.[k];
-    if (v !== undefined && v !== null && v !== '') return v;
-  }
-  return null;
-};
-
-const ADDRESS_FIELD_DEFS: { label: string; keys?: string[]; resolver?: (a: any) => any }[] = [
-  { label: 'Area', resolver: getAddressAreaName },
-  { label: 'Block', keys: ['block'] },
-  { label: 'Building', keys: ['building'] },
-  { label: 'Avenue', keys: ['avenue'] },
-  { label: 'Street', keys: ['street'] },
-  {
-    label: 'Floor / Apt',
-    resolver: (a: any) => {
-      const floor = a?.floor;
-      const apt = a?.apartment;
-      if (!floor && !apt) return null;
-      return [floor, apt].filter(Boolean).join(' ');
-    },
-  },
-  { label: 'Country', keys: ['country'] },
-   { label: 'Delivery Notes', keys: ['addressNotes', 'deliveryNotes', 'delivery_notes', 'notes'] },
-];
-
-const getAddressFields = (address: any) =>
-  ADDRESS_FIELD_DEFS.map(({ label, keys, resolver }) => ({
-    label,
-    value: resolver ? resolver(address) : getAddressFieldValue(address, keys || []),
-  }));
-
-
-const getKitchenOrderAddons = (order: any): any[] => {
-  if (Array.isArray(order?.order_addons)) return order.order_addons;
-  if (Array.isArray(order?.order_addons_json)) return order.order_addons_json;
-  return [];
-};
-
-const getKitchenOrderAddonTotal = (order: any): number => {
-  const addons = getKitchenOrderAddons(order);
-  return Number(order?.order_addons_total ?? addons.reduce((sum: number, addon: any) => sum + Number(addon.total ?? (addon.price * addon.quantity || 0)), 0));
-};
-
-// Reads the custom-cake customization payload off an order (custom_cake_json /
-// custom_cake, whichever the backend sends). This mirrors OrderManagement.tsx's
-// `customCake` normalization — it was already defined here but never rendered
-// anywhere in the modal, so custom-cake orders showed everything except their
-// customization details. It's now wired into the order detail modal below.
-const getCustomCakeDetails = (order: any) => {
-  const customCake = order?.custom_cake_json ?? order?.custom_cake ?? null;
-  if (!customCake || typeof customCake !== 'object') return null;
-  return {
-    image: customCake?.image || customCake?.image_url || null,
-    flavour: customCake?.flavour || customCake?.flavor || null,
-    weight: customCake?.weight || null,
-    shape: customCake?.shape || null,
-    size: customCake?.size || null,
-    colour: customCake?.colour || customCake?.color || null,
-    message: customCake?.message || null,
-    notes: customCake?.notes || null,
-    price: customCake?.price != null ? Number(customCake.price) : null,
-  };
-};
-
-const isCustomCakeOrder = (order: any) => !!getCustomCakeDetails(order);
-
-// ── Payment-link eligibility ──────────────────────────────────────────────
-// Online payment links are only offered for PICKUP orders. For delivery
-// orders, payment is settled through the normal checkout/COD flow, so we
-// never show a payment-link action there. Even for pickup orders, we don't
-// currently support online payment when the order currency is INR — those
-// are collected as Cash (COD) or UPI directly through the "Mark Delivered"
-// popover instead, so no link is generated for them either.
-const isOrderPickup = (order: any) => (order?.delivery_method || '').toUpperCase() === 'PICKUP';
-
-const canGeneratePaymentLink = (order: any) => {
-  if (!order) return false;
-  const currency = (order?.currency || 'INR').toUpperCase();
-  return isOrderPickup(order) && currency !== 'INR';
-};
-
-const getPaymentLinkDisabledReason = (order: any): string | null => {
-  if (!order) return null;
-  if (!isOrderPickup(order)) return 'Payment links are only available for pickup orders.';
-  const currency = (order?.currency || 'INR').toUpperCase();
-  if (currency === 'INR') {
-    return "Online payment isn't supported for INR — collect Cash (COD) or UPI when marking the order delivered.";
-  }
-  return null;
-};
-
-// ── Order origin (who placed the order) — used to tint the kitchen card ────
-// Mirrors the origin logic already used in OrderManagement.tsx (isSalesAgentOrder
-// / isAgentOrder), adapted to the snake_case fields the kitchen order records use.
-const getOrderCreatedByRole = (order: any) =>
-  (order?.created_by?.role ?? order?.createdByRole ?? '').toString().toUpperCase();
-
-const isSalesAgentKitchenOrder = (order: any) => {
-  const role = getOrderCreatedByRole(order);
-  const source = (order?.order_source ?? '').toString().toUpperCase();
-  const type = (order?.order_type ?? '').toString().toUpperCase();
-  return role === 'SALES_AGENT' || source === 'SALES_AGENT' || type === 'SALES_AGENT';
-};
-
-const isAgentKitchenOrder = (order: any) => {
-  if (isSalesAgentKitchenOrder(order)) return false;
-  const role = getOrderCreatedByRole(order);
-  const source = (order?.order_source ?? '').toString().toUpperCase();
-  return role === 'AGENT' || source === 'AGENT';
-};
-
-// Regular customer orders keep the card's default background. Agent orders
-// get the lightest green tint, Sales-Agent orders get the lightest rose
-// tint — independent of (and layered on top of) the blue/green pickup vs
-// delivery border-left highlight.
-const getOrderOriginCardClass = (order: any) => {
-  if (isSalesAgentKitchenOrder(order)) return 'card-origin-sales-agent';
-  if (isAgentKitchenOrder(order)) return 'card-origin-agent';
-  return '';
-};
-
-const getExpectedDelivery = (order: any): { label: string } | null => {
-  if (!order) return null;
-
-  const explicit =
-    order.expected_delivery_at ||
-    order.expected_delivery_time ||
-    order.estimated_delivery_at;
-  if (explicit) return { label: fmtDateTime(explicit) as string };
-
-  const date = order.delivery_date || order.deliveryDate;
-  const slot = order.delivery_time_slot ?? order.deliveryTimeSlot;
-  if (date && slot) return { label: `${fmtDate(date)} · ${slot}` };
-  if (date) return { label: fmtDate(date) as string };
-  if (slot) return { label: slot };
-
-  return null;
-};
-
-interface FulfillmentInfo {
-  isPickup: boolean;
-  date: string | null;
-  time: string | null;
-}
-
-// Resolves the single relevant date/time for an order based on its actual
-// fulfilment method, so the UI never shows the wrong (or empty) schedule:
-//  · PICKUP   → pickup_date / pickup_time_slot (falls back to the delivery_*
-//               fields only if pickup-specific ones are missing)
-//  · DELIVERY → delivery_date / delivery_time_slot only — pickup fields are
-//               never read or shown for a delivery order.
-// Card and modal both call this so "hide the other type's info" logic lives
-// in one place instead of being duplicated per view.
-const getFulfillmentInfo = (order: any): FulfillmentInfo => {
-  const isPickup = (order?.delivery_method || '').toUpperCase() === 'PICKUP';
-
-  if (isPickup) {
-    const rawDate = order?.pickup_date || order?.delivery_date || order?.deliveryDate;
-    const time = order?.pickup_time_slot || order?.delivery_time_slot || order?.deliveryTimeSlot || null;
-    return { isPickup: true, date: rawDate ? fmtDate(rawDate) : null, time };
-  }
-
-  const rawDate = order?.delivery_date || order?.deliveryDate;
-  const time = order?.delivery_time_slot ?? order?.deliveryTimeSlot ?? null;
-  return { isPickup: false, date: rawDate ? fmtDate(rawDate) : null, time };
-};
-
-/* ─── Calendar helpers ───────────────────────────────────────────────────────── */
-
-type CalendarStatusKey = 'grey' | 'yellow' | 'green' | 'red';
-
-// pending/assigned → grey · preparing → yellow · ready/completed/delivered → green · cancelled/rejected → red
-const getStatusColorKey = (status?: string): CalendarStatusKey => {
-  const s = (status || '').toUpperCase();
-  if (['CANCELLED', 'CANCELED', 'REJECTED'].includes(s)) return 'red';
-  if (['PREPARING', 'PROCESSING'].includes(s)) return 'yellow';
-  if (['DELIVERED', 'COMPLETED', 'READY', 'READY_FOR_PICKUP', 'READY_FOR_DISPATCH'].includes(s)) return 'green';
-  return 'grey';
-};
-
-const CALENDAR_STATUS_LEGEND: { key: CalendarStatusKey; label: string }[] = [
-  { key: 'grey', label: 'Pending' },
-  { key: 'yellow', label: 'Preparing' },
-  { key: 'green', label: 'Completed' },
-  { key: 'red', label: 'Cancelled' },
-];
-
-interface CalendarOrderInfo {
-  date: Date;
-  dateLabel: string;
-  timeLabel: string | null;
-}
-
-// Resolve the date/time to plot an order on the calendar:
-//  · Pickup orders  → pickup date & time (falls back to delivery date/slot)
-//  · Delivery orders with an expected delivery date → that date & time slot
-//  · Otherwise (nothing scheduled yet) → the order's created date & time
-const getOrderCalendarInfo = (order: any): CalendarOrderInfo => {
-  const isPickup = (order?.delivery_method || '').toUpperCase() === 'PICKUP';
-
-  if (isPickup) {
-    const d = order?.pickup_date || order?.delivery_date;
-    if (d) {
-      return {
-        date: new Date(d),
-        dateLabel: 'Pickup',
-        timeLabel: order?.pickup_time_slot || order?.delivery_time_slot || null,
-      };
-    }
-  } else if (order?.delivery_date) {
-    return {
-      date: new Date(order.delivery_date),
-      dateLabel: 'Expected Delivery',
-      timeLabel: order?.delivery_time_slot || null,
-    };
-  }
-
-  const created = new Date(order?.created_at);
-  return {
-    date: created,
-    dateLabel: 'Order Placed',
-    timeLabel: created.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' }),
-  };
-};
-
-const dateKey = (d: Date) =>
-  `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-
-const buildMonthGrid = (monthDate: Date): (Date | null)[] => {
-  const year = monthDate.getFullYear();
-  const month = monthDate.getMonth();
-  const firstDay = new Date(year, month, 1);
-  const startWeekday = firstDay.getDay();
-  const daysInMonth = new Date(year, month + 1, 0).getDate();
-
-  const cells: (Date | null)[] = [];
-  for (let i = 0; i < startWeekday; i++) cells.push(null);
-  for (let d = 1; d <= daysInMonth; d++) cells.push(new Date(year, month, d));
-  while (cells.length % 7 !== 0) cells.push(null);
-  return cells;
-};
-
-const WEEKDAY_LABELS = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'];
-
-
-
-// The logged-in kitchen staff member's id — used only for display purposes
-// now (e.g. "(You)" tag), since /kitchen/my-completed-orders already scopes
-// the Completed tab server-side.
-const getCurrentUserId = (): number | null => {
+const currentUserId = (): number | null => {
   try {
-    const stored = JSON.parse(localStorage.getItem('user') || '{}');
-    return stored?.id ?? null;
+    const u = JSON.parse(localStorage.getItem('user') || '{}');
+    const id = Number(u?.id ?? localStorage.getItem('user_id'));
+    return Number.isFinite(id) && id > 0 ? id : null;
   } catch {
     return null;
   }
 };
 
-/* ─── Date filter helpers ────────────────────────────────────────────────────── */
-// Only two modes now: 'all' (no date restriction) and 'day' (a single
-// selected day, navigable with the arrows or the calendar icon).
-type DateFilterMode = 'all' | 'day';
-
-const kuwaitTodayAsLocalDate = () => {
-  const p = getKuwaitParts();
-  return new Date(p.year, p.month - 1, p.day);
+const originOf = (o: any): 'agent' | 'sales' | 'pickup' | 'delivery' => {
+  const source = String(o?.order_source ?? '').toUpperCase();
+  const role = String(o?.created_by?.role ?? '').toUpperCase();
+  if (source === 'AGENT' || role === 'AGENT' || o?.order_type === 'agent_order') return 'agent';
+  if (source === 'SALES_AGENT' || role === 'SALES_AGENT' || source === 'SHOP_MANAGER') return 'sales';
+  if (String(o?.delivery_method ?? '').toUpperCase() === 'PICKUP') return 'pickup';
+  return 'delivery';
 };
 
-const isSameDay = (a: Date, b: Date) =>
-  a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
-
-// yyyy-mm-dd string for a Date, in local time (for the native <input type="date">)
-const toDateInputValue = (d: Date) =>
-  `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+const statusLabel = (status: string): string =>
+  ({
+    ASSIGNED_TO_KITCHEN: 'Waiting for kitchen',
+    PREPARING: 'Preparing',
+    READY: 'Ready for dispatch',
+    PICKUP_READY: 'Ready for pickup',
+    ASSIGNED_TO_AGENT: 'With delivery agent',
+    ASSIGNED_TO_DRIVER: 'Driver assigned',
+    DRIVER_ACCEPTED: 'Driver accepted',
+    OUT_FOR_DELIVERY: 'Out for delivery',
+    DELIVERY_SUBMITTED: 'Proof submitted',
+    DELIVERED: 'Delivered',
+  } as Record<string, string>)[status] ?? status.replace(/_/g, ' ').toLowerCase();
 
 const KitchenOrder: React.FC = () => {
-  const currentUserId = useMemo(getCurrentUserId, []);
+  const me = useMemo(currentUserId, []);
+  const [tab, setTab] = useState<KitchenBoardTab>('pending');
+  const [scope, setScope] = useState<Scope>('all');
+  const [date, setDate] = useState<string>(getKuwaitTodayStr());
+  const [pendingAllDates, setPendingAllDates] = useState(true);
 
-  const [activeTab, setActiveTab] = useState<'all' | 'pending' | 'processing' | 'completed'>('pending');
-  const [pendingOrders, setPendingOrders] = useState<KitchenOrderRecord[]>([]);
-  const [processingOrders, setProcessingOrders] = useState<KitchenOrderRecord[]>([]);
-  const [completedOrders, setCompletedOrders] = useState<KitchenOrderRecord[]>([]);
-  const [loading, setLoading] = useState<boolean>(true);
-  const [actionLoading, setActionLoading] = useState<number | null>(null);
-  const [actionError, setActionError] = useState<string | null>(null);
+  const [orders, setOrders] = useState<any[]>([]);
+  const [counts, setCounts] = useState<Record<KitchenBoardTab, number | null>>({ pending: null, processing: null, completed: null });
+  const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+  const [busyId, setBusyId] = useState<number | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [toast, setToast] = useState<string | null>(null);
 
-  // Date filter — 'all' shows everything, 'day' restricts to a single
-  // selected day (defaults to today, steppable with the arrows, or jump to
-  // any day via the calendar icon). Used by Pending & Processing — Completed
-  // is always locked to today, and All Orders always ignores this filter
-  // entirely (see applyTabRules). Defaults to 'day' (today) so Pending opens
-  // scoped to "what's needed today" rather than every pending order ever.
-  const [dateFilterMode, setDateFilterMode] = useState<DateFilterMode>('day');
-  // const [selectedDay, setSelectedDay] = useState<Date>(new Date());
-  const [selectedDay, setSelectedDay] = useState<Date>(kuwaitTodayAsLocalDate());
-  const dateInputRef = useRef<HTMLInputElement>(null);
+  const [detailsOrder, setDetailsOrder] = useState<any | null>(null);
+  const [detailsLoading, setDetailsLoading] = useState(false);
+  const [receiptOrder, setReceiptOrder] = useState<any | null>(null);
+  const [pickupPay, setPickupPay] = useState<Record<number, string>>({});
 
-  // Calendar view modal
-  const [isCalendarOpen, setIsCalendarOpen] = useState<boolean>(false);
-  const [calendarMonth, setCalendarMonth] = useState<Date>(new Date());
-  const [calendarSelectedDate, setCalendarSelectedDate] = useState<Date | null>(null);
+  const [payOrder, setPayOrder] = useState<any | null>(null);
+  const [payLink, setPayLink] = useState<string | null>(null);
+  const [payLoading, setPayLoading] = useState(false);
+  const [payError, setPayError] = useState<string | null>(null);
+  const [payCopied, setPayCopied] = useState(false);
 
-  // Which order's "Payment" popover is currently open (card grid + modal share this)
-  const [paymentMenuOrderId, setPaymentMenuOrderId] = useState<number | null>(null);
+  // The date only filters Pending when "All dates" is switched off.
+  const dateFor = useCallback(
+    (t: KitchenBoardTab) => (t === 'pending' && pendingAllDates ? null : date),
+    [date, pendingAllDates]
+  );
+  const mineFor = (t: KitchenBoardTab) => t !== 'pending' && scope === 'mine';
 
-  // Detailed Modal states
-  const [selectedOrder, setSelectedOrder] = useState<any>(null);
-  const [modalOpen, setModalOpen] = useState<boolean>(false);
-  const [modalLoading, setModalLoading] = useState<boolean>(false);
-  // Receipt modal state (separate from detailed view)
-  const [isReceiptOpen, setIsReceiptOpen] = useState<boolean>(false);
-  const [receiptLoading, setReceiptLoading] = useState<boolean>(false);
-
-  // ── Payment link / QR modal state ──
-  const [paymentLinkOrderId, setPaymentLinkOrderId] = useState<number | null>(null);
-  const [paymentLinkOrderMeta, setPaymentLinkOrderMeta] = useState<any>(null);
-  const [paymentLink, setPaymentLink] = useState<string | null>(null);
-  const [paymentLinkLoading, setPaymentLinkLoading] = useState<boolean>(false);
-  const [paymentLinkError, setPaymentLinkError] = useState<string | null>(null);
-  const [paymentLinkCopied, setPaymentLinkCopied] = useState<boolean>(false);
-
-  const fetchAllKitchenData = useCallback(async () => {
-    try {
-      setLoading(true);
-
-      // /kitchen/my-completed-orders is scoped server-side to the logged-in
-      // kitchen staff member, so no client-side filtering is needed anymore.
-      const [pending, processing, myCompleted] = await Promise.all([
-        getKitchenPending(),
-        getKitchenProcessing(),
-        getMyCompletedKitchenOrders(),
-      ]);
-
-      setPendingOrders(pending);
-      setProcessingOrders(processing);
-      setCompletedOrders(myCompleted);
-    } catch (err) {
-      console.error('Failed to load kitchen dashboard data', err);
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+  const load = useCallback(
+    async (silent = false) => {
+      if (silent) setRefreshing(true);
+      else setLoading(true);
+      setError(null);
+      try {
+        const tabs: KitchenBoardTab[] = ['pending', 'processing', 'completed'];
+        const results = await Promise.all(
+          tabs.map((t) => getKitchenBoard(t, { date: dateFor(t), mine: mineFor(t) }).catch(() => null))
+        );
+        const nextCounts = { pending: null, processing: null, completed: null } as Record<KitchenBoardTab, number | null>;
+        tabs.forEach((t, i) => {
+          nextCounts[t] = results[i] ? results[i]!.length : null;
+        });
+        setCounts(nextCounts);
+        const current = results[tabs.indexOf(tab)];
+        if (current === null) setError('Could not load kitchen orders. Please refresh.');
+        setOrders(current ?? []);
+      } finally {
+        setLoading(false);
+        setRefreshing(false);
+      }
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [tab, scope, date, pendingAllDates]
+  );
 
   useEffect(() => {
-    fetchAllKitchenData();
-  }, [fetchAllKitchenData]);
+    load();
+  }, [load]);
 
-  const allOrders = useMemo(() => {
-    return [...pendingOrders, ...processingOrders, ...completedOrders].sort(
-      (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
-    );
-  }, [pendingOrders, processingOrders, completedOrders]);
+  // Gentle auto-refresh so new kitchen orders appear without reloading.
+  useEffect(() => {
+    const id = window.setInterval(() => load(true), 60000);
+    return () => window.clearInterval(id);
+  }, [load]);
 
-  const visibleOrders = useMemo(() => {
-    switch (activeTab) {
-      case 'pending': return pendingOrders;
-      case 'processing': return processingOrders;
-      case 'completed': return completedOrders;
-      default: return allOrders;
-    }
-  }, [activeTab, pendingOrders, processingOrders, completedOrders, allOrders]);
+  useEffect(() => {
+    if (!toast) return;
+    const t = window.setTimeout(() => setToast(null), 3200);
+    return () => window.clearTimeout(t);
+  }, [toast]);
 
-  // The date that actually matters for "is this order from today" purposes:
-  //  · An order the kitchen has FINISHED (mark-ready'd) should be judged by
-  //    WHEN IT WAS FINISHED, not when it was originally placed — an order
-  //    placed yesterday but marked ready by the kitchen today is a "today"
-  //    completion and must show up in Completed / All Orders.
-  //
-  //  NOTE: `completeKitchenOrder` (POST /kitchen/:id/complete) flips the
-  //  order's status to ASSIGNED_TO_AGENT (it auto-assigns a delivery agent),
-  //  NOT to a literal "COMPLETED" status — and by the time you're viewing
-  //  the dashboard it may have moved even further along the delivery
-  //  pipeline (ASSIGNED_TO_DRIVER, OUT_FOR_DELIVERY, etc). So we can't key
-  //  off `status` at all here. Instead: if the order carries ANY completion
-  //  timestamp, it's been kitchen-completed — use that date. Otherwise it's
-  //  still pending/preparing, so use created_at.
-  // const getKitchenRelevantDate = (order: any): Date => {
-  //   const completedRaw =
-  //     order?.completed_by_kitchen_at ||
-  //     order?.completed_at ||
-  //     order?.kitchen_completed_at ||
-  //     order?.preparation_completed_at ||
-  //     order?.ready_at;
+  const tools = useAdminDataTools<any>({
+    data: orders,
+    title: `Kitchen · ${TAB_META[tab].label}`,
+    storageKey: 'kitchen-board',
+    fields: { date: false },
+    phoneKeys: ['customer_phone'],
+    orderKeys: ['order_number', 'id'],
+    columns: [
+      { header: 'Order #', key: 'order_number' },
+      { header: 'Status', key: 'status' },
+      { header: 'Method', key: 'delivery_method' },
+      { header: 'Scheduled date', key: 'scheduled_date' },
+      { header: 'Time slot', key: 'scheduled_time_slot' },
+      { header: 'Customer', key: 'customer_name' },
+      { header: 'Phone', key: 'customer_phone' },
+      {
+        header: 'Products',
+        value: (o: any) =>
+          toOrderView(o)
+            .lines.map((l) => `${l.quantity}× ${l.name}${l.size ? ` (${l.size})` : ''}`)
+            .join(', '),
+      },
+      { header: 'Writing', key: 'cake_message' },
+      { header: 'Kitchen staff', value: (o: any) => o?.kitchen_staff?.name ?? '' },
+    ],
+  });
+  const visible = tools.filtered;
 
-  //   if (completedRaw) {
-  //     return new Date(completedRaw);
-  //   }
-
-  //   return new Date(order?.updated_at || order?.created_at);
-  // };
-
-  
-  // The date a PENDING order should be judged against: kitchen staff care
-  // about WHEN THE ORDER IS ACTUALLY NEEDED, not when it happened to be
-  // placed. Pickup orders use pickup_date (falling back to delivery_date if
-  // pickup_date isn't set on the record); delivery orders use delivery_date.
-  // const getPendingRelevantDate = (order: any): Date | null => {
-  //   const isPickup = (order?.delivery_method || '').toUpperCase() === 'PICKUP';
-  //   const raw = isPickup
-  //     ? (order?.pickup_date || order?.delivery_date)
-  //     : order?.delivery_date;
-  //   return raw ? new Date(raw) : null;
-  // };
-
-
-  const getKitchenRelevantDate = (order: any): string => {
-  return (
-    order?.completed_by_kitchen_at ||
-    order?.completed_at ||
-    order?.kitchen_completed_at ||
-    order?.preparation_completed_at ||
-    order?.ready_at ||
-    order?.updated_at ||
-    order?.created_at
-  );
-};
-
-const getPendingRelevantDate = (order: any): string | null => {
-  const isPickup = (order?.delivery_method || '').toUpperCase() === 'PICKUP';
-  return (isPickup ? (order?.pickup_date || order?.delivery_date) : order?.delivery_date) || null;
-};
-
-  // Apply all business rules on top of the active tab's raw list:
-  //  · Delivered orders are never shown on the kitchen board, in any tab.
-  //  · Pending    → only orders assigned to the kitchen (awaiting prep) whose
-  //                 pickup/delivery date falls on the selected day (today by
-  //                 default) — i.e. "what's actually due today", not every
-  //                 pending order regardless of when it's needed.
-  //  · Processing → only orders currently being prepared, unchanged: still
-  //                 keyed on when the order was placed (created_at), same as
-  //                 before.
-  //  · Completed  → always locked to *today*, judged by
-  //                 getKitchenRelevantDate (when the kitchen actually
-  //                 finished the order), regardless of the date filter bar.
-  //  · All Orders → every non-delivered order, on any day — this tab always
-  //                 ignores the date filter bar entirely, so it's a full
-  //                 roster rather than a "today" view.
-  //
-  // Shared by both the visible card grid AND the tab badge counts below, so
-  // the number on a tab always matches what you actually see after clicking it.
-  const applyTabRules = useCallback(
-    (orders: any[], tab: 'pending' | 'processing' | 'completed' | 'all') => {
-      let base = orders.filter((order: any) => (order.status || '').toUpperCase() !== 'DELIVERED');
-
-      if (tab === 'pending') {
-        base = base.filter((order: any) => (order.status || '').toUpperCase() === 'ASSIGNED_TO_KITCHEN');
-      }
-
-      if (tab === 'processing') {
-        base = base.filter((order: any) => (order.status || '').toUpperCase() === 'PREPARING');
-      }
-
-      // if (tab === 'completed') {
-      //   const today = new Date();
-      //   return base.filter((order: any) => isSameDay(getKitchenRelevantDate(order), today));
-      // }
-
-      if (tab === 'completed') {
-  const todayKey = getKuwaitTodayStr();
-  return base.filter((order: any) => toKuwaitDateKey(getKitchenRelevantDate(order)) === todayKey);
-}
-
-
-      if (tab === 'all') {
-        return base;
-      }
-
-      if (dateFilterMode === 'all') return base;
-
-      // if (tab === 'pending') {
-      //   return base.filter((order: any) => {
-      //     const relevantDate = getPendingRelevantDate(order);
-      //     return relevantDate ? isSameDay(relevantDate, selectedDay) : false;
-      //   });
-      // }
-
-      return base.filter((order: any) => {
-  const relevant = getPendingRelevantDate(order);
-  return relevant ? toKuwaitDateKey(relevant) === toDateInputValue(selectedDay) : false;
-});
-
-      // return base.filter((order: any) => isSameDay(new Date(order.created_at), selectedDay));
-      return base.filter((order: any) => toKuwaitDateKey(order.created_at) === toDateInputValue(selectedDay));
-    },
-    [dateFilterMode, selectedDay]
-  );
-
-  const filteredOrders = useMemo(
-    () => applyTabRules(visibleOrders, activeTab),
-    [visibleOrders, activeTab, applyTabRules]
-  );
-
-  // Badge counts — computed the same way as filteredOrders, per tab, so
-  // "All Orders 0" on a day with no orders today actually matches what's
-  // shown when you click into that tab.
-  const pendingCount = useMemo(() => applyTabRules(pendingOrders, 'pending').length, [pendingOrders, applyTabRules]);
-  const processingCount = useMemo(() => applyTabRules(processingOrders, 'processing').length, [processingOrders, applyTabRules]);
-  const completedCount = useMemo(() => applyTabRules(completedOrders, 'completed').length, [completedOrders, applyTabRules]);
-  const allCount = useMemo(() => applyTabRules(allOrders, 'all').length, [allOrders, applyTabRules]);
-
-  // Group every known order (not just the active tab) by the calendar date
-  // resolved via getOrderCalendarInfo(), so the calendar modal can plot dots
-  // regardless of which tab / date-filter is currently active.
-  const calendarOrdersByDay = useMemo(() => {
-    const map: Record<string, { order: any; info: CalendarOrderInfo }[]> = {};
-    allOrders.forEach((order: any) => {
-      const info = getOrderCalendarInfo(order);
-      if (!info.date || isNaN(info.date.getTime())) return;
-      const key = dateKey(info.date);
-      if (!map[key]) map[key] = [];
-      map[key].push({ order, info });
-    });
-    return map;
-  }, [allOrders]);
-
-  const calendarSelectedDayEntries = useMemo(() => {
-    if (!calendarSelectedDate) return [];
-    return calendarOrdersByDay[dateKey(calendarSelectedDate)] || [];
-  }, [calendarSelectedDate, calendarOrdersByDay]);
-
-  const openCalendarView = () => {
-    setCalendarMonth(new Date());
-    setCalendarSelectedDate(null);
-    setIsCalendarOpen(true);
-  };
-
-  const goToPrevMonth = () => {
-    setCalendarMonth(prev => new Date(prev.getFullYear(), prev.getMonth() - 1, 1));
-  };
-
-  const goToNextMonth = () => {
-    setCalendarMonth(prev => new Date(prev.getFullYear(), prev.getMonth() + 1, 1));
-  };
-
-  const goToCurrentMonth = () => {
-    const today = new Date();
-    setCalendarMonth(today);
-    setCalendarSelectedDate(today);
-  };
-
-  const handleViewOrderDetails = async (orderId: number) => {
+  // ── Actions ──
+  const runAction = async (orderId: number, action: () => Promise<any>, success: string) => {
+    setBusyId(orderId);
+    setError(null);
     try {
-      setModalLoading(true);
-      setModalOpen(true);
-      const data = await getKitchenOrderDetails(orderId);
-      setSelectedOrder(data);
-    } catch (err) {
-      console.error("Could not fetch full order record manifest", err);
-    } finally {
-      setModalLoading(false);
-    }
-  };
-
-  const handleOpenReceipt = async (orderId: number) => {
-    try {
-      setReceiptLoading(true);
-      // fetch full details (same endpoint) so receipt has all fields
-      const data = await getKitchenOrderDetails(orderId);
-      setSelectedOrder(data);
-      setIsReceiptOpen(true);
-    } catch (err) {
-      console.error('Could not fetch order for receipt', err);
-    } finally {
-      setReceiptLoading(false);
-    }
-  };
-
-  const handleStartPreparation = async (orderId: number, e: React.MouseEvent) => {
-    e.stopPropagation();
-    setActionError(null);
-    try {
-      setActionLoading(orderId);
-      await startProcessing(orderId);
-      await fetchAllKitchenData();
-
-      if (modalOpen && selectedOrder?.id === orderId) {
-        const updated = await getKitchenOrderDetails(orderId);
-        setSelectedOrder(updated);
-      }
+      await action();
+      setToast(success);
+      await load(true);
     } catch (err: any) {
-      const msg =
-        err?.response?.data?.error ||
-        "Couldn't start preparation — someone may have already claimed this order.";
-      setActionError(msg);
-      // Refresh so the button/status reflects reality if someone else beat us to it.
-      await fetchAllKitchenData();
+      setError(err?.response?.data?.error || err?.response?.data?.message || 'Action failed. Please try again.');
     } finally {
-      setActionLoading(null);
+      setBusyId(null);
     }
   };
 
-  const handleMarkReady = async (orderId: number, e: React.MouseEvent) => {
-    e.stopPropagation();
-    setActionError(null);
+  const openDetails = async (order: any) => {
+    setDetailsOrder(order);
+    setDetailsLoading(true);
     try {
-      setActionLoading(orderId);
-      await completeKitchenOrder(orderId);
-      // This order now moves into "Completed (Mine)" — refetch so the
-      // completed list (and its count) picks it up immediately. Its
-      // completion timestamp (completed_by_kitchen_at etc.) is what makes
-      // getKitchenRelevantDate() treat it as "today" in Completed/All,
-      // regardless of when it was originally placed or what status it
-      // moves to next in the delivery pipeline.
-      await fetchAllKitchenData();
-      if (modalOpen && selectedOrder?.id === orderId) {
-        setModalOpen(false);
-      }
-    } catch (err: any) {
-      const msg = err?.response?.data?.error || "Couldn't mark this order ready.";
-      setActionError(msg);
-    } finally {
-      setActionLoading(null);
-    }
-  };
-
-  // Kitchen marks a PICKUP order as delivered/collected (POST /orders/:id/pickup)
-  // Backend sets status straight to DELIVERED — no intermediate step.
-  const handleMarkDelivered = async (orderId: number, e: React.MouseEvent) => {
-    e.stopPropagation();
-    setActionError(null);
-    try {
-      setActionLoading(orderId);
-      await markOrderPickedUp(orderId);
-      await fetchAllKitchenData();
-      if (modalOpen && selectedOrder?.id === orderId) {
-        setModalOpen(false);
-      }
-    } catch (err: any) {
-      const msg = err?.response?.data?.error || "Couldn't mark this order as delivered.";
-      setActionError(msg);
-    } finally {
-      setActionLoading(null);
-    }
-  };
-
-  // Kitchen confirms how payment was collected — COD or Online — for a pickup order
-  const handleSelectPaymentMethod = async (orderId: number, method: 'COD' | 'UPI', e: React.MouseEvent) => {
-    e.stopPropagation();
-    setActionError(null);
-    setPaymentMenuOrderId(null);
-    try {
-      setActionLoading(orderId);
-      await markOrderPaymentPaid(orderId, method);
-      await fetchAllKitchenData();
-      if (modalOpen && selectedOrder?.id === orderId) {
-        const updated = await getKitchenOrderDetails(orderId);
-        setSelectedOrder(updated);
-      }
-    } catch (err: any) {
-      const msg = err?.response?.data?.error || "Couldn't update payment status.";
-      setActionError(msg);
-    } finally {
-      setActionLoading(null);
-    }
-  };
-
-  // ── Day-filter navigation ──
-  // "All" clears the day restriction entirely.
-  const selectAllDates = () => {
-    setDateFilterMode('all');
-  };
-
-  // "Today" (re)centers the day filter on today.
-  const selectToday = () => {
-    setDateFilterMode('day');
-    setSelectedDay(new Date());
-  };
-
-  // Left/right arrows step the currently selected day by ±1, switching into
-  // 'day' mode automatically if the filter was on 'all'.
-  const goToPrevDay = () => {
-    setDateFilterMode('day');
-    setSelectedDay(prev => {
-      const base = new Date(prev);
-      base.setDate(base.getDate() - 1);
-      return base;
-    });
-  };
-
-  const goToNextDay = () => {
-    setDateFilterMode('day');
-    setSelectedDay(prev => {
-      const base = new Date(prev);
-      base.setDate(base.getDate() + 1);
-      return base;
-    });
-  };
-
-  // Calendar icon → native date picker → jump straight to that day.
-  const handlePickDate = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const val = e.target.value; // yyyy-mm-dd
-    if (!val) return;
-    const [y, m, d] = val.split('-').map(Number);
-    setSelectedDay(new Date(y, m - 1, d));
-    setDateFilterMode('day');
-  };
-
-  // Opens the native date picker reliably. Relying on clicking a
-  // visually-hidden <input type="date"> only opens the calendar if the click
-  // lands exactly on the browser's tiny built-in calendar icon, so instead we
-  // trigger it explicitly via showPicker() (Chrome/Edge/Firefox 101+), with a
-  // focus+click fallback for older/unsupported browsers.
-  const openDatePicker = () => {
-    const el = dateInputRef.current;
-    if (!el) return;
-    const anyEl = el as any;
-    if (typeof anyEl.showPicker === 'function') {
-      try {
-        anyEl.showPicker();
-        return;
-      } catch {
-        /* fall through to the fallback below */
-      }
-    }
-    el.focus();
-    el.click();
-  };
-
-  // Label shown between the arrows: "Today" / "Yesterday" / "Tomorrow" when
-  // applicable, otherwise the formatted date.
-  const dayLabel = useMemo(() => {
-    const today = new Date();
-    if (isSameDay(selectedDay, today)) return 'Today';
-    const yesterday = new Date(today);
-    yesterday.setDate(yesterday.getDate() - 1);
-    if (isSameDay(selectedDay, yesterday)) return 'Yesterday';
-    const tomorrow = new Date(today);
-    tomorrow.setDate(tomorrow.getDate() + 1);
-    if (isSameDay(selectedDay, tomorrow)) return 'Tomorrow';
-    return fmtDateObj(selectedDay);
-  }, [selectedDay]);
-
-  // Kitchen picks COD or Online for a pickup order → marks paid AND delivered, in one call
-  const handleCompletePickup = async (orderId: number, method: 'COD' | 'UPI', e: React.MouseEvent) => {
-    e.stopPropagation();
-    setActionError(null);
-    setPaymentMenuOrderId(null);
-    try {
-      setActionLoading(orderId);
-      await completePickupOrder(orderId, method);
-      await fetchAllKitchenData();
-      if (modalOpen && selectedOrder?.id === orderId) {
-        setModalOpen(false);
-      }
-    } catch (err: any) {
-      const msg = err?.response?.data?.error || "Couldn't complete this pickup order.";
-      setActionError(msg);
-    } finally {
-      setActionLoading(null);
-    }
-  };
-
-  const togglePaymentMenu = (orderId: number, e: React.MouseEvent) => {
-    e.stopPropagation();
-    setPaymentMenuOrderId((prev) => (prev === orderId ? null : orderId));
-  };
-
-  // ── Payment link / QR handlers ──
-  const handleOpenPaymentLink = async (order: any, e?: React.MouseEvent) => {
-    if (e) e.stopPropagation();
-    const orderId = order?.id;
-    if (!orderId) return;
-
-    // Payment links are only offered for eligible orders (pickup + non-INR).
-    // If the order doesn't qualify, surface why instead of calling the API.
-    const disabledReason = getPaymentLinkDisabledReason(order);
-    if (disabledReason) {
-      setPaymentLinkOrderId(orderId);
-      setPaymentLinkOrderMeta(order);
-      setPaymentLink(null);
-      setPaymentLinkCopied(false);
-      setPaymentLinkLoading(false);
-      setPaymentLinkError(disabledReason);
-      return;
-    }
-
-    setPaymentLinkOrderId(orderId);
-    setPaymentLinkOrderMeta(order);
-    setPaymentLink(null);
-    setPaymentLinkError(null);
-    setPaymentLinkCopied(false);
-    setPaymentLinkLoading(true);
-    try {
-      const result = await createPaymentLink(Number(orderId));
-      if (result?.success === false) {
-        setPaymentLinkError(result?.error || 'Unable to generate payment link.');
-      } else if (result?.payment_url) {
-        setPaymentLink(result.payment_url);
-      } else {
-        setPaymentLinkError('Payment link was not returned by the server.');
-      }
-    } catch (err: any) {
-      console.error('Failed to create payment link:', err);
-      setPaymentLinkError(
-        err?.response?.data?.error || 'Failed to generate payment link. Please try again.'
-      );
-    } finally {
-      setPaymentLinkLoading(false);
-    }
-  };
-
-  const handleCopyPaymentLink = async () => {
-    if (!paymentLink) return;
-    try {
-      await navigator.clipboard.writeText(paymentLink);
-      setPaymentLinkCopied(true);
-      setTimeout(() => setPaymentLinkCopied(false), 2000);
+      const fresh = await getKitchenOrderDetails(Number(order.id));
+      if (fresh) setDetailsOrder(fresh);
     } catch {
-      /* clipboard unavailable, ignore */
+      /* keep the list copy */
+    } finally {
+      setDetailsLoading(false);
     }
   };
 
-  const closePaymentLinkModal = () => {
-    setPaymentLinkOrderId(null);
-    setPaymentLinkOrderMeta(null);
-    setPaymentLink(null);
-    setPaymentLinkError(null);
-    setPaymentLinkLoading(false);
-    setPaymentLinkCopied(false);
+  const openPaymentLink = async (order: any) => {
+    setPayOrder(order);
+    setPayLink(null);
+    setPayError(null);
+    setPayCopied(false);
+    setPayLoading(true);
+    try {
+      const result = await createPaymentLink(Number(order.id));
+      if (result?.success === false) setPayError(result?.error || 'Unable to generate payment link.');
+      else if (result?.payment_url) setPayLink(result.payment_url);
+      else setPayError('Payment link was not returned by the server.');
+    } catch (err: any) {
+      setPayError(err?.response?.data?.error || 'Failed to generate payment link.');
+    } finally {
+      setPayLoading(false);
+    }
   };
 
-  return (
-    <div className="ko-workspace-container">
+  const copyPaymentLink = async () => {
+    if (!payLink) return;
+    try {
+      await navigator.clipboard.writeText(payLink);
+      setPayCopied(true);
+      window.setTimeout(() => setPayCopied(false), 1800);
+    } catch {
+      /* clipboard unavailable */
+    }
+  };
 
-      {/* ─── Page Title Header ─── */}
-      <div className="ko-page-header">
-        <div className="ko-page-header-text">
-          <h2>Kitchen Dashboard</h2>
-          <p>Monitor real-time line preparation items, active orders, and live chef fulfillment tasks.</p>
-        </div>
-      </div>
+  const isMine = (o: any) =>
+    me != null && (Number(o?.preparation_started_by?.id ?? o?.preparation_started_by) === me || Number(o?.kitchen_staff_id) === me);
 
-      {actionError && (
-        <div className="ko-action-error-banner">
-          <span>{actionError}</span>
-          <button onClick={() => setActionError(null)}>Dismiss</button>
-        </div>
-      )}
+  // ── Render helpers ──
+  const renderPrimaryAction = (o: any) => {
+    const id = Number(o.id);
+    const busy = busyId === id;
+    const status = String(o.status || '').toUpperCase();
+    const pickup = String(o.delivery_method || '').toUpperCase() === 'PICKUP';
 
-      {/* ─── Filter Navigation Tab Row ─── */}
-      <div className="ko-tabs-navigation-bar">
-        <button className={`ko-tab-nav-item ${activeTab === 'pending' ? 'active' : ''}`} onClick={() => setActiveTab('pending')}>
-          Pending <span className="ko-tab-badge bg-pending">{pendingCount}</span>
+    if (status === 'ASSIGNED_TO_KITCHEN') {
+      return (
+        <button className="kb-btn kb-btn--primary" disabled={busy} onClick={() => runAction(id, () => startProcessing(id), `Order #${o.order_number} — preparation started`)}>
+          {busy ? <Loader2 size={15} className="kb-spin" /> : <Flame size={15} />} Start Preparation
         </button>
-        <button className={`ko-tab-nav-item ${activeTab === 'processing' ? 'active' : ''}`} onClick={() => setActiveTab('processing')}>
-          Processing <span className="ko-tab-badge bg-processing">{processingCount}</span>
-        </button>
-        <button className={`ko-tab-nav-item ${activeTab === 'completed' ? 'active' : ''}`} onClick={() => setActiveTab('completed')}>
-          Completed (Mine) <span className="ko-tab-badge bg-completed">{completedCount}</span>
-        </button>
-         <button className={`ko-tab-nav-item ${activeTab === 'all' ? 'active' : ''}`} onClick={() => setActiveTab('all')}>
-          All Orders <span className="ko-tab-badge bg-all">{allCount}</span>
-        </button>
-      </div>
-
-      {/* ─── Date Filter Bar: All | < Today > | calendar icon ─── */}
-      <div
-        className="ko-date-filter-bar"
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          flexWrap: 'wrap',
-          gap: 10,
-        }}
-      >
-        <div className="ko-filter-segment-group" role="tablist" aria-label="Filter orders by date">
-          <button
-            role="tab"
-            aria-selected={dateFilterMode === 'all'}
-            className={`ko-filter-segment-btn ${dateFilterMode === 'all' ? 'active' : ''}`}
-            onClick={selectAllDates}
-          >
-            All
-          </button>
-
-          <button
-            type="button"
-            className="ko-filter-day-nav-btn"
-            onClick={goToPrevDay}
-            title="Previous day"
-            aria-label="Previous day"
-          >
-            <IconChevronLeft size={14} />
-          </button>
-
-          <button
-            role="tab"
-            aria-selected={dateFilterMode === 'day'}
-            className={`ko-filter-segment-btn ${dateFilterMode === 'day' ? 'active' : ''}`}
-            onClick={selectToday}
-          >
-            <IconClock size={13} /> {dayLabel}
-          </button>
-
-          <button
-            type="button"
-            className="ko-filter-day-nav-btn"
-            onClick={goToNextDay}
-            title="Next day"
-            aria-label="Next day"
-          >
-            <IconChevronRight size={14} />
-          </button>
-        </div>
-
-        <div className="ko-date-filter-calendar-wrap">
-          <button
-            type="button"
-            className="ko-date-filter-calendar-btn"
-            title="Pick a date"
-            aria-label="Pick a date"
-            onClick={openDatePicker}
-            style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              width: 34,
-              height: 34,
-              flexShrink: 0,
-              borderRadius: 8,
-              border: '1px solid #d7dce1',
-              background: '#ffffff',
-              color: '#4b5563',
-              cursor: 'pointer',
-            }}
-          >
-            <IconCalendar size={16} />
-          </button>
-          <input
-            ref={dateInputRef}
-            type="date"
-            className="ko-date-filter-hidden-input"
-            value={toDateInputValue(selectedDay)}
-            onChange={handlePickDate}
-            tabIndex={-1}
-            aria-hidden="true"
-          />
-        </div>
-
-        {dateFilterMode === 'day' && (
-          <span
-            className="ko-date-filter-active-chip"
-            style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: 6,
-              whiteSpace: 'nowrap',
-            }}
-          >
-            Showing: <strong>{dayLabel}</strong>
-            <button
-              className="ko-date-filter-chip-clear"
-              onClick={selectAllDates}
-              title="Reset filter"
-              aria-label="Clear date filter"
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                color: 'inherit',
-                cursor: 'pointer',
-              }}
-            >
-              <IconClose size={11} />
-            </button>
+      );
+    }
+    if (status === 'PREPARING') {
+      if (!isMine(o)) {
+        return (
+          <span className="kb-chip kb-chip--muted">
+            <User size={13} /> {o?.kitchen_staff?.name || o?.preparation_started_by?.name || 'Another staff member'}
           </span>
-        )}
-      </div>
-
-      {/* ─── Card Highlight Legend ─── */}
-      <div className="ko-card-legend-row">
-        <span className="ko-card-legend-item">
-          <span className="ko-legend-swatch swatch-fulfillment-delivery" /> Delivery order
-        </span>
-        <span className="ko-card-legend-item">
-          <span className="ko-legend-swatch swatch-fulfillment-pickup" /> Pickup order
-        </span>
-        <span className="ko-card-legend-item">
-          <span className="ko-legend-swatch swatch-origin-agent" /> Agent order
-        </span>
-        <span className="ko-card-legend-item">
-          <span className="ko-legend-swatch swatch-origin-sales-agent" /> Sales agent order
-        </span>
-      </div>
-
-      {/* ─── Active Queue Layout Loop ─── */}
-      {loading ? (
-        <div className="ko-workspace-center-loader">
-          <div className="ko-spinner" />
-          <p>Syncing hot items with kitchen lines...</p>
+        );
+      }
+      return (
+        <button className="kb-btn kb-btn--success" disabled={busy} onClick={() => runAction(id, () => completeKitchenOrder(id), `Order #${o.order_number} marked ready`)}>
+          {busy ? <Loader2 size={15} className="kb-spin" /> : <Check size={15} />} Mark Ready
+        </button>
+      );
+    }
+    if (pickup && ['PICKUP_READY', 'READY', 'ASSIGNED_TO_AGENT'].includes(status)) {
+      const method = pickupPay[id] || (o.payment_status === 'PAID' ? o.payment_method || 'COD' : 'COD');
+      return (
+        <div className="kb-pickup-action">
+          {o.payment_status !== 'PAID' && (
+            <select value={method} onChange={(e) => setPickupPay((p) => ({ ...p, [id]: e.target.value }))} aria-label="Payment collected by">
+              <option value="COD">Cash</option>
+              <option value="KNET">KNET</option>
+              <option value="LINK">Payment link</option>
+              {o.payment_method === 'CREDIT' && <option value="CREDIT">Credit</option>}
+            </select>
+          )}
+          <button className="kb-btn kb-btn--success" disabled={busy} onClick={() => runAction(id, () => completePickupOrder(id, method), `Order #${o.order_number} collected`)}>
+            {busy ? <Loader2 size={15} className="kb-spin" /> : <ShoppingBag size={15} />} Collected
+          </button>
         </div>
-      ) : filteredOrders.length === 0 ? (
-        <div className="ko-empty-state">
-          <IconChef size={50} />
-          <h3>No Orders Found</h3>
-          <p>
-            {activeTab === 'completed'
-              ? "You haven't completed any orders yet."
-              : `There are no items currently categorized under the "${activeTab}" status loop.`}
+      );
+    }
+    return (
+      <span className="kb-chip kb-chip--done">
+        <Check size={13} /> {statusLabel(status)}
+      </span>
+    );
+  };
+
+  const groupedPending = useMemo(() => {
+    if (tab !== 'pending' || !pendingAllDates) return null;
+    const groups: { key: string; items: any[] }[] = [];
+    visible.forEach((o) => {
+      const key = o.scheduled_date || '';
+      const g = groups.find((x) => x.key === key);
+      if (g) g.items.push(o);
+      else groups.push({ key, items: [o] });
+    });
+    return groups;
+  }, [visible, tab, pendingAllDates]);
+
+  const renderCard = (o: any, idx: number) => {
+    const v = toOrderView(o);
+    const origin = originOf(o);
+    const rel = relativeDayLabel(v.scheduledDate);
+    const showPay = v.isPickup && o.payment_status !== 'PAID' && o.payment_method !== 'CREDIT';
+    return (
+      <motion.article
+        key={o.id}
+        layout
+        className={`kb-card kb-card--${origin}`}
+        initial={{ opacity: 0, y: 14 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, scale: 0.97 }}
+        transition={{ duration: 0.25, delay: Math.min(idx * 0.03, 0.25) }}
+      >
+        <header className="kb-card-head">
+          <div>
+            <h3>Order #{v.number}</h3>
+            <span className="kb-card-sub">
+              <Clock size={12} /> Placed {formatKuwaitTime(o.created_at)}
+            </span>
+          </div>
+          <span className={`kb-status kb-status--${String(o.status || '').toLowerCase()}`}>{statusLabel(String(o.status || ''))}</span>
+        </header>
+
+        <div className="kb-badges">
+          <span className={`kb-day kb-day--${rel.tone}`}>
+            <CalendarDays size={12} /> {rel.label}
+            {v.scheduledSlot ? ` · ${v.scheduledSlot}` : ''}
+          </span>
+          <span className="kb-method">
+            {v.isPickup ? <ShoppingBag size={12} /> : <Truck size={12} />} {v.isPickup ? 'Pickup' : 'Delivery'}
+          </span>
+          {o.has_custom_cake && (
+            <span className="kb-custom">
+              <Cake size={12} /> Custom cake
+            </span>
+          )}
+        </div>
+
+        <ul className="kb-lines">
+          {v.lines.slice(0, 4).map((l) => (
+            <li key={l.key}>
+              <span className="kb-qty">×{l.quantity}</span>
+              <span className="kb-line-name">{l.name}</span>
+              {l.size && <span className="kb-size">{l.size}</span>}
+              {l.flavour && <span className="kb-flavour">{l.flavour}</span>}
+            </li>
+          ))}
+          {v.lines.length > 4 && <li className="kb-more">+{v.lines.length - 4} more</li>}
+          {v.lines.length === 0 && <li className="kb-more">No products</li>}
+        </ul>
+
+        {v.cakeMessage && (
+          <p className="kb-writing" title={v.cakeMessage}>
+            ✍︎ “{v.cakeMessage}”
           </p>
+        )}
+        {v.orderNotes && <p className="kb-order-notes">Note: {v.orderNotes}</p>}
+
+        {tab !== 'pending' && (o?.kitchen_staff?.name || o?.preparation_started_by?.name) && (
+          <p className="kb-staff">
+            <ChefHat size={13} /> {o?.kitchen_staff?.name || o?.preparation_started_by?.name}
+            {isMine(o) && <span className="kb-me">You</span>}
+          </p>
+        )}
+
+        <footer className="kb-card-foot">
+          <div className="kb-icon-row">
+            <button className="kb-icon" title="Order details" onClick={() => openDetails(o)}>
+              <Eye size={16} />
+            </button>
+            <button className="kb-icon" title="Print receipt" onClick={() => setReceiptOrder(o)}>
+              <Printer size={16} />
+            </button>
+            {showPay && (
+              <button className="kb-icon" title="Payment link" onClick={() => openPaymentLink(o)}>
+                <CreditCard size={16} />
+              </button>
+            )}
+          </div>
+          {renderPrimaryAction(o)}
+        </footer>
+      </motion.article>
+    );
+  };
+
+  const dateRel = relativeDayLabel(date);
+  const showDateNav = tab !== 'pending' || !pendingAllDates;
+
+  return (
+    <div className="kb-root">
+      <AnimatePresence>
+        {toast && (
+          <motion.div className="kb-toast" initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}>
+            <Check size={15} /> {toast}
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* ── Header ── */}
+      <header className="kb-header">
+        <div className="kb-header-text">
+          <span className="kb-eyebrow">
+            <ChefHat size={14} /> Kitchen
+          </span>
+          <h1>Kitchen Orders</h1>
+          <p>Work through orders by delivery date — start, prepare and finish every cake on time.</p>
         </div>
+        <button className={`kb-refresh ${refreshing ? 'is-spinning' : ''}`} onClick={() => load(true)} title="Refresh">
+          <RefreshCw size={16} /> Refresh
+        </button>
+      </header>
+
+      {/* ── Tabs ── */}
+      <nav className="kb-tabs" role="tablist">
+        {(Object.keys(TAB_META) as KitchenBoardTab[]).map((t) => (
+          <button key={t} role="tab" aria-selected={tab === t} className={`kb-tab ${tab === t ? 'is-active' : ''}`} onClick={() => setTab(t)}>
+            {tab === t && <motion.span layoutId="kb-tab-pill" className="kb-tab-pill" transition={{ type: 'spring', stiffness: 420, damping: 34 }} />}
+            <span className="kb-tab-label">
+              {TAB_META[t].icon} {TAB_META[t].label}
+              <span className="kb-tab-count">{counts[t] ?? '–'}</span>
+            </span>
+          </button>
+        ))}
+      </nav>
+
+      {/* ── Controls ── */}
+      <section className="kb-controls">
+        <div className="kb-controls-left">
+          <p className="kb-hint">{TAB_META[tab].hint}</p>
+          {tab !== 'pending' ? (
+            <div className="kb-scope" role="group" aria-label="Whose orders">
+              <button className={scope === 'mine' ? 'is-active' : ''} onClick={() => setScope('mine')}>
+                <User size={14} /> Me
+              </button>
+              <button className={scope === 'all' ? 'is-active' : ''} onClick={() => setScope('all')}>
+                <Users size={14} /> All
+              </button>
+            </div>
+          ) : (
+            <label className="kb-switch">
+              <input type="checkbox" checked={pendingAllDates} onChange={(e) => setPendingAllDates(e.target.checked)} />
+              <span className="kb-switch-track" />
+              All delivery dates
+            </label>
+          )}
+        </div>
+
+        {showDateNav && (
+          <div className="kb-datenav">
+            <button className="kb-datenav-btn" onClick={() => setDate((d) => addDays(d, -1))} aria-label="Previous day">
+              <ChevronLeft size={16} />
+            </button>
+            <label className="kb-datenav-current">
+              <CalendarDays size={15} />
+              <span>
+                <strong>{dateRel.tone === 'today' || dateRel.tone === 'tomorrow' ? dateRel.label : formatOrderDate(date)}</strong>
+                <small>Delivery date</small>
+              </span>
+              <input type="date" value={date} onChange={(e) => e.target.value && setDate(e.target.value)} aria-label="Pick delivery date" />
+            </label>
+            <button className="kb-datenav-btn" onClick={() => setDate((d) => addDays(d, 1))} aria-label="Next day">
+              <ChevronRight size={16} />
+            </button>
+            {date !== getKuwaitTodayStr() && (
+              <button className="kb-today" onClick={() => setDate(getKuwaitTodayStr())}>
+                Today
+              </button>
+            )}
+          </div>
+        )}
+      </section>
+
+      <AdminDataToolbar tools={tools} compact hideImport />
+
+      <div className="kb-legend">
+        <span><i className="kb-dot kb-dot--delivery" /> Delivery order</span>
+        <span><i className="kb-dot kb-dot--pickup" /> Pickup order</span>
+        <span><i className="kb-dot kb-dot--agent" /> Agent order</span>
+        <span><i className="kb-dot kb-dot--sales" /> Sales staff order</span>
+      </div>
+
+      {error && (
+        <div className="kb-error">
+          {error}
+          <button onClick={() => setError(null)} aria-label="Dismiss">
+            <X size={14} />
+          </button>
+        </div>
+      )}
+
+      {/* ── Board ── */}
+      {loading ? (
+        <div className="kb-grid">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <div className="kb-card kb-skeleton" key={i} />
+          ))}
+        </div>
+      ) : visible.length === 0 ? (
+        <motion.div className="kb-empty" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
+          <Package size={46} />
+          <h3>No orders here</h3>
+          <p>
+            {tab === 'pending'
+              ? pendingAllDates
+                ? 'Nothing is waiting for the kitchen right now.'
+                : `Nothing is waiting for ${formatOrderDate(date)}.`
+              : `No ${TAB_META[tab].label.toLowerCase()} orders ${scope === 'mine' ? 'of yours ' : ''}for ${formatOrderDate(date)}.`}
+          </p>
+        </motion.div>
+      ) : groupedPending ? (
+        groupedPending.map((g) => {
+          const rel = relativeDayLabel(g.key || undefined);
+          return (
+            <section className="kb-group" key={g.key || 'none'}>
+              <h2 className={`kb-group-title kb-group-title--${rel.tone}`}>
+                <CalendarDays size={15} /> {rel.label}
+                <span>{g.items.length}</span>
+              </h2>
+              <div className="kb-grid">
+                <AnimatePresence>{g.items.map((o, i) => renderCard(o, i))}</AnimatePresence>
+              </div>
+            </section>
+          );
+        })
       ) : (
-        <div className="ko-orders-grid">
-          {filteredOrders.map((order: any) => {
-            // const dateStr = new Date(order.created_at).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
-            const dateStr = formatKuwaitTime(order.created_at);
-            const currentStatus = (order.status || 'PENDING').toUpperCase();
-            const isMine = order.preparation_started_by === currentUserId;
-            const isPickup = (order.delivery_method || '').toUpperCase() === 'PICKUP';
-            const isReadyForPickup = currentStatus === 'PICKUP_READY';
-            const isPaid = (order.payment_status || '').toUpperCase() === 'PAID';
-            const isPaymentMenuOpen = paymentMenuOrderId === order.id;
-            const isCustomCake = isCustomCakeOrder(order);
-            const fulfillment = getFulfillmentInfo(order);
-            const originCardClass = getOrderOriginCardClass(order);
-            const paymentLinkEligible = canGeneratePaymentLink(order);
-            const paymentLinkDisabledReason = getPaymentLinkDisabledReason(order);
-
-            return (
-              <div
-                key={order.id}
-                className={`ko-order-card ${isPickup ? 'card-fulfillment-pickup' : 'card-fulfillment-delivery'} ${originCardClass}`}
-                onClick={() => handleViewOrderDetails(order.id)}
-              >
-                <div className="ko-card-upper-row">
-                  <div>
-                    <h4 className="ko-order-title">Order #{order.order_number || String(order.id).padStart(5, '0')}</h4>
-                    <span className="ko-order-timestamp"><IconClock size={12} /> {dateStr}</span>
-                  </div>
-                  <span className={`ko-status-pill pill-${currentStatus.toLowerCase()}`}>
-                    {currentStatus.replace(/_/g, ' ')}
-                  </span>
-                </div>
-
-                {isCustomCake && (
-                  <div className="op-origin-badge badge-custom-cake" style={{ marginBottom: 6 }}>
-                    <IconCake size={11} /> Custom Cake Order
-                  </div>
-                )}
-
-                {/* Fulfilment highlight row — pickup orders show only pickup
-                    date/time, delivery orders show only delivery date/time. */}
-                <div className={`ko-fulfillment-row ${isPickup ? 'is-pickup' : 'is-delivery'}`}>
-                  <span className="ko-fulfillment-type-badge">
-                    {isPickup ? <IconBag size={12} /> : <IconTruck size={12} />}
-                    {isPickup ? 'Pickup' : 'Delivery'}
-                  </span>
-                  <span className="ko-fulfillment-schedule">
-                    <IconCalendar size={12} />
-                    {fulfillment.date || 'Date TBD'}
-                    {fulfillment.time && <span className="ko-fulfillment-time"> · {fulfillment.time}</span>}
-                  </span>
-                </div>
-
-                {currentStatus === "PREPARING" && (
-                  <div className="ko-owner-tag">
-                    <strong>Kitchen Staff:</strong>{" "}
-                    {typeof order.preparation_started_by === 'object' ? order.preparation_started_by?.name : order.preparation_started_by || "Unknown"}
-                    {isMine && " (You)"}
-                  </div>
-                )}
-
-                {/* Products Manifest Block */}
-                <div className="ko-card-items-preview">
-                  {order.items?.map((item: any, idx: number) => {
-                    const variantLabel = getItemVariantLabel(item);
-                    return (
-                      <div key={item.id || idx} className="ko-preview-item-line">
-                        <span className="ko-item-quantity">×{item.quantity}</span>
-                        <span className="ko-item-name">
-                          {getItemDisplayName(item)}
-                          {variantLabel && <span className="ko-item-variant-inline"> ({variantLabel})</span>}
-                        </span>
-                      </div>
-                    );
-                  })}
-                </div>
-
-                {/* Interactive Workflow Execution Footer Button Row */}
-                <div className="ko-card-action-bar">
-                  <button className="ko-action-icon-btn" onClick={(e) => { e.stopPropagation(); handleViewOrderDetails(order.id); }} title="View Details">
-                    <IconEye size={16} />
-                  </button>
-
-                  <button className="ko-action-icon-btn" onClick={(e) => { e.stopPropagation(); handleOpenReceipt(order.id); }} title="Open Receipt">
-                    <IconPrinter size={16} />
-                  </button>
-
-                  {/* Payment link — only ever generated for pickup orders in a
-                      non-INR currency (see canGeneratePaymentLink). Disabled
-                      with an explanatory title otherwise. */}
-                  <button
-                    className="ko-action-icon-btn"
-                    onClick={(e) => handleOpenPaymentLink(order, e)}
-                    title={isPaid ? 'Already paid' : (paymentLinkDisabledReason || 'Generate payment link & QR')}
-                    disabled={isPaid || !paymentLinkEligible}
-                  >
-                    <IconCreditCard size={16} />
-                  </button>
-
-                  {currentStatus === "ASSIGNED_TO_KITCHEN" && (
-                    <button
-                      className="ko-action-primary-btn bg-prep"
-                      disabled={actionLoading === order.id}
-                      onClick={(e) => handleStartPreparation(order.id, e)}
-                    >
-                      {actionLoading === order.id ? "Starting..." : "Start Preparation"}
-                    </button>
-                  )}
-
-                  {currentStatus === "PREPARING" && (
-                    <button
-                      className="ko-action-primary-btn bg-complete"
-                      disabled={actionLoading === order.id}
-                      onClick={(e) => handleMarkReady(order.id, e)}
-                    >
-                      {actionLoading === order.id ? "Completing..." : "Mark Ready"}
-                    </button>
-                  )}
-
-                  {isPickup && isReadyForPickup && (
-                    <>
-                      <div className="ko-payment-menu-wrap">
-                        <button
-                          className="ko-action-icon-btn"
-                          onClick={(e) => togglePaymentMenu(order.id, e)}
-                          title={isPaid ? 'Payment collected' : 'Collect payment'}
-                        >
-                          <IconCreditCard size={16} />
-                        </button>
-
-                        {paymentMenuOrderId === order.id && (
-                          <div className="ko-payment-popover" onClick={(e) => e.stopPropagation()}>
-                            <div className="ko-payment-popover-label">Payment received via</div>
-                            <button
-                              className="ko-payment-popover-option"
-                              onClick={(e) => handleSelectPaymentMethod(order.id, 'COD', e)}
-                            >
-                              Cash (COD)
-                            </button>
-                            <button
-                              className="ko-payment-popover-option"
-                              onClick={(e) => { setPaymentMenuOrderId(null); handleOpenPaymentLink(order, e); }}
-                            >
-                              Online (show QR)
-                            </button>
-                          </div>
-                        )}
-                      </div>
-
-                      <button
-                        className="ko-action-primary-btn bg-deliver"
-                        disabled={actionLoading === order.id}
-                        onClick={(e) => handleMarkDelivered(order.id, e)}
-                      >
-                        {actionLoading === order.id ? "Completing..." : "Mark Delivered"}
-                      </button>
-                    </>
-                  )}
-
-                </div>
-              </div>
-            );
-          })}
+        <div className="kb-grid">
+          <AnimatePresence>{visible.map((o, i) => renderCard(o, i))}</AnimatePresence>
         </div>
       )}
 
-      {/* ─── Detailed Order Modal Overlay View Sheet ─── */}
-      {modalOpen && (
-        <div className="ko-modal-backdrop" onClick={() => setModalOpen(false)}>
-          <div className="ko-modal-content-card" onClick={(e) => e.stopPropagation()}>
-            <div className="ko-modal-header">
-              <h3>Full Order Details — {selectedOrder ? (selectedOrder.order_number || selectedOrder.id) : ''}</h3>
-              <button className="ko-modal-close-cross" onClick={() => setModalOpen(false)}>×</button>
-            </div>
-
-            <div className="ko-modal-body-area op-full-details-modal-body">
-              {modalLoading || !selectedOrder ? (
-                <div className="ko-modal-spinner-wrapper">
-                  <div className="ko-spinner" />
-                  <p>Pulling full order manifest details...</p>
-                </div>
-              ) : (
-                <>
-                  {/* Top badges + status */}
-                  <div className="op-fd-top-row">
-                    <div className={`ko-status-pill pill-${selectedOrder.status?.toLowerCase()}`}>{selectedOrder.status}</div>
-                    {isCustomCakeOrder(selectedOrder) && (
-                      <span className="op-origin-badge badge-custom-cake">
-                        <IconCake size={11} /> Custom Cake Order
-                      </span>
-                    )}
-                    <div className="op-origin-badges">
-                      <div className="op-origin-item"><strong>Placed by</strong><div>{getDisplayName(selectedOrder)}</div></div>
-                      <div className="op-origin-item"><strong>Role</strong><div>{getDisplayRole(selectedOrder)}</div></div>
-                      <div className="op-origin-item"><strong>Phone</strong><div>{getDisplayPhone(selectedOrder)}</div></div>
-                      <div className="op-origin-item"><strong>Email</strong><div>{getDisplayEmail(selectedOrder)}</div></div>
-                      <div className="op-origin-item"><strong>Order source</strong><div>{getDisplayOrderSource(selectedOrder)}</div></div>
+      {/* ── Details modal ── */}
+      <AnimatePresence>
+        {detailsOrder && (
+          <motion.div className="kb-modal-backdrop" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setDetailsOrder(null)}>
+            <motion.div
+              className="kb-modal"
+              initial={{ opacity: 0, y: 26, scale: 0.97 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: 26, scale: 0.97 }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              {(() => {
+                const v = toOrderView(detailsOrder);
+                return (
+                  <>
+                    <div className="kb-modal-head">
+                      <div>
+                        <h3>Order #{v.number}</h3>
+                        <span className={`kb-status kb-status--${String(detailsOrder.status || '').toLowerCase()}`}>
+                          {statusLabel(String(detailsOrder.status || ''))}
+                        </span>
+                        {detailsLoading && <Loader2 size={14} className="kb-spin" />}
+                      </div>
+                      <button className="kb-icon" onClick={() => setDetailsOrder(null)} aria-label="Close">
+                        <X size={16} />
+                      </button>
                     </div>
-                  </div>
-
-                  {selectedOrder.preparation_started_at && (
-                    <div className="ko-modal-delivery-info">
-                      <IconClock size={16} />
-                      <span className="ko-delivery-label">Preparation started:</span>
-                      <span className="ko-delivery-value">
-                        {fmtDateTime(selectedOrder.preparation_started_at)}
-                        {selectedOrder.preparation_started_by?.id === currentUserId ? ' · by you' : ''}
-                      </span>
-                    </div>
-                  )}
-
-                  {/* Fulfilment schedule — pickup orders show pickup date/time
-                      only, delivery orders show delivery date/time + area only. */}
-                  {(() => {
-                    const modalFulfillment = getFulfillmentInfo(selectedOrder);
-                    return (
-                      <div className={`op-fd-section op-fd-fulfillment ${modalFulfillment.isPickup ? 'is-pickup' : 'is-delivery'}`}>
-                        <h4>
-                          {modalFulfillment.isPickup ? <IconBag size={14} /> : <IconCalendar size={14} />}
-                          {modalFulfillment.isPickup ? 'Pickup Schedule' : 'Delivery Schedule'}
-                        </h4>
-                        <div className="op-fd-grid">
-                          <div>
-                            <span className="lbl">{modalFulfillment.isPickup ? 'Pickup date' : 'Expected date'}</span>
-                            <span>{modalFulfillment.date || '—'}</span>
-                          </div>
-                          <div>
-                            <span className="lbl">{modalFulfillment.isPickup ? 'Pickup time' : 'Time slot'}</span>
-                            <span>{modalFulfillment.time || '—'}</span>
-                          </div>
-                          {!modalFulfillment.isPickup && (
+                    <div className="kb-modal-body">
+                      <div className="kb-detail-grid">
+                        <div>
+                          <span>{v.isPickup ? 'Pickup date' : 'Delivery date'}</span>
+                          <strong>
+                            {formatOrderDate(v.scheduledDate)}
+                            {v.scheduledSlot ? ` · ${v.scheduledSlot}` : ''}
+                          </strong>
+                        </div>
+                        <div>
+                          <span>Method</span>
+                          <strong>{v.isPickup ? 'Pickup' : 'Delivery'}</strong>
+                        </div>
+                        <div>
+                          <span>Customer</span>
+                          <strong>{v.customerName}</strong>
+                        </div>
+                        <div>
+                          <span>Phone</span>
+                          <strong>{v.customerPhone || '—'}</strong>
+                        </div>
+                        {!v.isPickup && (
+                          <>
                             <div>
-                              <span className="lbl">Area</span>
-                              <span>
-                                {(selectedOrder.delivery_address?.area && typeof selectedOrder.delivery_address.area === 'object')
-                                  ? (selectedOrder.delivery_address.area.name ?? selectedOrder.delivery_address.area.areaName ?? '—')
-                                  : (selectedOrder.delivery_address?.area
-                                      ?? selectedOrder.detailedAddress?.areaName
-                                      ?? (selectedOrder.area && typeof selectedOrder.area === 'object' ? (selectedOrder.area.name ?? selectedOrder.area.areaName) : selectedOrder.area)
-                                      ?? '—')}
-                              </span>
+                              <span>Area</span>
+                              <strong>{v.areaName || '—'}</strong>
                             </div>
-                          )}
-                          <div><span className="lbl">Fulfilment</span><span>{selectedOrder.delivery_method || '—'}</span></div>
+                            <div className="is-wide">
+                              <span>Address</span>
+                              <strong>{v.addressText || '—'}</strong>
+                            </div>
+                          </>
+                        )}
+                        <div>
+                          <span>Payment</span>
+                          <strong>
+                            {paymentLabel(v.paymentMethod)} {v.paymentStatus ? `· ${v.paymentStatus}` : ''}
+                          </strong>
+                        </div>
+                        <div>
+                          <span>Total</span>
+                          <strong>{formatOrderMoney(v.total, v.currency)}</strong>
                         </div>
                       </div>
-                    );
-                  })()}
 
-                  <div className="op-fd-section">
-                    <h4>Customer &amp; Address</h4>
-                    <div className="op-fd-grid">
-                      <div><span className="lbl">Name</span><span>{getDisplayName(selectedOrder)}</span></div>
-                      <div><span className="lbl">Phone</span><span>{getDisplayPhone(selectedOrder)}</span></div>
-                      <div><span className="lbl">Email</span><span>{getDisplayEmail(selectedOrder)}</span></div>
+                      <OrderProducts view={v} />
+                      <OrderNotesBlock view={v} />
                     </div>
-
-                    <div className="op-fd-address-block">
-                      <div className="op-fd-grid">
-                        {getAddressFields(selectedOrder.delivery_address).map((f) => (
-                          <div key={f.label}>
-                            <span className="lbl">{f.label}</span>
-                            <span>{f.value || '-'}</span>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-
-                  </div>
-
-                  <div className="ko-modal-section-box">
-                    <h5 className="ko-section-title">Line Kitchen Production Items</h5>
-
-                    <div className="ko-modal-items-table">
-                      {selectedOrder.items?.map((item: any) => {
-                        const flavour = getFlavour(item);
-                        const variant = getVariant(item);
-                        const shape = getShape(item);
-                        const addOns = getAddOns(item);
-                        const itemNotes = getItemNotes(item);
-                        const lineTotal = item.line_total ?? (item.price * item.quantity);
-                        const displayName = getItemDisplayName(item);
-                        const displayImage = getItemDisplayImage(item);
-                        const displayDescription = getItemDisplayDescription(item);
-
-                        return (
-                          <div key={item.id} className="ko-modal-item-row-detailed">
-                            {/* Left: Product Image Box */}
-                            <div className="ko-modal-item-image-wrap">
-                              {displayImage ? (
-                                <img
-                                  className="ko-modal-item-image"
-                                  src={displayImage}
-                                  alt={displayName}
-                                />
-                              ) : (
-                                <div className="ko-modal-item-image-fallback">
-                                  <IconImageFallback size={20} />
-                                </div>
-                              )}
-                            </div>
-
-                            {/* Right: Detailed Content Area */}
-                            <div className="ko-modal-item-body">
-
-                              {/* Header Row: Qty Badge & Title */}
-                              <div className="ko-modal-item-header">
-                                <span className="ko-modal-qty-bubble">
-                                  {item.quantity}x
-                                </span>
-                                <p className="item-main-title">{displayName}</p>
-                              </div>
-
-                              {/* Description */}
-                              {displayDescription && (
-                                <p className="item-sub-desc">{displayDescription}</p>
-                              )}
-
-                              {/* Specifications (Flavour, Variant, Shape) */}
-                              {(flavour || variant || shape) && (
-                                <div className="ko-item-meta-chips">
-                                  {flavour && (
-                                    <span className="ko-item-meta-chip chip-flavour">
-                                      Flavour: <strong>{flavour}</strong>
-                                    </span>
-                                  )}
-                                  {variant && (
-                                    <span className="ko-item-meta-chip chip-variant">
-                                      Variant: <strong>{variant}</strong>
-                                    </span>
-                                  )}
-                                  {shape && (
-                                    <span className="ko-item-meta-chip chip-shape">
-                                      Shape: <strong>{shape}</strong>
-                                    </span>
-                                  )}
-                                </div>
-                              )}
-
-                              {/* Add-ons */}
-                              {addOns.length > 0 && (
-                                <div className="ko-modal-item-addons">
-                                  <span className="ko-addons-label">Add-ons</span>
-                                  <div className="ko-item-meta-chips-small">
-                                    {addOns.map((addOn, i) => (
-                                      <span key={i} className="ko-item-meta-chip chip-addon">{addOn}</span>
-                                    ))}
-                                  </div>
-                                </div>
-                              )}
-
-                              {/* Special Instructions Note */}
-                              {itemNotes && (
-                                <div className="ko-item-custom-note-box">
-                                  <span className="note-label">Instruction:</span>
-                                  <p className="item-custom-note-text">"{itemNotes}"</p>
-                                </div>
-                              )}
-
-                              {/* Price Calculations */}
-                              <div className="ko-modal-item-price-row">
-                                <span className="ko-item-unit-price">
-                                  {fmtMoney(item.price, selectedOrder?.currency)} × {item.quantity}
-                                </span>
-                                <span className="ko-item-line-total">
-                                  {fmtMoney(lineTotal, selectedOrder?.currency)}
-                                </span>
-                              </div>
-
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </div>
-
-                  {getKitchenOrderAddons(selectedOrder).length > 0 && (
-                    <div className="op-fd-order-addons">
-                      <h4>Order Add-ons</h4>
-                      <div className="op-fd-addons-list">
-                        {getKitchenOrderAddons(selectedOrder).map((addon: any, idx: number) => (
-                          <div key={`${addon.addon_id ?? addon.addonId}-${idx}`} className="op-fd-addon-row">
-                            <div className="op-fd-addon-thumb-wrapper">
-                              <div className="op-fd-addon-thumb-placeholder" />
-                              <div className="op-fd-addon-content">
-                                <strong>{addon.addon_name || addon.addonName || addon.name || `Addon #${addon.addon_id ?? addon.addonId ?? idx + 1}`}{addon.quantity ? ` (${addon.quantity} pcs)` : ''}</strong>
-                                <div className="op-fd-addon-meta">{fmtMoney(addon.price, selectedOrder.currency)} each</div>
-                              </div>
-                            </div>
-                            <div className="op-fd-addon-price-block">
-                              <span>{fmtMoney(addon.total ?? (addon.price * addon.quantity), selectedOrder.currency)}</span>
-                              <div className="op-fd-addon-note">Rate included in totals</div>
-                            </div>
-                          </div>
-                        ))}
-                        <div className="op-fd-addon-total">
-                          <strong>Total Add-ons:</strong>
-                          <span>{fmtMoney(getKitchenOrderAddonTotal(selectedOrder), selectedOrder.currency)}</span>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* ── Custom Cake Details ── */}
-                  {(() => {
-                    const customCake = getCustomCakeDetails(selectedOrder);
-                    if (!customCake) return null;
-                    return (
-                      <div className="op-fd-section op-fd-highlight-cake">
-                        <h4><IconCake size={14} /> Custom Cake Details</h4>
-                        <div className="op-fd-cake-body">
-                          {customCake.image && (
-                            <img src={customCake.image} alt="Custom cake reference" className="op-fd-cake-image" />
-                          )}
-                          <div className="op-fd-grid">
-                            <div><span className="lbl">Flavour</span><span>{customCake.flavour ?? '—'}</span></div>
-                            <div><span className="lbl">Weight</span><span>{customCake.weight ?? '—'}</span></div>
-                            <div><span className="lbl">Shape</span><span>{customCake.shape ?? '—'}</span></div>
-                            <div><span className="lbl">Size</span><span>{customCake.size ?? '—'}</span></div>
-                            <div><span className="lbl">Colour</span><span>{customCake.colour ?? '—'}</span></div>
-                            <div><span className="lbl">Est. price</span><span>{customCake.price != null ? fmtMoney(customCake.price, selectedOrder.currency) : '—'}</span></div>
-                          </div>
-                          {customCake.message && (
-                            <p className="op-fd-cake-message"><strong>Cake message:</strong> "{customCake.message}"</p>
-                          )}
-                          {customCake.notes && (
-                            <p className="op-fd-cake-message"><strong>Customization notes:</strong> {customCake.notes}</p>
-                          )}
-                        </div>
-                      </div>
-                    );
-                  })()}
-
-                  {(selectedOrder.greeting_message || selectedOrder.greeting_from || selectedOrder.greeting_to) && (
-                    <div className="op-fd-section op-fd-highlight-greeting">
-                      <h4>Greeting Card</h4>
-                      {/* <div className="op-fd-grid">
-                        <div><span className="lbl">To</span><span>{selectedOrder.greeting_to || '—'}</span></div>
-                        <div><span className="lbl">From</span><span>{selectedOrder.greeting_from || '—'}</span></div>
-                      </div> */}
-                      {selectedOrder.greeting_message && (
-                        <p className="op-fd-greeting-message">"{selectedOrder.greeting_message}"</p>
-                      )}
-                    </div>
-                  )}
-
-                  <div className="op-fd-section">
-                    <h4>Pricing Summary</h4>
-                    {(() => {
-                      const itemSubtotal = Number(selectedOrder.subtotal ?? selectedOrder.sub_total ?? (selectedOrder.items?.reduce((sum: number, item: any) => sum + Number(item.line_total ?? (item.price * item.quantity || 0)), 0) || 0));
-                      const addonsTotal = getKitchenOrderAddonTotal(selectedOrder);
-                      const discount = Number(selectedOrder.discount || 0);
-                      const deliveryCharge = Number(selectedOrder.delivery_charge ?? selectedOrder.deliveryCharge ?? 0);
-                      const grandTotal = Number(selectedOrder.total ?? selectedOrder.grand_total ?? (itemSubtotal + addonsTotal - discount + deliveryCharge));
-
-                      return (
-                        <div className="drawer-cost-breakdown">
-                          <div className="cost-row"><span>Subtotal:</span><span>{fmtMoney(itemSubtotal, selectedOrder.currency)}</span></div>
-                          {addonsTotal > 0 && <div className="cost-row"><span>Add-ons:</span><span>{fmtMoney(addonsTotal, selectedOrder.currency)}</span></div>}
-                          {discount > 0 && <div className="cost-row discount"><span>Discount:</span><span>-{fmtMoney(discount, selectedOrder.currency)}</span></div>}
-                          <div className="cost-row"><span>Delivery:</span><span>{fmtMoney(deliveryCharge, selectedOrder.currency)}</span></div>
-                          <div className="cost-row total"><span>Grand Total:</span><span>{fmtMoney(grandTotal, selectedOrder.currency)}</span></div>
-                        </div>
-                      );
-                    })()}
-                  </div>
-
-                  {selectedOrder.delivery_notes && (
-                    <div className="ko-modal-section-box notes-box">
-                      <h5>Special Kitchen Notes / Instructions</h5>
-                      <p className="notes-text-render">"{selectedOrder.delivery_notes}"</p>
-                    </div>
-                  )}
-
-                  <div className="op-fd-actions-row">
-                    <button className="sage-btn btn-secondary btn-sm" onClick={(e) => { e.stopPropagation(); handleOpenReceipt(selectedOrder.id); }}>
-                      <IconPrinter size={13} /> Print Receipt
-                    </button>
-                    <button
-                      className="sage-btn btn-secondary btn-sm"
-                      onClick={(e) => handleOpenPaymentLink(selectedOrder, e)}
-                      disabled={(selectedOrder.payment_status || '').toUpperCase() === 'PAID' || !canGeneratePaymentLink(selectedOrder)}
-                      title={
-                        (selectedOrder.payment_status || '').toUpperCase() === 'PAID'
-                          ? 'Already paid'
-                          : (getPaymentLinkDisabledReason(selectedOrder) || 'Generate payment link & QR')
-                      }
-                    >
-                      <IconCreditCard size={13} /> Payment
-                    </button>
-                    <button className="sage-btn btn-ghost btn-sm" onClick={() => { setModalOpen(false); }}>
-                      Open Workflow Panel
-                    </button>
-                  </div>
-
-                  <div className="ko-modal-action-footer">
-                    <button className="ko-modal-cancel-btn" onClick={() => setModalOpen(false)}>Close Window</button>
-                    {selectedOrder.status === "ASSIGNED_TO_KITCHEN" && (
-                      <button
-                        className="ko-action-primary-btn bg-prep"
-                        disabled={actionLoading === selectedOrder.id}
-                        onClick={(e) => handleStartPreparation(selectedOrder.id, e)}
-                      >
-                        {actionLoading === selectedOrder.id ? "Starting..." : "Start Preparation"}
+                    <div className="kb-modal-foot">
+                      <button className="kb-btn" onClick={() => printOrderReceipt(detailsOrder) || setReceiptOrder(detailsOrder)}>
+                        <Printer size={15} /> Print receipt
                       </button>
-                    )}
-                    {selectedOrder.status === "PREPARING" && (
-                      <button
-                        className="ko-action-primary-btn bg-complete"
-                        disabled={actionLoading === selectedOrder.id}
-                        onClick={(e) => handleMarkReady(selectedOrder.id, e)}
-                      >
-                        {actionLoading === selectedOrder.id ? "Completing..." : "Mark Ready"}
-                      </button>
-                    )}
-
-                    {(selectedOrder.delivery_method || '').toUpperCase() === 'PICKUP' &&
-                      selectedOrder.status === "PICKUP_READY" && (
-                      <>
-                        <div className="ko-payment-menu-wrap">
-                          <button
-                            className="sage-btn btn-secondary btn-sm"
-                            onClick={(e) => togglePaymentMenu(selectedOrder.id, e)}
-                          >
-                            <IconCreditCard size={13} />
-                            {(selectedOrder.payment_status || '').toUpperCase() === 'PAID' ? 'Payment collected' : 'Collect payment'}
-                          </button>
-
-                          {paymentMenuOrderId === selectedOrder.id && (
-                            <div className="ko-payment-popover" onClick={(e) => e.stopPropagation()}>
-                              <div className="ko-payment-popover-label">Payment received via</div>
-                              <button
-                                className="ko-payment-popover-option"
-                                onClick={(e) => handleSelectPaymentMethod(selectedOrder.id, 'COD', e)}
-                              >
-                                Cash (COD)
-                              </button>
-                              <button
-                                className="ko-payment-popover-option"
-                                onClick={(e) => { setPaymentMenuOrderId(null); handleOpenPaymentLink(selectedOrder, e); }}
-                              >
-                                Online (show QR)
-                              </button>
-                            </div>
-                          )}
-                        </div>
-
-                        <button
-                          className="ko-action-primary-btn bg-deliver"
-                          disabled={actionLoading === selectedOrder.id}
-                          onClick={(e) => handleMarkDelivered(selectedOrder.id, e)}
-                        >
-                          {actionLoading === selectedOrder.id ? "Completing..." : "Mark Delivered"}
-                        </button>
-                      </>
-                    )}
-
-                  </div>
-                </>
-              )}
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Receipt modal (opens when clicking receipt icon on an order card) */}
-      {isReceiptOpen && (
-        <div className="ko-modal-backdrop" onClick={() => setIsReceiptOpen(false)}>
-          <div className="ko-modal-content-card" onClick={(e) => e.stopPropagation()}>
-            <div className="ko-modal-header">
-              <h3>Print Receipt</h3>
-              <button className="ko-modal-close-cross" onClick={() => setIsReceiptOpen(false)}>×</button>
-            </div>
-
-            <div className="print-thermal-receipt-sheet">
-              {receiptLoading || !selectedOrder ? (
-                <div className="ko-modal-spinner-wrapper">
-                  <div className="ko-spinner" />
-                  <p>Loading receipt…</p>
-                </div>
-              ) : (
-                <>
-                  <div className="receipt-crown-title">
-                    <h2>ORDER RECEIPT</h2>
-                    <p className="divider">- - - - - - - - - - - - - - - - - - -</p>
-                  </div>
-
-                  <div className="receipt-basics">
-                    <p><strong>Order No:</strong> {selectedOrder.order_number ?? selectedOrder.id}</p>
-                    <p><strong>Date:</strong> {fmtDate(selectedOrder.created_at)}</p>
-                    {/* <p><strong>Time:</strong> {new Date(selectedOrder.created_at).toLocaleTimeString()}</p> */}
-                    <p><strong>Time:</strong> {formatKuwaitTime(selectedOrder.created_at)} (Kuwait)</p>
-                    <p><strong>Customer:</strong> {selectedOrder.customer?.first_name} {selectedOrder.customer?.last_name}</p>
-                    <p><strong>Phone:</strong> {selectedOrder.customer?.phone_no || selectedOrder.customerPhone}</p>
-                    <p><strong>Payment:</strong> {selectedOrder.payment_method || selectedOrder.paymentMethod}</p>
-                    <p className="divider">- - - - - - - - - - - - - - - - - - -</p>
-                  </div>
-
-                  <div className="receipt-items-table">
-                    {selectedOrder.items.map((item: any) => {
-                      const variantLabel = getItemVariantLabel(item);
-                      return (
-                        <div key={`r-${item.id}`} className="receipt-item-row">
-                          <div className="receipt-item-main">
-                            <span className="receipt-item-name">
-                              {item.quantity} x {getItemDisplayName(item) || item.productName}
-                              {variantLabel && <span className="receipt-item-variant"> ({variantLabel})</span>}
-                            </span>
-                            <span className="receipt-item-price">{fmtMoney(item.line_total ?? (item.price * item.quantity), selectedOrder.currency)}</span>
-                          </div>
-                          {getAddOns(item).length > 0 && (
-                            <div className="receipt-item-addons">Add-ons: {getAddOns(item).join(', ')}</div>
-                          )}
-                        </div>
-                      );
-                    })}
-
-                    {selectedOrder.order_addons?.length > 0 && (
-                      <>
-                        <div className="receipt-divider">-----------------------------------------</div>
-                        {selectedOrder.order_addons.map((addon: any, idx: number) => (
-                          <div key={`ra-${idx}`} className="receipt-item-row receipt-addon-row">
-                            <div className="receipt-item-main">
-                              <span className="receipt-item-name">{addon.quantity} × {addon.addon_name || addon.addonName || `Addon #${addon.addon_id ?? addon.addonId}`}</span>
-                              <span className="receipt-item-price">{fmtMoney(addon.total ?? (addon.price * addon.quantity), selectedOrder.currency)}</span>
-                            </div>
-                          </div>
-                        ))}
-                      </>
-                    )}
-                  </div>
-
-                  <div className="receipt-divider">-----------------------------------------</div>
-
-                  {/* totals */}
-                  {(() => {
-                    const itemSubtotal = Number(selectedOrder.subtotal ?? (selectedOrder.items?.reduce((s: number, it: any) => s + Number(it.line_total ?? (it.price * it.quantity || 0)), 0) || 0));
-                    const addonsTotal = Number(selectedOrder.order_addons_total ?? (selectedOrder.order_addons?.reduce((s: number, a: any) => s + Number(a.total ?? (a.price * a.quantity || 0)), 0) || 0));
-                    const discount = Number(selectedOrder.discount || 0);
-                    const deliveryCharge = Number(selectedOrder.delivery_charge ?? selectedOrder.deliveryCharge ?? 0);
-                    const computedGrandTotal = Number(selectedOrder.total ?? (itemSubtotal + addonsTotal - discount + deliveryCharge));
-
-                    return (
-                      <div className="receipt-totals">
-                        <div className="receipt-total-row"><span>Subtotal:</span><span>{fmtMoney(itemSubtotal, selectedOrder.currency)}</span></div>
-                        {addonsTotal > 0 && <div className="receipt-total-row"><span>Add-ons:</span><span>{fmtMoney(addonsTotal, selectedOrder.currency)}</span></div>}
-                        {discount > 0 && <div className="receipt-total-row"><span>Discount:</span><span>-{fmtMoney(discount, selectedOrder.currency)}</span></div>}
-                        <div className="receipt-total-row"><span>Delivery:</span><span>{fmtMoney(deliveryCharge, selectedOrder.currency)}</span></div>
-                        <div className="receipt-divider">-----------------------------------------</div>
-                        <div className="receipt-total-row grand-total"><span>GRAND TOTAL:</span><span>{fmtMoney(computedGrandTotal, selectedOrder.currency)}</span></div>
-                      </div>
-                    );
-                  })()}
-
-                  <div className="receipt-divider">-----------------------------------------</div>
-
-                  <div className="receipt-center receipt-footer-msg">
-                    <p>Thank you for dining with CakeNTake!</p>
-                    <p>Baked fresh daily, prepared artisanally.</p>
-                    <p className="receipt-url">www.cakentake.com</p>
-                  </div>
-
-                  <div className="receipt-modal-controls no-print footer-gap">
-                    <button className="sage-btn btn-secondary btn-sm" onClick={() => window.print()}>
-                      <IconPrinter size={13} /><span>Print</span>
-                    </button>
-                    <button className="sage-btn btn-primary btn-sm" onClick={() => setIsReceiptOpen(false)}>Close</button>
-                  </div>
-                </>
-              )}
-            </div>
-
-          </div>
-        </div>
-      )}
-
-      {/* ─── Payment Link / QR Modal ─── */}
-      {paymentLinkOrderId && (
-        <div className="ko-modal-backdrop" onClick={closePaymentLinkModal}>
-          <div className="ko-modal-content-card ko-payment-modal-card" onClick={(e) => e.stopPropagation()}>
-            <div className="ko-modal-header">
-              <h3>
-                Payment — {paymentLinkOrderMeta?.order_number || paymentLinkOrderMeta?.id || paymentLinkOrderId}
-              </h3>
-              <button className="ko-modal-close-cross" onClick={closePaymentLinkModal}>×</button>
-            </div>
-
-            <div className="ko-modal-body-area ko-payment-modal-body">
-              {paymentLinkOrderMeta && (
-                <div className="ko-payment-summary">
-                  <p><strong>Customer:</strong> {getDisplayName(paymentLinkOrderMeta)}</p>
-                  <p>
-                    <strong>Amount:</strong>{' '}
-                    {fmtMoney(
-                      paymentLinkOrderMeta.total ?? paymentLinkOrderMeta.grand_total,
-                      paymentLinkOrderMeta.currency
-                    )}
-                  </p>
-                </div>
-              )}
-
-              {paymentLinkLoading && (
-                <div className="ko-modal-spinner-wrapper">
-                  <div className="ko-spinner" />
-                  <p>Generating payment link…</p>
-                </div>
-              )}
-
-              {!paymentLinkLoading && paymentLinkError && (
-                <div className="ko-action-error-banner ko-payment-error-banner">
-                  <span>{paymentLinkError}</span>
-                  {/* Only offer a retry when the order is actually eligible —
-                      retrying a non-pickup or INR order would just repeat
-                      the same "not supported" error. */}
-                  {canGeneratePaymentLink(paymentLinkOrderMeta) && (
-                    <button onClick={() => handleOpenPaymentLink(paymentLinkOrderMeta)}>Retry</button>
-                  )}
-                </div>
-              )}
-
-              {!paymentLinkLoading && paymentLink && (
-                <div className="ko-payment-content">
-                  <div className="ko-payment-qr">
-                    <QRCodeSVG value={paymentLink} size={200} />
-                  </div>
-
-                  <div className="ko-payment-link-row">
-                    <input
-                      type="text"
-                      className="ko-payment-link-input"
-                      value={paymentLink}
-                      readOnly
-                      onFocus={(e) => e.target.select()}
-                    />
-                    <button className="ko-action-icon-btn" title="Copy link" onClick={handleCopyPaymentLink}>
-                      {paymentLinkCopied ? <IconCheck size={16} /> : <IconCopy size={16} />}
-                    </button>
-                  </div>
-
-                  <div className="ko-payment-actions">
-                    <a
-                      href={paymentLink}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="sage-btn btn-primary btn-sm"
-                    >
-                      <IconExternalLink size={13} /> Open Payment Page
-                    </a>
-                    <button className="sage-btn btn-secondary btn-sm" onClick={handleCopyPaymentLink}>
-                      {paymentLinkCopied ? <IconCheck size={13} /> : <IconCopy size={13} />}
-                      <span>{paymentLinkCopied ? 'Copied' : 'Copy Link'}</span>
-                    </button>
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* ─── Calendar View Modal (currently not triggered by any button, left
-           in place in case you want to re-enable a "Calendar View" button) ─── */}
-      {isCalendarOpen && (
-        <div className="ko-modal-backdrop" onClick={() => setIsCalendarOpen(false)}>
-          <div className="ko-calendar-modal-card" onClick={(e) => e.stopPropagation()}>
-            <div className="ko-modal-header ko-calendar-modal-header">
-              <h3><IconCalendar size={17} /> Order Calendar</h3>
-              <button className="ko-modal-close-cross" onClick={() => setIsCalendarOpen(false)}>×</button>
-            </div>
-
-            <div className="ko-calendar-modal-body">
-              {/* Month navigation */}
-              <div className="ko-calendar-nav-row">
-                <button className="ko-calendar-nav-btn" onClick={goToPrevMonth} title="Previous month">
-                  <IconChevronLeft size={18} />
-                </button>
-                <div className="ko-calendar-month-label">
-                  {calendarMonth.toLocaleDateString('en-IN', { month: 'long', year: 'numeric' })}
-                </div>
-                <button className="ko-calendar-nav-btn" onClick={goToNextMonth} title="Next month">
-                  <IconChevronRight size={18} />
-                </button>
-                <button className="ko-calendar-today-btn" onClick={goToCurrentMonth}>
-                  Today
-                </button>
-              </div>
-
-              {/* Legend */}
-              <div className="ko-calendar-legend-row">
-                {CALENDAR_STATUS_LEGEND.map(item => (
-                  <span key={item.key} className="ko-calendar-legend-item">
-                    <span className={`ko-cal-dot ko-cal-dot-${item.key}`} />
-                    {item.label}
-                  </span>
-                ))}
-              </div>
-
-              {/* Weekday header */}
-              <div className="ko-calendar-weekday-row">
-                {WEEKDAY_LABELS.map(w => (
-                  <div key={w} className="ko-calendar-weekday-cell">{w}</div>
-                ))}
-              </div>
-
-              {/* Month grid */}
-              <div className="ko-calendar-grid">
-                {buildMonthGrid(calendarMonth).map((cellDate, idx) => {
-                  if (!cellDate) {
-                    return <div key={`empty-${idx}`} className="ko-calendar-day-cell ko-calendar-day-empty" />;
-                  }
-
-                  const key = dateKey(cellDate);
-                  const entries = calendarOrdersByDay[key] || [];
-                  const today = new Date();
-                  const isToday = isSameDay(cellDate, today);
-                  const isSelected = calendarSelectedDate ? isSameDay(cellDate, calendarSelectedDate) : false;
-
-                  // Unique status colors present on this date (max 4 dots shown)
-                  const statusKeys = Array.from(new Set(entries.map(e => getStatusColorKey(e.order.status))));
-
-                  return (
-                    <button
-                      key={key}
-                      className={`ko-calendar-day-cell ${isToday ? 'is-today' : ''} ${isSelected ? 'is-selected' : ''} ${entries.length ? 'has-orders' : ''}`}
-                      onClick={() => setCalendarSelectedDate(cellDate)}
-                    >
-                      <span className="ko-calendar-day-number">{cellDate.getDate()}</span>
-                      {entries.length > 0 && (
-                        <span className="ko-calendar-day-dots">
-                          {statusKeys.slice(0, 4).map(sk => (
-                            <span key={sk} className={`ko-cal-dot ko-cal-dot-${sk}`} />
-                          ))}
-                          {entries.length > 4 && <span className="ko-calendar-day-more">+{entries.length - 4}</span>}
-                        </span>
-                      )}
-                    </button>
-                  );
-                })}
-              </div>
-
-              {/* Selected date detail panel */}
-              <div className="ko-calendar-detail-panel">
-                {!calendarSelectedDate ? (
-                  <p className="ko-calendar-detail-empty">Select a date on the calendar to see its orders.</p>
-                ) : calendarSelectedDayEntries.length === 0 ? (
-                  <>
-                    <h5 className="ko-calendar-detail-heading">
-                      {calendarSelectedDate.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}
-                    </h5>
-                    <p className="ko-calendar-detail-empty">No orders scheduled on this date.</p>
+                      {renderPrimaryAction(detailsOrder)}
+                    </div>
                   </>
-                ) : (
+                );
+              })()}
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <OrderReceiptModal open={!!receiptOrder} order={receiptOrder} onClose={() => setReceiptOrder(null)} />
+
+      {/* ── Payment link modal ── */}
+      <AnimatePresence>
+        {payOrder && (
+          <motion.div className="kb-modal-backdrop" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setPayOrder(null)}>
+            <motion.div className="kb-modal kb-modal--sm" initial={{ opacity: 0, scale: 0.96 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.96 }} onClick={(e) => e.stopPropagation()}>
+              <div className="kb-modal-head">
+                <h3>Payment link · #{payOrder.order_number}</h3>
+                <button className="kb-icon" onClick={() => setPayOrder(null)} aria-label="Close">
+                  <X size={16} />
+                </button>
+              </div>
+              <div className="kb-modal-body kb-pay-body">
+                {payLoading && (
+                  <p className="kb-hint">
+                    <Loader2 size={15} className="kb-spin" /> Generating link…
+                  </p>
+                )}
+                {payError && <div className="kb-error">{payError}</div>}
+                {payLink && (
                   <>
-                    <h5 className="ko-calendar-detail-heading">
-                      {calendarSelectedDate.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}
-                      {' '}· {calendarSelectedDayEntries.length} order{calendarSelectedDayEntries.length > 1 ? 's' : ''}
-                    </h5>
-                    <div className="ko-calendar-detail-list">
-                      {calendarSelectedDayEntries.map(({ order, info }) => {
-                        const sk = getStatusColorKey(order.status);
-                        return (
-                          <button
-                            key={order.id}
-                            className="ko-calendar-detail-row"
-                            onClick={() => {
-                              setIsCalendarOpen(false);
-                              handleViewOrderDetails(order.id);
-                            }}
-                          >
-                            <span className={`ko-cal-dot ko-cal-dot-${sk}`} />
-                            <span className="ko-calendar-detail-order-num">
-                              #{order.order_number || String(order.id).padStart(5, '0')}
-                            </span>
-                            <span className="ko-calendar-detail-tag">
-                              {info.dateLabel}{info.timeLabel ? ` · ${info.timeLabel}` : ''}
-                            </span>
-                            <span className={`ko-status-pill pill-${(order.status || '').toLowerCase()} ko-calendar-detail-status`}>
-                              {(order.status || '').replace(/_/g, ' ')}
-                            </span>
-                          </button>
-                        );
-                      })}
+                    <div className="kb-qr">
+                      <QRCodeSVG value={payLink} size={190} />
+                    </div>
+                    <p className="kb-hint">Ask the customer to scan, or share the link.</p>
+                    <div className="kb-pay-actions">
+                      <button className="kb-btn" onClick={copyPaymentLink}>
+                        {payCopied ? <Check size={15} /> : <Copy size={15} />} {payCopied ? 'Copied' : 'Copy link'}
+                      </button>
+                      <a className="kb-btn kb-btn--primary" href={payLink} target="_blank" rel="noopener noreferrer">
+                        <ExternalLink size={15} /> Open
+                      </a>
                     </div>
                   </>
                 )}
               </div>
-            </div>
-          </div>
-        </div>
-      )}
-
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };

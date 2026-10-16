@@ -185,3 +185,28 @@
   stroke: #fff;
 }
 
+
+/* ── Image fallback (missing / broken image URL) ── */
+.bakery-card-image-wrapper {
+  background: linear-gradient(160deg, #f7faf2, #e3ecd6);
+}
+.bakery-card-image--fallback {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px;
+  color: #6f8e57;
+  text-align: center;
+}
+.bakery-card-image--fallback span {
+  font-size: 12px;
+  font-weight: 700;
+  color: #3f5c33;
+  line-height: 1.3;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}

@@ -777,3 +777,116 @@ body {
     font-size: 12px;
   }
 }
+
+/* ==========================================================================
+   Period performance · monthly bars · filter summary (pistachio)
+   ========================================================================== */
+.db-loading { display: flex; align-items: center; gap: 10px; color: #3f5c33; font-weight: 600; }
+.db-loading-dot { width: 10px; height: 10px; border-radius: 50%; background: #6f8e57; animation: dbPulseDot 1s infinite; }
+.db-error-banner { margin-bottom: 16px; padding: 10px 14px; border-radius: 12px; background: #fff4e5; color: #8a5a12; font-size: 13px; font-weight: 600; }
+.db-muted { color: #8a9482; font-size: 13px; margin: 6px 0; }
+
+.db-period-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 16px;
+  margin-bottom: 20px;
+}
+.db-period-card {
+  position: relative;
+  overflow: hidden;
+  padding: 18px;
+  border-radius: 20px;
+  background: #ffffff;
+  border: 1px solid #e3ead9;
+  box-shadow: 0 8px 22px rgba(47, 70, 38, 0.06);
+}
+.db-period-card::after {
+  content: '';
+  position: absolute;
+  right: -40px;
+  top: -40px;
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  background: #edf3e4;
+  opacity: 0.8;
+}
+.db-period-card.is-today { background: linear-gradient(160deg, #2f4626, #526a45); color: #ffffff; border-color: transparent; }
+.db-period-card.is-today::after { background: rgba(255, 255, 255, 0.08); }
+.db-period-card > * { position: relative; z-index: 1; }
+
+.db-period-head { display: flex; align-items: center; gap: 10px; }
+.db-period-head h3 { margin: 0; font-size: 15px; font-weight: 800; color: inherit; font-family: inherit; }
+.db-period-head span { font-size: 12px; opacity: 0.75; }
+.db-period-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 12px;
+  display: grid;
+  place-items: center;
+  background: #edf3e4;
+  color: #3f5c33;
+}
+.is-today .db-period-icon { background: rgba(255, 255, 255, 0.16); color: #ffffff; }
+
+.db-period-revenue { margin: 14px 0 12px; display: flex; flex-direction: column; gap: 2px; }
+.db-period-revenue small { font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; opacity: 0.7; }
+.db-period-revenue strong { font-size: 26px; font-weight: 800; letter-spacing: -0.02em; color: #2f4626; }
+.is-today .db-period-revenue strong { color: #ffffff; }
+
+.db-period-trend { display: inline-flex; align-items: center; gap: 4px; font-size: 11.5px; font-weight: 700; }
+.db-period-trend.up { color: #437d3f; }
+.db-period-trend.down { color: #c2410c; }
+.db-period-trend.flat { color: #7c8a74; }
+.is-today .db-period-trend { color: #d8e4c7; }
+
+.db-period-stats {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 6px;
+  padding-top: 12px;
+  border-top: 1px dashed rgba(111, 142, 87, 0.35);
+}
+.db-period-stats div { display: flex; flex-direction: column; min-width: 0; }
+.db-period-stats b { font-size: 14px; font-weight: 800; overflow: hidden; text-overflow: ellipsis; }
+.db-period-stats span { font-size: 10.5px; opacity: 0.7; }
+
+.db-monthly-card { margin-bottom: 20px; }
+.db-monthly-bars {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  gap: 10px;
+  align-items: end;
+  height: 190px;
+  margin-top: 12px;
+}
+.db-monthly-col { height: 100%; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; gap: 6px; min-width: 0; }
+.db-monthly-bar { width: 100%; max-width: 42px; border-radius: 10px 10px 4px 4px; background: linear-gradient(180deg, #b9d09b, #8faf6e); }
+.db-monthly-col.is-current .db-monthly-bar { background: linear-gradient(180deg, #526a45, #2f4626); }
+.db-monthly-label { font-size: 11px; font-weight: 700; color: #6b7a63; }
+.db-monthly-value { font-size: 9.5px; color: #6b7a63; white-space: nowrap; overflow: hidden; max-width: 100%; text-overflow: ellipsis; }
+
+.db-filter-summary {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  padding: 0 14px;
+  min-height: 40px;
+  border-radius: 12px;
+  background: #f7faf2;
+  border: 1px dashed #b9d09b;
+  color: #3f5c33;
+  font-size: 12.5px;
+}
+.db-filter-summary span { font-weight: 800; text-transform: uppercase; font-size: 10.5px; letter-spacing: 0.08em; color: #6f8e57; }
+
+@media (max-width: 1200px) {
+  .db-period-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 640px) {
+  .db-period-grid { grid-template-columns: 1fr; }
+  .db-monthly-bars { gap: 4px; height: 150px; }
+  .db-monthly-value { display: none; }
+}

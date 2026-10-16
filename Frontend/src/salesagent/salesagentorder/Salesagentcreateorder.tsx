@@ -28468,6 +28468,8 @@ import {
   DEFAULT_PHONE_COUNTRY,
   buildInternationalPhone,
   isCompleteLocalPhone,
+  splitStoredPhone,
+  phoneLocalError,
   type PhoneCountry,
 } from "../../constants/phoneCountries";
 
@@ -28701,6 +28703,15 @@ const orDash = (value: string | null | undefined): string => {
  * back to DEFAULT_PHONE_COUNTRY with all digits as the local number.
  */
 const parseStoredPhone = (
+  phone: string
+): { country: PhoneCountry; local: string } => {
+  // Shared parser: handles "+965…", "965…", "00965…" and local 8-digit
+  // Kuwait numbers (previously these fell back to India and were truncated).
+  return splitStoredPhone(phone);
+};
+
+// Previous implementation, kept for reference.
+const parseStoredPhoneLegacy = (
   phone: string
 ): { country: PhoneCountry; local: string } => {
   const raw = (phone || "").trim();
@@ -29251,8 +29262,9 @@ const SalesAgentCreateOrder: React.FC = () => {
       nextErrors.customerName = "Customer name is required";
     }
 
-    if (!isCompleteLocalPhone(phoneCountry, phoneLocalNumber)) {
-      nextErrors.customerPhone = `${phoneCountry.name} mobile number must be exactly ${phoneCountry.localLength} digits`;
+    const phoneError = phoneLocalError(phoneCountry, phoneLocalNumber);
+    if (phoneError) {
+      nextErrors.customerPhone = phoneError;
     }
 
     if (deliveryMethod === "delivery" && !address.areaId) {
@@ -29401,8 +29413,13 @@ const SalesAgentCreateOrder: React.FC = () => {
       await createSalesAgentOrder(payload);
       setSuccessMessage("Order Created Successfully");
       resetForm();
-    } catch (err) {
-      setSubmitError("Could not create the order. Please check the details and try again.");
+    } catch (err: any) {
+      // Show the server's reason (e.g. an invalid contact number) instead of a generic message.
+      const serverMessage = err?.response?.data?.error || err?.response?.data?.message;
+      if (err?.response?.data?.field === "customer_phone") {
+        setErrors((prev) => ({ ...prev, customerPhone: serverMessage }));
+      }
+      setSubmitError(serverMessage || "Could not create the order. Please check the details and try again.");
     } finally {
       setIsSubmitting(false);
     }

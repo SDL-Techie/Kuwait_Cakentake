@@ -1886,6 +1886,7 @@ import {
   ToggleLeft, ToggleRight, AlertCircle, Filter, UploadCloud,
 } from 'lucide-react';
 import './MenuManagement.css';
+import { AdminDataToolbar, useAdminDataTools, importRowByRow } from '../../services/Useadmindatatools';
 import { uploadCloudinaryImage } from '../../services/directApiService';
 import { menuManagementService } from '../../services/menuManagementService';
 
@@ -2883,22 +2884,113 @@ export const MenuManagement: React.FC = () => {
   /* ============================================================
      FILTER BY SEARCH
   ============================================================ */
+  // ── Pistachio filter deck: works on whichever tab is open ──
+  const truthy = (v: unknown, dflt = true) =>
+    v === undefined || v === '' ? dflt : !/^(false|0|no|inactive)$/i.test(String(v));
+  const findCategoryId = (r: Record<string, any>) => {
+    if (r.category_id) return Number(r.category_id);
+    const name = String(r.category || r.category_name || '').trim().toLowerCase();
+    const hit = categories.find(c => c.name.toLowerCase() === name);
+    return hit ? Number(hit.id) : NaN;
+  };
+  const tabData: Record<TopTab, any[]> = {
+    products, categories, subcategories: subCats, variants, flavors, addons, combos, promotions, promoCodes,
+  };
+  const tabImporters: Partial<Record<TopTab, (rows: Record<string, any>[]) => Promise<any>>> = {
+    products: async (rows) => {
+      const res = await importRowByRow(rows, (r) => {
+        const category_id = findCategoryId(r);
+        if (!category_id) throw new Error(`Unknown category "${r.category || r.category_id || ''}"`);
+        const payload: any = {
+          name: String(r.name || '').trim(),
+          description: String(r.description || '').trim(),
+          category_id,
+          subcategory_id: r.subcategory_id ? Number(r.subcategory_id) : null,
+          price: Number(r.price || 0),
+          stock: Number(r.stock || 0),
+          unit: String(r.unit || 'piece'),
+          image_url: String(r.image_url || r.image || ''),
+          ingredients: String(r.ingredients || ''),
+          is_active: truthy(r.is_active ?? r.available),
+        };
+        if (r.original_price) payload.original_price = Number(r.original_price);
+        return menuManagementService.createProduct(payload);
+      });
+      fetchProducts(activeCatFilter, activeSubFilter);
+      return res;
+    },
+    categories: async (rows) => {
+      const res = await importRowByRow(rows, (r) =>
+        menuManagementService.createCategory({ name: String(r.name || '').trim(), status: 'active', image_url: String(r.image_url || r.image || '') })
+      );
+      fetchCategories();
+      return res;
+    },
+    subcategories: async (rows) => {
+      const res = await importRowByRow(rows, (r) => {
+        const category_id = findCategoryId(r);
+        if (!category_id) throw new Error(`Unknown category "${r.category || r.category_id || ''}"`);
+        return menuManagementService.createSubcategory({
+          name: String(r.name || '').trim(),
+          description: String(r.description || '').trim(),
+          category_id,
+          image_url: String(r.image_url || r.image || ''),
+          is_active: truthy(r.is_active),
+        });
+      });
+      fetchSubCats();
+      return res;
+    },
+    addons: async (rows) => {
+      const res = await importRowByRow(rows, (r) =>
+        menuManagementService.createAddon({
+          name: String(r.name || '').trim(),
+          price: Number(r.price || 0),
+          image_url: String(r.image_url || r.image || '') || undefined,
+          is_predefined: truthy(r.is_predefined, false),
+          is_active: truthy(r.is_active),
+        })
+      );
+      fetchAddons();
+      return res;
+    },
+  };
+  const tabTemplates: Partial<Record<TopTab, string[]>> = {
+    products: ['name', 'description', 'category', 'subcategory_id', 'price', 'original_price', 'stock', 'unit', 'image_url', 'ingredients', 'is_active'],
+    categories: ['name', 'image_url'],
+    subcategories: ['name', 'description', 'category', 'image_url', 'is_active'],
+    addons: ['name', 'price', 'image_url', 'is_predefined', 'is_active'],
+  };
+  const tabTitle: Record<TopTab, string> = {
+    products: 'Products', categories: 'Categories', subcategories: 'Subcategories', variants: 'Variants',
+    flavors: 'Flavors', addons: 'Add-ons', combos: 'Combos', promotions: 'Promotions', promoCodes: 'Promo codes',
+  };
+  const tools = useAdminDataTools<any>({
+    data: tabData[activeTab],
+    title: `Menu · ${tabTitle[activeTab]}`,
+    storageKey: `menu-${activeTab}`,
+    onImport: tabImporters[activeTab],
+    importTemplate: tabTemplates[activeTab],
+  });
+  // Only the open tab is narrowed by the deck; the others keep their full lists.
+  const deck = <T,>(tab: TopTab, list: T[]): T[] => (activeTab === tab ? (tools.filtered as T[]) : list);
+
   const s = searchTerm.toLowerCase();
-  const filteredProducts   = products.filter(p =>
+  const filteredProducts   = deck('products', products).filter(p =>
     p.name.toLowerCase().includes(s) ||
     (p.categoryName || '').toLowerCase().includes(s) ||
     (p.subcategoryName || '').toLowerCase().includes(s)
   );
-  const filteredCategories = categories.filter(c => c.name.toLowerCase().includes(s));
-  const filteredSubCats    = subCats.filter(sc => sc.name.toLowerCase().includes(s) || (sc.parentCategoryName || '').toLowerCase().includes(s));
-  const filteredVariants   = variants.filter(v => v.name.toLowerCase().includes(s));
-  const filteredFlavors    = flavors.filter(f => f.name.toLowerCase().includes(s));
-  const filteredAddons     = addons.filter(a => a.name.toLowerCase().includes(s));
-  const filteredCombos     = combos.filter(c => c.name.toLowerCase().includes(s));
-  const filteredPromotions = promotions.filter(p =>
+  const filteredCategories = deck('categories', categories).filter(c => c.name.toLowerCase().includes(s));
+  const filteredSubCats    = deck('subcategories', subCats).filter(sc => sc.name.toLowerCase().includes(s) || (sc.parentCategoryName || '').toLowerCase().includes(s));
+  const filteredVariants   = deck('variants', variants).filter(v => v.name.toLowerCase().includes(s));
+  const filteredFlavors    = deck('flavors', flavors).filter(f => f.name.toLowerCase().includes(s));
+  const filteredAddons     = deck('addons', addons).filter(a => a.name.toLowerCase().includes(s));
+  const filteredCombos     = deck('combos', combos).filter(c => c.name.toLowerCase().includes(s));
+  const filteredPromotions = deck('promotions', promotions).filter(p =>
     p.name.toLowerCase().includes(s) || (p.product?.name || '').toLowerCase().includes(s)
   );
-  const filteredPromoCodes = promoCodes.filter(p => p.code.toLowerCase().includes(s));
+  const filteredPromoCodes = deck('promoCodes', promoCodes).filter(p => p.code.toLowerCase().includes(s));
 
   /* ============================================================
      TAB CONFIG
@@ -2989,6 +3081,9 @@ export const MenuManagement: React.FC = () => {
           )}
         </div>
       </div>
+
+      {/* ── FILTERS · IMPORT · EXPORT (current tab) ── */}
+      <AdminDataToolbar tools={tools} />
 
       {/* ── TAB CONTENT ── */}
       <div className="mm-content">

@@ -527,3 +527,31 @@ body {
     display: none;
   }
 }
+/* ── Professional polish: focus rings, smooth scroll, consistent motion ── */
+.rasi-page-transition {
+  min-height: 100%;
+}
+.rasi-admin-content-wrapper :is(button, a, input, select, textarea):focus-visible {
+  outline: 2px solid #8faf6e;
+  outline-offset: 2px;
+}
+.rasi-admin-content-wrapper {
+  scroll-behavior: smooth;
+}
+.rasi-admin-content-wrapper ::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+.rasi-admin-content-wrapper ::-webkit-scrollbar-thumb {
+  background: #c9d9b5;
+  border-radius: 999px;
+  border: 2px solid #f7faf2;
+}
+.rasi-admin-content-wrapper ::-webkit-scrollbar-track {
+  background: transparent;
+}
+@media (prefers-reduced-motion: reduce) {
+  .rasi-admin-content-wrapper * {
+    scroll-behavior: auto !important;
+  }
+}

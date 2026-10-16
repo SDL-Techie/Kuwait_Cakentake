@@ -599,6 +599,7 @@ from routes.reports_routes import reports_bp
 from routes.bank_charges_routes import bank_charges_bp
 from routes.delivery_charges_routes import delivery_charges_bp
 from routes.backup_route import backup_bp
+from routes.app_version import app_version_bp
 from routes.blog_routes import blog_bp
 from routes.notification_campaign_routes import notification_campaign_bp
 from tasks.notification_scheduler import start_notification_scheduler
@@ -685,7 +686,7 @@ app.register_blueprint(blog_bp)
 app.register_blueprint(notification_campaign_bp)
 app.register_blueprint(account_deletion_bp)
 app.register_blueprint(backup_bp)
-
+app.register_blueprint(app_version_bp)
 
 @app.route("/")
 def home():

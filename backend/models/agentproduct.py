@@ -91,16 +91,53 @@ class AgentProduct(db.Model):
 
     # ---------------- Serializer ---------------- #
 
+    @staticmethod
+    def _options(raw):
+        """[{name, price_modifier}] from strings or dicts (older rows used strings)."""
+        out = []
+        for entry in raw or []:
+            if isinstance(entry, str) and entry.strip():
+                out.append({"name": entry.strip(), "price_modifier": 0.0})
+            elif isinstance(entry, dict) and str(entry.get("name") or "").strip():
+                try:
+                    modifier = float(entry.get("price_modifier") or 0)
+                except (TypeError, ValueError):
+                    modifier = 0.0
+                out.append({"name": str(entry["name"]).strip(), "price_modifier": modifier})
+        return out
+
     def to_dict(self):
+        # Client report: exclusive cakes showed no image and "no variants /
+        # flavours" in the agent order screen. The screens read the same keys
+        # as normal products (image_url, variants[].id/is_active/flavors[]),
+        # so those are provided here in addition to the original keys.
+        flavours = [
+            {"id": idx + 1, "name": f["name"], "price_modifier": f["price_modifier"], "is_active": True}
+            for idx, f in enumerate(self._options(self.flavours))
+        ]
+        variants = [
+            {
+                "id": idx + 1,
+                "product_id": self.id,
+                "name": v["name"],
+                "price_modifier": v["price_modifier"],
+                "is_active": True,
+                "flavors": [dict(f, variant_id=idx + 1) for f in flavours],
+            }
+            for idx, v in enumerate(self._options(self.variants))
+        ]
         return {
             "id": self.id,
             "agent_id": self.agent_id,
+            "product_type": "AGENT",
             "name": self.name,
             "description": self.description,
             "price": float(self.price) if self.price is not None else 0,
-            "variants": self.variants or [],
-            "flavours": self.flavours or [],
+            "variants": variants,
+            "flavours": flavours,
+            "flavors": flavours,
             "image": self.image,
+            "image_url": self.image,
             "cloudinary_public_id": self.cloudinary_public_id,
             "is_active": self.is_active,
             "created_by": self.created_by,

@@ -529,6 +529,7 @@ export interface Agent {
 
 /** A single variant or flavour option with its own price add-on. */
 export interface AgentProductOption {
+  id?: number | string;
   name: string;
   /** Amount added to the base product price when this option is selected. */
   price_modifier: number;
@@ -543,6 +544,9 @@ export interface AgentProduct {
   flavours: AgentProductOption[];
   price: number;
   image: string | null;
+  /** Alias of image returned by the backend (same URL). */
+  image_url?: string | null;
+  product_type?: "AGENT";
   cloudinary_public_id: string | null;
   is_active: boolean;
   created_by: number | null;
@@ -585,7 +589,8 @@ export interface CreateAgentOrderPayload {
     | "STRIPE"
     | "KNET"
     | "UPI"
-    | "LINK";
+    | "LINK"
+    | "CREDIT";
 
   currency?:
     | "INR"
@@ -619,6 +624,9 @@ export interface CreateAgentOrderPayload {
   delivery_method?: "PICKUP" | "DELIVERY";
 
   agent_notes?: string;
+
+  /** Shown as "ORDER NOTES" on the agent screen; kept separate from address delivery notes. */
+  order_notes?: string;
 
   agent_discount_percentage?: number;
 
@@ -1019,4 +1027,39 @@ export const createAgentOrder = async (
 
     throw error;
   }
+};
+
+// ─────────────────────────────────────────────────────────────────────────────
+// AGENT PAYMENTS (credit orders the agent settles later)
+// ─────────────────────────────────────────────────────────────────────────────
+
+export interface AgentPaymentsSummary {
+  pending_count: number;
+  pending_amount: number;
+  paid_count: number;
+  paid_amount: number;
+  currency: string;
+}
+
+export interface AgentPaymentsResponse {
+  pending: any[];
+  paid: any[];
+  summary: AgentPaymentsSummary;
+}
+
+/** GET /agent/payments — the logged-in agent's unpaid (credit) and paid orders. */
+export const getAgentPayments = async (): Promise<AgentPaymentsResponse> => {
+  const res = await api.get("/agent/payments");
+  const data = res.data || {};
+  return {
+    pending: Array.isArray(data.pending) ? data.pending : [],
+    paid: Array.isArray(data.paid) ? data.paid : [],
+    summary: data.summary || {
+      pending_count: 0,
+      pending_amount: 0,
+      paid_count: 0,
+      paid_amount: 0,
+      currency: "KWD",
+    },
+  };
 };

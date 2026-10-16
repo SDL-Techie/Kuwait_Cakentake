@@ -57,6 +57,7 @@ import ChatWidget from './components/ChatWidget/ChatWidget';
 import Agentfetchorder from './agent/Agentfetchorder';
 import AgentDashboard from './agent/Agentdashboard';
 import AgentPayment from './agent/Agentpayment';
+import AgentMyPayments from './agent/AgentMyPayments';
 import BlogManagement from './admin/Blog/BlogManagement';
 import UserBlog from './pages/Blog/Userblog';
 import Unauthorized from './components/Unauthorized';
@@ -249,6 +250,7 @@ const AppContent: React.FC = () => {
       <Route path="agentdashboard" element={<AgentDashboard/>}/>
       <Route path="agentorder" element={<AgentOrder/>}/>
       <Route path="agentfetchorder" element={<Agentfetchorder/>}/>
+      <Route path="agentmypayments" element={<AgentMyPayments/>}/>
     </Route>
 
     <Route element={<RoleProtectedRoute allowedRoles={['ADMIN','DELIVERY_AGENT']} />}>

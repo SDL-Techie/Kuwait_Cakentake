@@ -128,6 +128,7 @@ const NAV_SECTIONS = [
           { name: 'Agent Dashboard', icon: <FaTachometerAlt />, path: '/admin/agentdashboard', roles: [ 'AGENT'] },
           { name: 'Agent Create Order', icon: <FaPlusCircle />, path: '/admin/agentorder', roles: [ 'AGENT'] },
           { name: 'Agent Order', icon: <FaList />, path: '/admin/agentfetchorder', roles: [ 'AGENT'] },
+          { name: 'My Payments', icon: <FaWallet />, path: '/admin/agentmypayments', roles: [ 'AGENT'] },
         ],
       },
       {
@@ -392,7 +393,7 @@ const AdminLayout = () => {
             </button>
 
             <div className="admin-profile-pill">
-              <img src="https://cakentake.com/wp-content/uploads/2024/05/cakentake-logo.png" alt="Admin" />
+              <img src="/assets/logo.png" alt="Admin" />
               <div className="admin-info desktop-only">
                 <span className="admin-name">CakeNTake</span>
                 <span className="admin-role">{theme.label}</span>
@@ -403,7 +404,16 @@ const AdminLayout = () => {
 
         <section className="rasi-admin-content-wrapper">
           <div className="rasi-admin-content-inner">
-            <Outlet />
+            {/* Soft page transition between admin screens */}
+            <motion.div
+              key={location.pathname}
+              className="rasi-page-transition"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.25, ease: 'easeOut' }}
+            >
+              <Outlet />
+            </motion.div>
           </div>
         </section>
       </main>

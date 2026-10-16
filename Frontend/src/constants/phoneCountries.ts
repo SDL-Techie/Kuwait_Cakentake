@@ -288,8 +288,10 @@ export const PHONE_COUNTRIES: PhoneCountry[] = RAW.map(
   ([iso, name, dialCode, localLength]) => ({ iso, name, dialCode, localLength })
 ).sort((a, b) => a.name.localeCompare(b.name));
 
+// CakeNTake operates in Kuwait: default to +965 (defaulting to India caused
+// Kuwait numbers to be saved as "+91XXXXXXXX" — client report 13/10/2026).
 export const DEFAULT_PHONE_COUNTRY: PhoneCountry =
-  PHONE_COUNTRIES.find((c) => c.iso === "IN") ?? PHONE_COUNTRIES[0];
+  PHONE_COUNTRIES.find((c) => c.iso === "KW") ?? PHONE_COUNTRIES[0];
 
 export const onlyPhoneDigits = (value: string): string => value.replace(/\D/g, "");
 
@@ -298,3 +300,40 @@ export const isCompleteLocalPhone = (country: PhoneCountry, value: string): bool
 
 export const buildInternationalPhone = (country: PhoneCountry, value: string): string =>
   `${country.dialCode}${onlyPhoneDigits(value).slice(0, country.localLength)}`;
+
+/**
+ * Split any stored phone ("+96551234567", "96551234567", "0096551234567",
+ * "51234567") into a country + local number. Local 8-digit numbers are Kuwait.
+ */
+export const splitStoredPhone = (value?: string | null): { country: PhoneCountry; local: string } => {
+  const raw = String(value || "").trim();
+  let digits = onlyPhoneDigits(raw);
+  if (raw.startsWith("00")) digits = digits.slice(2);
+  if (!digits) return { country: DEFAULT_PHONE_COUNTRY, local: "" };
+
+  const kw = PHONE_COUNTRIES.find((c) => c.iso === "KW")!;
+  if (digits.length === kw.localLength && !raw.startsWith("+")) {
+    return { country: kw, local: digits };
+  }
+  // Longest dial code first so "+971" wins over "+97"; require the exact length.
+  const byCode = [...PHONE_COUNTRIES].sort((a, b) => b.dialCode.length - a.dialCode.length);
+  for (const country of byCode) {
+    const code = country.dialCode.replace("+", "");
+    if (digits.startsWith(code) && digits.length === code.length + country.localLength) {
+      return { country, local: digits.slice(code.length) };
+    }
+  }
+  return { country: DEFAULT_PHONE_COUNTRY, local: digits.slice(-DEFAULT_PHONE_COUNTRY.localLength) };
+};
+
+/** Kuwait numbers must start with 2, 4, 5, 6 or 9 (landline / mobile). */
+export const phoneLocalError = (country: PhoneCountry, value: string): string | null => {
+  const local = onlyPhoneDigits(value);
+  if (local.length !== country.localLength) {
+    return `${country.name} numbers must be exactly ${country.localLength} digits`;
+  }
+  if (country.iso === "KW" && !/^[124569]/.test(local)) {
+    return "Kuwait numbers start with 2, 4, 5, 6 or 9";
+  }
+  return null;
+};

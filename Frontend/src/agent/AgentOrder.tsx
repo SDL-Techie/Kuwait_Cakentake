@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState, useCallback } from "react";
 import "./agentorder.css";
+import { useNavigate } from "react-router-dom";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // EXISTING SERVICES ONLY (agentService.ts, areaService.ts) — nothing here
@@ -150,7 +151,6 @@ interface DraftSelection {
 }
 
 const TIME_SLOTS = [
-  "9:00 AM - 10:00 AM",
   "10:00 AM - 11:00 AM",
   "11:00 AM - 12:00 PM",
   "12:00 PM - 1:00 PM",
@@ -164,6 +164,41 @@ const TIME_SLOTS = [
   "8:00 PM - 9:00 PM",
   "9:00 PM - 10:00 PM",
 ];
+
+
+const getKuwaitNow = () => {
+  const parts = new Intl.DateTimeFormat("en-GB", {
+    timeZone: "Asia/Kuwait",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    hourCycle: "h23",
+  }).formatToParts(new Date());
+
+  const get = (type: string) =>
+    parts.find((part) => part.type === type)?.value ?? "0";
+
+  return {
+    date: `${get("year")}-${get("month")}-${get("day")}`,
+    minutes: Number(get("hour")) * 60 + Number(get("minute")),
+  };
+};
+
+const getAvailableSlots = (selectedDate: string) => {
+  if (!selectedDate) return [];
+
+  const now = getKuwaitNow();
+
+  if (selectedDate < now.date) return [];
+  if (selectedDate > now.date) return TIME_SLOTS;
+
+  return TIME_SLOTS.filter((_, index) => {
+    const slotStartMinutes = (10 + index) * 60;
+    return slotStartMinutes >= now.minutes;
+  });
+};
 
 const PAYMENT_METHODS: { value: PaymentMethodOption; label: string }[] = [
   { value: "COD", label: "Cash" },
@@ -341,6 +376,7 @@ const getFlavourOptions = (product: unknown, variantId?: string | null): Product
 // =============================================================================
 
 const AgentOrder: React.FC = () => {
+  const navigate = useNavigate();
   // ── Logged-in agent (auto-loaded, never typed manually) ─────────────────
   const [agent, setAgent] = useState<Agent | null>(null);
   const [agentLoading, setAgentLoading] = useState<boolean>(true);
@@ -696,7 +732,7 @@ const AgentOrder: React.FC = () => {
         productId: product.id,
         productType: "AGENT",
         name: product.name,
-        image: (product as any).image || undefined,
+        image: (product as any).image || (product as any).image_url || undefined,
         basePrice,
         optionsAddOn,
         originalPrice: adjustedPrice,
@@ -925,7 +961,9 @@ const AgentOrder: React.FC = () => {
       customer_id: agent!.id,
       address_id: isPickup ? null : selectedAddressId ?? null,
       items,
-      payment_method: paymentMethod || "COD",
+      // Agent orders are always on CREDIT — the agent settles them later
+      // from the "My Payments" screen (client requirement).
+      payment_method: "CREDIT",
       currency: currency as CreateAgentOrderPayload["currency"],
       delivery_date: !isPickup ? deliveryDate || undefined : undefined,
       delivery_time_slot: !isPickup ? deliveryTimeSlot || undefined : undefined,
@@ -934,6 +972,7 @@ const AgentOrder: React.FC = () => {
       order_source: "AGENT_SELF",
       delivery_method: deliveryMethod,
       agent_notes: notes.trim() || undefined,
+      order_notes: notes.trim() || undefined,
       agent_discount_percentage: Number(agentDiscount.toFixed(2)),
       discount_total: Number(discountTotal.toFixed(2)),
       delivery_charge: Number(deliveryCharge.toFixed(2)),
@@ -995,9 +1034,15 @@ const AgentOrder: React.FC = () => {
     try {
       const payload = buildPayload();
       const order = await createAgentOrder(payload);
-      console.log("ORDER CREATED:", order);
-      setSuccessMessage("Order created successfully.");
       resetOrderState();
+      // No "Order created" dialog — go straight to the orders screen and
+      // highlight the new order (number + details are shown there).
+      navigate("/admin/agentfetchorder", {
+        state: {
+          highlightOrderId: order?.id ?? null,
+          highlightOrderNumber: order?.order_number ?? null,
+        },
+      });
     } catch (err: any) {
       console.error("========================================");
       console.error("ORDER CREATION FAILED");
@@ -1082,8 +1127,16 @@ const AgentOrder: React.FC = () => {
       <div className="ao-product-card" key={cartKey(product.id, "AGENT")}>
         <span className="ao-badge ao-badge-exclusive">Agent Exclusive</span>
         <div className="ao-product-image-wrap">
-          {product.image ? (
-            <img src={product.image} alt={product.name} className="ao-product-image" />
+          {product.image || product.image_url ? (
+            <img
+              src={(product.image || product.image_url) as string}
+              alt={product.name}
+              className="ao-product-image"
+              loading="lazy"
+              onError={(e) => {
+                (e.currentTarget as HTMLImageElement).style.visibility = "hidden";
+              }}
+            />
           ) : (
             <div className="ao-product-image-placeholder">No Image</div>
           )}
@@ -1170,6 +1223,26 @@ const AgentOrder: React.FC = () => {
       <header className="ao-header">
         <p className="ao-eyebrow">Agent Self-Order</p>
         <h1 className="ao-title">Place Your Order</h1>
+        <ol className="ao-steps" aria-label="How to order">
+          {[
+            "Select item",
+            "Choose variant",
+            "Choose flavour",
+            "Place order",
+          ].map((label, i) => {
+            const done = cart.length > 0 ? i < 3 : false;
+            const current = cart.length > 0 ? i === 3 : i === 0;
+            return (
+              <li
+                key={label}
+                className={`ao-step ${done ? "is-done" : ""} ${current ? "is-current" : ""}`}
+              >
+                <span className="ao-step-dot">{done ? "✓" : i + 1}</span>
+                {label}
+              </li>
+            );
+          })}
+        </ol>
       </header>
 
       {successMessage && <div className="ao-toast ao-toast-success">{successMessage}</div>}
@@ -1235,16 +1308,26 @@ const AgentOrder: React.FC = () => {
                 <div className="ao-field-grid ao-delivery-time-grid">
                   <div className="ao-field">
                     <label>Pickup Date *</label>
-                    <input type="date" value={pickupDate} onChange={(e) => setPickupDate(e.target.value)} />
+<input
+  type="date"
+  min={getKuwaitNow().date}
+  value={pickupDate}
+  onChange={(e) => {
+    setPickupDate(e.target.value);
+    setPickupTimeSlot("");
+  }}
+/>
                     {errors.pickupDate && <span className="ao-error-text">{errors.pickupDate}</span>}
                   </div>
                   <div className="ao-field">
                     <label>Pickup Time *</label>
                     <select value={pickupTimeSlot} onChange={(e) => setPickupTimeSlot(e.target.value)}>
                       <option value="">Select a pickup time</option>
-                      {TIME_SLOTS.map((slot) => (
-                        <option key={slot} value={slot}>{slot}</option>
-                      ))}
+                      {getAvailableSlots(pickupDate).map((slot) => (
+  <option key={slot} value={slot}>
+    {slot}
+  </option>
+))}
                     </select>
                     {errors.pickupTimeSlot && <span className="ao-error-text">{errors.pickupTimeSlot}</span>}
                   </div>
@@ -1286,8 +1369,8 @@ const AgentOrder: React.FC = () => {
                             </p>
                           </div>
                           <div className="ao-address-card-actions" onClick={(e) => e.stopPropagation()}>
-                            <button type="button" className="ao-icon-btn" onClick={() => openEditAddressModal(addr)} aria-label="Edit address">✎</button>
-                            <button type="button" className="ao-icon-btn ao-icon-btn-danger" onClick={() => handleDeleteAddress(addr.id as number)} aria-label="Delete address">✕</button>
+                            <button type="button" className="ao-icon-btn" onClick={() => openEditAddressModal(addr)} aria-label="Edit address">✎ Edit</button>
+                            <button type="button" className="ao-icon-btn ao-icon-btn-danger" onClick={() => handleDeleteAddress(addr.id as number)} aria-label="Delete address">🗑 Delete</button>
                           </div>
                         </div>
                       );
@@ -1302,14 +1385,21 @@ const AgentOrder: React.FC = () => {
                 <div className="ao-field-grid ao-delivery-time-grid">
                   <div className="ao-field">
                     <label>Delivery Date *</label>
-                    <input type="date" value={deliveryDate} onChange={(e) => setDeliveryDate(e.target.value)} />
-                    {errors.deliveryDate && <span className="ao-error-text">{errors.deliveryDate}</span>}
+<input
+  type="date"
+  min={getKuwaitNow().date}
+  value={deliveryDate}
+  onChange={(e) => {
+    setDeliveryDate(e.target.value);
+    setDeliveryTimeSlot("");
+  }}
+/>                    {errors.deliveryDate && <span className="ao-error-text">{errors.deliveryDate}</span>}
                   </div>
                   <div className="ao-field">
                     <label>Delivery Time Slot *</label>
                     <select value={deliveryTimeSlot} onChange={(e) => setDeliveryTimeSlot(e.target.value)}>
                       <option value="">Select a time slot</option>
-                      {TIME_SLOTS.map((slot) => (
+                      {getAvailableSlots(deliveryDate).map((slot) => (
                         <option key={slot} value={slot}>{slot}</option>
                       ))}
                     </select>
@@ -1489,9 +1579,9 @@ const AgentOrder: React.FC = () => {
 
           {/* Card — Notes */}
           <section className="ao-card">
-            <h2 className="ao-card-title">Notes</h2>
+            <h2 className="ao-card-title">ORDER NOTES</h2>
             <div className="ao-field">
-              <label>Notes for this order</label>
+              <label>ORDER NOTES</label>
               <textarea
                 rows={3}
                 value={notes}
@@ -1512,7 +1602,7 @@ const AgentOrder: React.FC = () => {
               <span>{currency} {formatMoney(originalSubtotal)}</span>
             </div>
             <div className="ao-summary-row ao-summary-discount">
-              <span>Agent Discount Total</span>
+              <span>Agent Discount <small className="ao-muted">(menu items only)</small></span>
               <span>-{currency} {formatMoney(discountTotal)}</span>
             </div>
             <div className="ao-summary-row">
@@ -1522,6 +1612,10 @@ const AgentOrder: React.FC = () => {
             <div className="ao-summary-row ao-summary-grand-total">
               <span>Grand Total</span>
               <span>{currency} {formatMoney(grandTotal)}</span>
+            </div>
+            <div className="ao-credit-note">
+              <strong>Payment: Credit</strong>
+              <span>Settle this order later from <em>My Payments</em>.</span>
             </div>
 
           </section>
@@ -1533,7 +1627,7 @@ const AgentOrder: React.FC = () => {
               onClick={handleCreateOrder}
               disabled={isSubmitting || agentLoading}
             >
-              {isSubmitting ? "Creating…" : "Create Order"}
+              {isSubmitting ? "Placing order…" : "Place Order"}
             </button>
           </div>
         </aside>

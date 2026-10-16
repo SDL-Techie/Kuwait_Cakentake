@@ -1024,8 +1024,13 @@ from models.address import Address
 from models.area import Area
 from models.currency_rate import CurrencyRate
 from services.order_history_service import log_order_status
+from models.variant import Variant, Flavor
 
 agent_bp = Blueprint("agent", __name__)
+
+# Agent orders are always on CREDIT: the agent never pays at order time and
+# settles later from the Agent Payments screen (client agreement).
+AGENT_PAYMENT_METHOD = "CREDIT"
 
 ROLE_OWNER_LIST = ["ADMIN", "SHOP_MANAGER"]
 ROLE_AGENT = "AGENT"
@@ -1094,6 +1099,39 @@ def _normalize_options(raw):
     return out
 
 
+def _clean(value):
+    text = str(value or "").strip()
+    return "" if text.lower() in {"", "-", "—", "null", "none", "undefined"} else text
+
+
+def _selected_option_name(custom_json, options, kind):
+    """Name of the variant/flavour the client picked, from any key spelling.
+
+    Supports names (selected_variant / variant_name / variant / size) and the
+    1-based ids exposed by AgentProduct.to_dict() (variant_id / flavor_id).
+    """
+    if kind == "variant":
+        keys = ("selected_variant", "variant_name", "variant", "size")
+        id_keys = ("variant_id",)
+    else:
+        keys = ("selected_flavour", "selected_flavor", "flavor_name", "flavour_name", "flavour", "flavor")
+        id_keys = ("flavor_id", "flavour_id")
+    for key in keys:
+        name = _clean(custom_json.get(key))
+        if name:
+            return name
+    for key in id_keys:
+        raw_id = custom_json.get(key)
+        try:
+            idx = int(raw_id) - 1
+        except (TypeError, ValueError):
+            continue
+        clean_options = AgentProduct._options(options)
+        if 0 <= idx < len(clean_options):
+            return clean_options[idx]["name"]
+    return ""
+
+
 def _option_modifier(options, selected_name):
     """Look up the price_modifier for a selected variant/flavour name.
 
@@ -1105,8 +1143,8 @@ def _option_modifier(options, selected_name):
         return Decimal("0")
 
     selected_name = str(selected_name).strip()
-    for opt in (options or []):
-        if isinstance(opt, dict) and opt.get("name") == selected_name:
+    for opt in AgentProduct._options(options):
+        if opt.get("name", "").lower() == selected_name.lower():
             try:
                 return Decimal(str(opt.get("price_modifier", 0) or 0))
             except (InvalidOperation, TypeError, ValueError):
@@ -1586,19 +1624,18 @@ def agent_get_order(order_id):
 @role_required([ROLE_AGENT] + ROLE_OWNER_LIST)
 def agent_create_order():
     """
-    Same flow as the normal customer order (routes/order_routes.py:create_order),
-    reusing Order/OrderItem/Product/Address/Area/CurrencyRate, but:
-      - order_type is forced to "agent_order"
-      - created_by is forced to the logged-in agent's id
-      - discount is NOT taken from the client — it is computed automatically
-        from the agent's default_discount (Step 5).
-      - AgentProduct line items resolve their unit price server-side as:
-            agent_product.price
-          + price_modifier of the selected variant (if any)
-          + price_modifier of the selected flavour (if any)
-        The client only sends the *names* it picked (selected_variant /
-        selected_flavour inside custom_json) — never a price. This prevents
-        a tampered client payload from setting its own price.
+    Agent places an order for themselves.
+
+    Business rules (client correction list, Oct 2026):
+      * payment_method is always CREDIT — agents settle later from the
+        Agent Payments screen; whatever the client sends is ignored.
+      * the agent's default discount applies ONLY to normal bakery products,
+        never to agent-exclusive products (those already carry agent pricing).
+      * exclusive product price = base + variant modifier + flavour modifier,
+        always resolved server-side.
+      * normal product price = base + selected variant + selected flavour
+        modifiers (validated against that product).
+      * "ORDER NOTES" are stored with the order (delivery_address_json.order_notes).
     """
     agent = get_current_user()
     data = request.get_json(silent=True) or {}
@@ -1606,129 +1643,88 @@ def agent_create_order():
     address_id = data.get("address_id")
     items_data = data.get("items")
 
-    delivery_method = str(
-        data.get("delivery_method") or "DELIVERY"
-    ).strip().upper()
-
+    delivery_method = str(data.get("delivery_method") or "DELIVERY").strip().upper()
     if delivery_method not in {"PICKUP", "DELIVERY"}:
-        return jsonify({
-            "error": "Invalid delivery_method"
-        }), 400
+        return jsonify({"error": "Invalid delivery_method"}), 400
 
     if not isinstance(items_data, list) or not items_data:
-        return jsonify({
-            "error": "Order must contain at least one item"
-        }), 400
-
-    # ============================================================
-    # AGENT SELF ORDER
-    # The logged-in agent is ALWAYS the customer.
-    # Do NOT look up customer_id from the request.
-    # ============================================================
+        return jsonify({"error": "Order must contain at least one item"}), 400
 
     customer = agent
 
-    # ============================================================
-    # ADDRESS
-    # ============================================================
-
+    # ── Address / area ──
     address = None
     area = None
-
     if delivery_method == "DELIVERY":
-
         if not address_id:
-            return jsonify({
-                "error": "address_id is required for delivery orders"
-            }), 400
-
-        # Address must belong to the logged-in agent
-        address = Address.query.filter_by(
-            id=address_id,
-            user_id=agent.id
-        ).first()
-
+            return jsonify({"error": "Please choose a delivery address"}), 400
+        address = Address.query.filter_by(id=address_id, user_id=agent.id).first()
         if not address:
-            return jsonify({
-                "error": "Address not found for this agent"
-            }), 404
-
+            return jsonify({"error": "Address not found for this agent"}), 404
         if not address.area_id:
             return jsonify({
-                "error": (
-                    "This address does not have a delivery area. "
-                    "Please update the address and select an area."
-                )
+                "error": "This address does not have a delivery area. Please edit the address and select an area."
             }), 400
-
-        area = Area.query.filter_by(
-            id=address.area_id,
-            is_active=True
-        ).first()
-
+        area = Area.query.filter_by(id=address.area_id, is_active=True).first()
         if not area:
             return jsonify({
-                "error": (
-                    "Delivery is not available for the selected area. "
-                    "Please contact CakeNTake customer support."
-                ),
-                "delivery_available": False
+                "error": "Delivery is not available for the selected area. Please contact CakeNTake customer support.",
+                "delivery_available": False,
             }), 400
 
-    else:
-        # PICKUP
-        address = None
-        area = None
-
-    payment_method = str(data.get("payment_method") or "COD").strip().upper()
-    allowed_payment_methods = {"COD", "CARD", "STRIPE", "KNET", "UPI", "LINK"}
-    if payment_method not in allowed_payment_methods:
-        return jsonify({
-            "error": "Invalid payment method",
-            "allowed_payment_methods": sorted(allowed_payment_methods)
-        }), 400
+    # ── Schedule ──
+    raw_date = data.get("pickup_date") if delivery_method == "PICKUP" else data.get("delivery_date")
+    raw_slot = data.get("pickup_time_slot") if delivery_method == "PICKUP" else data.get("delivery_time_slot")
+    sched_date = None
+    if raw_date:
+        try:
+            sched_date = datetime.strptime(str(raw_date), "%Y-%m-%d").date()
+        except ValueError:
+            return jsonify({"error": "Invalid date. Use YYYY-MM-DD"}), 400
 
     allowed_currencies = {"INR", "KWD", "AED", "USD", "SAR", "SGD"}
     currency = str(data.get("currency") or "KWD").strip().upper()
     if currency not in allowed_currencies:
         currency = "KWD"
 
-    # Agent is the customer for AGENT_SELF orders
-    customer = agent
+    order_notes = ""
+    for key in ("order_notes", "agent_notes", "notes"):
+        if _clean(data.get(key)):
+            order_notes = str(data.get(key)).strip()
+            break
+    cake_message = ""
+    for key in ("greeting_message", "cake_message", "writing"):
+        if _clean(data.get(key)):
+            cake_message = str(data.get(key)).strip()
+            break
+
+    snapshot = {"customer_origin": "AGENT"}
+    if area:
+        snapshot["area"] = area.name
+    if order_notes:
+        snapshot["order_notes"] = order_notes
 
     order = Order(
-        user_id=customer.id if customer else None,
+        user_id=customer.id,
         created_by=agent.id,
         order_number=generate_order_number(),
         order_type="agent_order",
         order_source="AGENT",
-        customer_name=(
-            f"{customer.first_name} {customer.last_name}".strip()
-            if customer else None
-        ),
-        customer_phone=customer.phone_no if customer else None,
-        customer_email=customer.email if customer else None,
-        address_id=(address.id if address else None),
-        delivery_area_id=(area.id if area else None),
+        customer_name=f"{customer.first_name or ''} {customer.last_name or ''}".strip(),
+        customer_phone=customer.phone_no,
+        customer_email=customer.email,
+        address_id=address.id if address else None,
+        delivery_area_id=area.id if area else None,
+        delivery_address_json=snapshot,
         delivery_method=delivery_method,
-        delivery_date=(
-            datetime.strptime(data["delivery_date"], "%Y-%m-%d").date()
-            if delivery_method != "PICKUP" and data.get("delivery_date") else None
-        ),
-        delivery_time_slot=(
-            data.get("delivery_time_slot") if delivery_method != "PICKUP" else None
-        ),
-        pickup_date=(
-            datetime.strptime(data["pickup_date"], "%Y-%m-%d").date()
-            if delivery_method == "PICKUP" and data.get("pickup_date") else None
-        ),
-        pickup_time_slot=(
-            data.get("pickup_time_slot") if delivery_method == "PICKUP" else None
-        ),
-        greeting_message=data.get("greeting_message") or None,
+        delivery_date=sched_date if delivery_method == "DELIVERY" else None,
+        delivery_time_slot=raw_slot if delivery_method == "DELIVERY" else None,
+        pickup_date=sched_date if delivery_method == "PICKUP" else None,
+        pickup_time_slot=raw_slot if delivery_method == "PICKUP" else None,
+        greeting_message=cake_message or None,
         greeting_from=data.get("greeting_from") or None,
         greeting_to=data.get("greeting_to") or None,
-        payment_method=payment_method,
+        payment_method=AGENT_PAYMENT_METHOD,
         payment_status="PENDING",
         status="PENDING",
         subtotal=0,
@@ -1736,16 +1732,18 @@ def agent_create_order():
         discount=0,
         grand_total=0,
         total=0,
-        currency=currency
+        currency=currency,
     )
+
+    places = Decimal("0.001") if currency == "KWD" else Decimal("0.01")
 
     try:
         db.session.add(order)
         db.session.flush()
-
         order.order_number = str(order.id)
 
-        subtotal = Decimal("0.001")
+        subtotal = Decimal("0")
+        discountable = Decimal("0")   # normal bakery products only
 
         for index, item in enumerate(items_data):
             if not isinstance(item, dict):
@@ -1753,7 +1751,6 @@ def agent_create_order():
             product_id = item.get("product_id")
             if not product_id:
                 raise ValueError(f"product_id is required for item {index + 1}")
-
             try:
                 quantity = int(item.get("quantity", 1))
             except (TypeError, ValueError):
@@ -1761,94 +1758,90 @@ def agent_create_order():
             if quantity <= 0:
                 raise ValueError(f"Quantity must be greater than zero for product {product_id}")
 
-            custom_json = item.get("custom_json") or {}
-            product_type = str(custom_json.get("product_type") or "NORMAL").upper()
+            custom_json = dict(item.get("custom_json") or {})
+            product_type = str(custom_json.get("product_type") or item.get("product_type") or "NORMAL").upper()
 
             if product_type == "AGENT":
                 agent_product = AgentProduct.query.filter_by(
-                    id=product_id,
-                    agent_id=agent.id,
-                    is_active=True
+                    id=product_id, agent_id=agent.id, is_active=True
                 ).first()
                 if not agent_product:
                     raise ValueError(f"Exclusive product {product_id} not found")
 
-                # ── Base price + variant/flavour price modifiers ──
-                # Client only sends the *names* it picked; the actual price
-                # modifier is always looked up server-side from the stored
-                # AgentProduct.variants / .flavours, never trusted from the
-                # request payload.
+                variant_name = _selected_option_name(custom_json, agent_product.variants, "variant")
+                flavour_name = _selected_option_name(custom_json, agent_product.flavours, "flavour")
+                if AgentProduct._options(agent_product.variants) and not variant_name:
+                    raise ValueError(f"Choose a size / variant for {agent_product.name}")
+
                 unit_price = Decimal(str(agent_product.price or 0))
+                unit_price += _option_modifier(agent_product.variants, variant_name)
+                unit_price += _option_modifier(agent_product.flavours, flavour_name)
+                unit_price = max(unit_price, Decimal("0")).quantize(places)
 
-                selected_variant = custom_json.get("selected_variant")
-                selected_flavour = custom_json.get("selected_flavour")
-
-                unit_price += _option_modifier(agent_product.variants, selected_variant)
-                unit_price += _option_modifier(agent_product.flavours, selected_flavour)
-
-                if unit_price < 0:
-                    unit_price = Decimal("0")
-
-                item_total = unit_price * Decimal(quantity)
-                subtotal += item_total
-
-                order_item = OrderItem(
-                    order_id=order.id,
-                    product_id=None,
-                    agent_product_id=agent_product.id,
-                    quantity=quantity,
-                    price=unit_price,
-                    line_total=item_total,
-                    custom_json=custom_json
-                )
+                custom_json.update({
+                    "product_type": "AGENT",
+                    "selected_variant": variant_name or None,
+                    "selected_flavour": flavour_name or None,
+                    "variant_name": variant_name or None,
+                    "flavor_name": flavour_name or None,
+                })
+                line_total = (unit_price * quantity).quantize(places)
+                subtotal += line_total
+                db.session.add(OrderItem(
+                    order_id=order.id, product_id=None, agent_product_id=agent_product.id,
+                    quantity=quantity, price=unit_price, line_total=line_total,
+                    custom_json=custom_json,
+                ))
             else:
-                product = Product.query.filter_by(
-                    id=product_id,
-                    is_active=True
-                ).first()
-
+                product = Product.query.filter_by(id=product_id, is_active=True).first()
                 if not product:
                     raise ValueError(f"Product {product_id} not found")
                 rate = CurrencyRate.query.filter_by(currency_code=currency).first()
                 conversion_rate = Decimal(str(rate.rate if rate else 1))
 
-                unit_price = Decimal(str(product.price or 0)) * conversion_rate
-                item_total = unit_price * Decimal(quantity)
-                subtotal += item_total
+                unit_price = Decimal(str(product.price or 0))
+                variant = None
+                variant_id = custom_json.get("variant_id")
+                if variant_id:
+                    variant = Variant.query.filter_by(id=variant_id, product_id=product.id).first()
+                    if not variant:
+                        raise ValueError(f"Invalid size / variant for {product.name}")
+                    unit_price += Decimal(str(variant.price_modifier or 0))
+                    custom_json["variant_name"] = variant.name
+                flavor_id = custom_json.get("flavor_id") or custom_json.get("flavour_id")
+                if flavor_id:
+                    flavor = Flavor.query.get(flavor_id)
+                    if not flavor or (variant and flavor.variant_id != variant.id):
+                        raise ValueError(f"Invalid flavour for {product.name}")
+                    unit_price += Decimal(str(flavor.price_modifier or 0))
+                    custom_json["flavor_name"] = flavor.name
+                custom_json["product_type"] = "NORMAL"
 
-                order_item = OrderItem(
-                    order_id=order.id,
-                    product_id=product.id,
-                    agent_product_id=None,
-                    quantity=quantity,
-                    price=unit_price,
-                    line_total=item_total,
-                    custom_json=custom_json
-                )
+                unit_price = (unit_price * conversion_rate).quantize(places)
+                line_total = (unit_price * quantity).quantize(places)
+                subtotal += line_total
+                discountable += line_total
+                db.session.add(OrderItem(
+                    order_id=order.id, product_id=product.id, agent_product_id=None,
+                    quantity=quantity, price=unit_price, line_total=line_total,
+                    custom_json=custom_json,
+                ))
 
-            db.session.add(order_item)
-
-        # Minimum order and delivery charge are only applicable for delivery orders
         if area:
             minimum_order = Decimal(str(area.min_order_value or 0))
             if subtotal < minimum_order:
                 decimals = 3 if currency == "KWD" else 2
                 raise ValueError(
-                    f"Minimum order value for {area.name} is {currency} "
-                    f"{float(minimum_order):.{decimals}f}"
+                    f"Minimum order value for {area.name} is {currency} {float(minimum_order):.{decimals}f}"
                 )
-
             delivery_charge = Decimal(str(area.delivery_charge or 0))
         else:
-            delivery_charge = Decimal("0.00")
+            delivery_charge = Decimal("0")
 
-        # ── Step 5: automatic agent discount (overrides any client value) ──
         discount_percent = Decimal(str(agent.default_discount or 0))
-        discount_amount = (subtotal * discount_percent / Decimal("100")).quantize(Decimal("0.01"))
+        discount_amount = (discountable * discount_percent / Decimal("100")).quantize(places)
 
-        grand_total = subtotal + delivery_charge - discount_amount
-        if grand_total < 0:
-            grand_total = Decimal("0.00")
+        grand_total = max(subtotal + delivery_charge - discount_amount, Decimal("0"))
 
         order.subtotal = subtotal
         order.delivery_charge = delivery_charge
@@ -1859,25 +1852,59 @@ def agent_create_order():
         log_order_status(
             order, None, "PENDING", agent.id,
             f"Order created by agent {agent.first_name} {agent.last_name} "
-            f"(auto discount {discount_percent}%)"
+            f"(credit; {discount_percent}% discount on bakery items only)"
         )
-
         db.session.commit()
 
     except ValueError as error:
         db.session.rollback()
         return jsonify({"error": str(error)}), 400
-
     except Exception as error:
         db.session.rollback()
         print("Agent create order error:", str(error))
         return jsonify({"error": "Unable to create order"}), 500
 
     return jsonify({
-        "message": "Order created successfully",
-        "order": order.to_dict()
+        "message": f"Order #{order.order_number} placed successfully",
+        "order": order.to_dict(),
     }), 201
 
+
+# ─── Agent payments: pending credit orders the agent can settle ────────────
+
+@agent_bp.route("/agent/payments", methods=["GET"])
+@jwt_required()
+@role_required([ROLE_AGENT])
+def agent_payments():
+    """Orders the agent still has to pay for (credit), plus paid history."""
+    agent = get_current_user()
+    orders = (
+        Order.query.filter(
+            Order.created_by == agent.id,
+            Order.order_type == "agent_order",
+            Order.status.notin_(["CANCELLED", "REJECTED"]),
+        )
+        .order_by(Order.created_at.desc())
+        .all()
+    )
+    pending, paid = [], []
+    for order in orders:
+        (paid if str(order.payment_status or "").upper() == "PAID" else pending).append(order.to_dict())
+
+    def _sum(rows):
+        return round(sum(float(r.get("grand_total") or r.get("total") or 0) for r in rows), 3)
+
+    return jsonify({
+        "pending": pending,
+        "paid": paid,
+        "summary": {
+            "pending_count": len(pending),
+            "pending_amount": _sum(pending),
+            "paid_count": len(paid),
+            "paid_amount": _sum(paid),
+            "currency": "KWD",
+        },
+    }), 200
 
 
 @agent_bp.route("/agent/orders/<int:order_id>/cancel", methods=["POST"])

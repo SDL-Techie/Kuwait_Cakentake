@@ -1999,3 +1999,41 @@
   font-size: 12px;
   white-space: nowrap;
 }
+/* ── Direct driver dispatch + pickup completion (client corrections) ── */
+.op-direct-driver-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin: 6px 0 10px;
+}
+.op-pickup-complete-box {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 12px;
+  border-radius: 14px;
+  background: #f7faf2;
+  border: 1px solid #d8e4c7;
+}
+.op-pickup-pay-label {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #2f4626;
+}
+.op-pickup-pay-label select {
+  height: 36px;
+  padding: 0 10px;
+  border-radius: 10px;
+  border: 1px solid #d8e4c7;
+  background: #fff;
+  font-weight: 600;
+  color: #22361d;
+}
+.order-inspector-drawer-body .ov-products {
+  margin: 12px 0;
+}

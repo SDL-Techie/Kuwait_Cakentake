@@ -1099,3 +1099,132 @@
   color: #dc2626;
   font-weight: 600;
 }
+/* ==========================================================================
+   Client corrections — simple 4-step flow, credit payment note,
+   pistachio accents and subtle motion.
+   ========================================================================== */
+.ao-steps {
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 0;
+  margin: 14px 0 0;
+}
+.ao-step {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px 6px 6px;
+  border-radius: 999px;
+  background: #f7faf2;
+  border: 1px solid #d8e4c7;
+  color: #526a45;
+  font-size: 12.5px;
+  font-weight: 600;
+  transition: background 0.25s, color 0.25s, transform 0.25s;
+}
+.ao-step-dot {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: #fff;
+  border: 1px solid #b9d09b;
+  font-size: 11px;
+  font-weight: 800;
+}
+.ao-step.is-done {
+  background: #edf3e4;
+  color: #2f4626;
+}
+.ao-step.is-done .ao-step-dot {
+  background: #6f8e57;
+  border-color: #6f8e57;
+  color: #fff;
+}
+.ao-step.is-current {
+  background: #2f4626;
+  border-color: #2f4626;
+  color: #fff;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(47, 70, 38, 0.22);
+}
+.ao-step.is-current .ao-step-dot {
+  background: #8faf6e;
+  border-color: #8faf6e;
+  color: #fff;
+}
+
+.ao-credit-note {
+  margin-top: 12px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: #edf3e4;
+  border: 1px dashed #8faf6e;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 12.5px;
+  color: #3f5c33;
+}
+.ao-credit-note strong {
+  color: #2f4626;
+  font-size: 13px;
+}
+
+.ao-card {
+  animation: aoFadeUp 0.35s ease both;
+}
+.ao-product-card {
+  transition: transform 0.22s ease, box-shadow 0.22s ease;
+}
+.ao-product-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 14px 28px rgba(47, 70, 38, 0.12);
+}
+.ao-btn-primary {
+  background: #2f4626;
+  border-color: #2f4626;
+}
+.ao-btn-primary:hover:not(:disabled) {
+  background: #526a45;
+}
+.ao-pagination-page.active {
+  background: #2f4626;
+  border-color: #2f4626;
+}
+.ao-address-card-active {
+  border-color: #6f8e57 !important;
+  box-shadow: 0 0 0 3px rgba(143, 175, 110, 0.25);
+}
+.ao-address-card-actions .ao-icon-btn {
+  min-width: 30px;
+  min-height: 30px;
+}
+@keyframes aoFadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ao-card,
+  .ao-product-card,
+  .ao-step {
+    animation: none;
+    transition: none;
+  }
+}
+.ao-address-card-actions .ao-icon-btn {
+  width: auto;
+  padding: 0 10px;
+  font-size: 12px;
+  font-weight: 700;
+  border-radius: 8px;
+}

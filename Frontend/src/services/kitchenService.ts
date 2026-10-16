@@ -183,10 +183,30 @@ export const markOrderPaymentPaid = async (
  *  AND marks a pickup order DELIVERED, in one call. */
 export const completePickupOrder = async (
   orderId: number,
-  method: 'COD' | 'UPI'
+  method: string
 ): Promise<any> => {
   const res = await api.post(`/orders/${orderId}/pickup-complete`, {
     payment_method: method,
   });
   return res.data.order ?? res.data;
+};
+
+/* ============================================================
+   Kitchen board (delivery-date based)
+   ------------------------------------------------------------
+   GET /kitchen/orders/{pending|processing|completed}
+     ?date=YYYY-MM-DD   orders scheduled for that delivery / pickup date
+     ?mine=1            only orders prepared by the logged-in staff member
+============================================================ */
+export type KitchenBoardTab = 'pending' | 'processing' | 'completed';
+
+export const getKitchenBoard = async (
+  tab: KitchenBoardTab,
+  opts: { date?: string | null; mine?: boolean } = {}
+): Promise<KitchenOrder[]> => {
+  const params: Record<string, string> = {};
+  if (opts.date) params.date = opts.date;
+  if (opts.mine) params.mine = '1';
+  const res = await api.get(`/kitchen/orders/${tab}`, { params });
+  return res.data.orders ?? [];
 };
