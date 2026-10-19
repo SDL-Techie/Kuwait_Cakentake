@@ -1,6 +1,6 @@
 import os
 from flask import Blueprint, request, jsonify
-# from streamlit import user
+from streamlit import user
 from werkzeug.security import generate_password_hash
 from extensions import db
 from models.user import User
@@ -130,19 +130,9 @@ def login():
             "error": "Email/phone and password are required"
         }), 400
 
-    # A phone number can be stored as "51234567", "96551234567" or
-    # "+96551234567"; accept any spelling at login.
-    phone_candidates = [email_or_phone]
-    if "@" not in email_or_phone:
-        try:
-            from utils.phone import normalize_phone, phone_variants
-            phone_candidates += phone_variants(normalize_phone(email_or_phone))
-        except Exception:
-            pass
-
     user = User.query.filter(
         (db.func.lower(User.email) == email_or_phone.lower()) |
-        (User.phone_no.in_(list(dict.fromkeys(phone_candidates))))
+        (User.phone_no == email_or_phone)
     ).first()
 
     env_email = str(

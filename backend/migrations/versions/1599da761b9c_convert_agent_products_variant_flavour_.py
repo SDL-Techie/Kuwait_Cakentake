@@ -16,31 +16,12 @@ branch_labels = None
 depends_on = None
 
 
-
-
-def _columns(table):
-    """Columns that currently exist on `table` (empty set if the table is missing)."""
-    insp = sa.inspect(op.get_bind())
-    if table not in insp.get_table_names():
-        return set()
-    return {c["name"] for c in insp.get_columns(table)}
-
-
 def upgrade():
-    # Idempotent: a fresh database built from the initial schema already has
-    # `variants` / `flavours` and never had `variant` / `flavour`.
-    cols = _columns('agent_products')
-    if not cols:
-        return
     with op.batch_alter_table('agent_products', schema=None) as batch_op:
-        if 'variants' not in cols:
-            batch_op.add_column(sa.Column('variants', sa.JSON(), nullable=True))
-        if 'flavours' not in cols:
-            batch_op.add_column(sa.Column('flavours', sa.JSON(), nullable=True))
-        if 'variant' in cols:
-            batch_op.drop_column('variant')
-        if 'flavour' in cols:
-            batch_op.drop_column('flavour')
+        batch_op.add_column(sa.Column('variants', sa.JSON(), nullable=True))
+        batch_op.add_column(sa.Column('flavours', sa.JSON(), nullable=True))
+        batch_op.drop_column('variant')
+        batch_op.drop_column('flavour')
 
 
 def downgrade():

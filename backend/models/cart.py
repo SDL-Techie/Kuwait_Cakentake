@@ -18,10 +18,16 @@ class Cart(db.Model):
 
     def to_dict(self, currency="INR"):
         items = [item.to_dict(currency) for item in self.items]
+        precision = 3 if str(currency).upper() == "KWD" else 2
+        subtotal = round(sum(i["subtotal"] for i in items), precision)
         return {
             "id": self.id,
+            "cart_id": self.id,
+            "subtotal": subtotal,
+            "discount": 0,
+            "promotion": None,
             "user_id": self.user_id,
             "currency": currency,
             "items": items,
-            "total": round(sum(i["subtotal"] for i in items), 2),
+            "total": subtotal,
         }

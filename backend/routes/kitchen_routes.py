@@ -12,43 +12,6 @@ from services.order_history_service import log_order_status
 kitchen_bp = Blueprint("kitchen", __name__)
 
 
-# ─── Kitchen board filters ─────────────────────────────────────────────────
-# Client request: the kitchen screen must work on the DELIVERY date (pickup
-# date for pickup orders), and counts must match what is listed.
-#   ?date=YYYY-MM-DD   only orders scheduled for that day
-#   ?mine=1            only orders this kitchen staff member prepared
-
-def _scheduled_date_expr():
-    return db.func.coalesce(Order.delivery_date, Order.pickup_date)
-
-
-def _apply_board_filters(query):
-    raw_date = (request.args.get("date") or "").strip()
-    if raw_date:
-        try:
-            day = datetime.strptime(raw_date, "%Y-%m-%d").date()
-        except ValueError:
-            day = None
-        if day:
-            sched = _scheduled_date_expr()
-            query = query.filter(db.or_(
-                sched == day,
-                db.and_(sched.is_(None), db.func.date(Order.created_at) == day),
-            ))
-    if str(request.args.get("mine") or "").lower() in {"1", "true", "yes"}:
-        user_id = int(get_jwt_identity())
-        query = query.filter(db.or_(
-            Order.preparation_started_by == user_id,
-            Order.kitchen_staff_id == user_id,
-        ))
-    return query
-
-
-def _board_order():
-    sched = _scheduled_date_expr()
-    return (sched.asc().nullslast(), Order.created_at.asc())
-
-
 # @kitchen_bp.route("/kitchen/orders/pending", methods=["GET"])
 # @jwt_required()
 # @role_required(["ADMIN", "SHOP_MANAGER", "KITCHEN_STAFF"])
@@ -61,9 +24,9 @@ def _board_order():
 @jwt_required()
 @role_required(["ADMIN", "SHOP_MANAGER", "KITCHEN_STAFF"])
 def kitchen_pending():
-    orders = _apply_board_filters(Order.query.filter(
+    orders = Order.query.filter(
         Order.status == "ASSIGNED_TO_KITCHEN"
-    )).order_by(*_board_order()).all()
+    ).order_by(Order.created_at).all()
 
     return jsonify({"orders": [o.to_dict() for o in orders]}), 200
         
@@ -72,9 +35,7 @@ def kitchen_pending():
 @role_required(["ADMIN", "SHOP_MANAGER", "KITCHEN_STAFF"])
 def kitchen_processing():
     #orders = Order.query.filter_by(status="PROCESSING").order_by(Order.created_at).all()
-    orders = _apply_board_filters(
-        Order.query.filter(Order.status == "PREPARING")
-    ).order_by(*_board_order()).all()
+    orders = Order.query.filter_by(status="PREPARING").order_by(Order.created_at).all()
     return jsonify({"orders": [o.to_dict() for o in orders]}), 200
 
 
@@ -83,10 +44,9 @@ def kitchen_processing():
 @role_required(["ADMIN", "SHOP_MANAGER", "KITCHEN_STAFF"])
 def kitchen_completed():
     # orders = Order.query.filter_by(status="READY").order_by(Order.created_at.desc()).all()
-    orders = _apply_board_filters(Order.query.filter(
-        Order.completed_by_kitchen_at.isnot(None),
-        Order.status.notin_(["CANCELLED", "REJECTED"]),
-    )).order_by(Order.completed_by_kitchen_at.desc()).all()
+    orders = Order.query.filter(
+    Order.completed_by_kitchen_at.isnot(None)
+    ).order_by(Order.completed_by_kitchen_at.desc()).all()
     return jsonify({"orders": [o.to_dict() for o in orders]}), 200
 
 @kitchen_bp.route("/kitchen/<int:order_id>/start-processing", methods=["POST"])

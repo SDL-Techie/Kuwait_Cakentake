@@ -8,7 +8,6 @@ from models.address import Address
 from models.order import Order
 from models.loyalty import LoyaltyLedger
 from middleware.role import role_required
-from utils.phone import normalize_phone, phone_variants, PhoneError
 
 customers_bp = Blueprint("customers", __name__)
 
@@ -158,29 +157,19 @@ def get_customer(customer_id):
 @jwt_required()
 @role_required(["ADMIN", "SHOP_MANAGER", "SALES_AGENT"])
 def create_customer():
-    data = request.get_json(silent=True) or {}
-    first_name = str(data.get("first_name") or "").strip()
-    if not first_name:
-        return jsonify({"error": "First name is required"}), 400
-    try:
-        phone = normalize_phone(data.get("phone_no"), field="Phone number")
-    except PhoneError as exc:
-        return jsonify({"error": str(exc), "field": "phone_no"}), 400
-    email = str(data.get("email") or "").strip().lower() or None
-    # Only compare emails when one was given (NULL used to match every
-    # customer without an email and block creation).
-    if email and User.query.filter(func.lower(User.email) == email).first():
+    data = request.get_json()
+    if User.query.filter_by(email=data.get("email")).first():
         return jsonify({"error": "Email already exists"}), 400
-    if User.query.filter(User.phone_no.in_(phone_variants(phone))).first():
+    if User.query.filter_by(phone_no=data.get("phone_no")).first():
         return jsonify({"error": "Phone already exists"}), 400
     user = User(
-        first_name=first_name,
-        last_name=str(data.get("last_name") or "").strip() or "-",
-        phone_no=phone,
-        email=email,
+        first_name=data["first_name"],
+        last_name=data["last_name"],
+        phone_no=data["phone_no"],
+        email=data["email"],
         role="USER"
     )
-    user.set_password(data.get("password") or phone)
+    user.set_password(data.get("password", data["phone_no"]))
     db.session.add(user)
     db.session.commit()
     return jsonify({"message": "Customer created", "customer": user.to_dict()}), 201
@@ -191,19 +180,7 @@ def create_customer():
 @role_required(["ADMIN", "SHOP_MANAGER", "SALES_AGENT"])
 def update_customer(customer_id):
     customer = User.query.filter_by(id=customer_id, role="USER").first_or_404()
-    data = request.get_json(silent=True) or {}
-    if "phone_no" in data:
-        try:
-            data["phone_no"] = normalize_phone(data.get("phone_no"), field="Phone number")
-        except PhoneError as exc:
-            return jsonify({"error": str(exc), "field": "phone_no"}), 400
-        clash = User.query.filter(
-            User.phone_no.in_(phone_variants(data["phone_no"])), User.id != customer.id
-        ).first()
-        if clash:
-            return jsonify({"error": "Phone already exists"}), 400
-    if "email" in data:
-        data["email"] = str(data.get("email") or "").strip().lower() or None
+    data = request.get_json()
     for field in ["first_name", "last_name", "phone_no", "email"]:
         if field in data:
             setattr(customer, field, data[field])

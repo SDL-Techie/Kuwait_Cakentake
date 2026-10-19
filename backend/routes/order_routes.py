@@ -27,7 +27,6 @@ from services.push_notification_service import send_transactional_push
 from middleware.role import role_required
 from services.order_history_service import log_order_status
 from services.tap_service import create_knet_charge, create_tap_charge
-from utils.phone import normalize_phone, phone_variants, PhoneError
  
  
 order_bp = Blueprint("order", __name__)
@@ -62,6 +61,34 @@ def normalize_custom_cakes(data):
     return cakes
  
  
+def normalize_staff_customer_phone(value):
+    """Validate and canonicalize the six supported countries' mobile numbers.
+
+    Store in E.164 form. An explicit calling code prevents Indian national
+    numbers from being accidentally treated as Kuwaiti numbers.
+    """
+    import re
+    raw = str(value or "").strip()
+    if raw.startswith("00"):
+        raw = "+" + raw[2:]
+    if not raw.startswith("+") or not re.fullmatch(r"[+][0-9\s().-]+", raw):
+        raise ValueError("Phone must include a supported country code (e.g. +919876543210)")
+    digits = re.sub(r"\D", "", raw)
+    lengths = {"965": 8, "971": 9, "966": 9, "973": 8, "974": 8, "91": 10}
+    for prefix in sorted(lengths, key=len, reverse=True):
+        if not digits.startswith(prefix):
+            continue
+        national = digits[len(prefix):]
+        if len(national) != lengths[prefix]:
+            raise ValueError(f"Country code +{prefix} requires {lengths[prefix]} local digits")
+        if prefix == "91" and national[0] not in "6789":
+            raise ValueError("Indian mobile numbers must start with 6, 7, 8 or 9")
+        # UAE and Saudi national forms sometimes start with a trunk zero;
+        # staff must enter the number without that zero after the code.
+        return "+" + prefix + national
+    raise ValueError("Supported country codes: +965, +971, +966, +91, +973, +974")
+
+
 def generate_order_number():
     return f"CT-{datetime.now().strftime('%Y%m%d')}-{random.randint(1000,9999)}"
  
@@ -82,54 +109,11 @@ _ADDRESS_ALIASES = {
     "house_no":       ["house_no", "houseNo", "house_number", "house",
                        "house_flat_no", "houseFlatNo"],
     "landmark":       ["landmark"],
-    # NOTE: the generic "notes" key is deliberately NOT an alias any more.
-    # Clients send the cake writing / order notes as "notes", which used to be
-    # saved into the address "Delivery Notes" field (client report 13/10/2026).
     "delivery_notes": ["delivery_notes", "deliveryNotes", "address_notes",
                        "addressNotes"],
     "country":        ["country", "country_name"],
 }
-_ADDRESS_SKIP_KEYS = {
-    "items", "custom_cake", "custom_cakes", "order_addons", "cart",
-    "greeting_message", "greeting_from", "greeting_to",
-    "notes", "order_notes", "agent_notes", "cake_message", "message",
-}
-
-# Pickup orders the shop can hand over. READY / ASSIGNED_TO_AGENT cover older
-# pickup orders that were wrongly routed to dispatch before this fix.
-PICKUP_COLLECTABLE = {"PICKUP_READY", "READY", "ASSIGNED_TO_AGENT"}
-
-# Payment methods accepted anywhere an order's payment is recorded.
-# CREDIT = agent orders that are settled later from the agent payment screen.
-ALLOWED_PAYMENT_METHODS = {"COD", "CARD", "STRIPE", "KNET", "UPI", "LINK", "CREDIT"}
-
-
-def extract_order_notes(data):
-    """Free-text order notes ("ORDER NOTES") from any client spelling."""
-    for key in ("order_notes", "orderNotes", "agent_notes", "notes"):
-        value = data.get(key) if isinstance(data, dict) else None
-        if value is not None and _addr_clean(value):
-            return str(value).strip()
-    return ""
-
-
-def extract_cake_message(data):
-    """Order-level writing on the cake when a client sends it outside greeting_message."""
-    for key in ("greeting_message", "cake_message", "cakeMessage", "message_on_cake", "writing"):
-        value = data.get(key) if isinstance(data, dict) else None
-        if value is not None and _addr_clean(value):
-            return str(value).strip()
-    return ""
-
-
-def with_order_notes(snapshot, notes):
-    """Store order notes inside delivery_address_json (no schema change needed)."""
-    if not notes:
-        return snapshot
-    snap = dict(snapshot) if isinstance(snapshot, dict) else {}
-    snap["order_notes"] = notes
-    return snap
-
+_ADDRESS_SKIP_KEYS = {"items", "custom_cake", "order_addons"}
  
  
 def _addr_clean(value):
@@ -395,8 +379,7 @@ def create_order():
             return jsonify({"error": "pickup_time_slot is required for pickup orders"}), 400
  
     payment_method = str(data.get("payment_method") or "COD").strip().upper()
-    # Customers cannot choose CREDIT (that is reserved for agent orders).
-    allowed_payment_methods = ALLOWED_PAYMENT_METHODS - {"CREDIT"}
+    allowed_payment_methods = {"COD", "CARD", "STRIPE", "KNET", "UPI", "LINK"}
     if payment_method not in allowed_payment_methods:
         return jsonify({
             "error": "Invalid payment method",
@@ -441,10 +424,9 @@ def create_order():
         ),
         pickup_time_slot=data.get("pickup_time_slot") if delivery_method == "PICKUP" else None,
  
-        greeting_message=extract_cake_message(data) or None,
+        greeting_message=data.get("greeting_message") or None,
         greeting_from=data.get("greeting_from") or None,
         greeting_to=data.get("greeting_to") or None,
-        delivery_address_json=with_order_notes(None, extract_order_notes(data)) or None,
         payment_method=payment_method,
         payment_status="PENDING",
         status="PENDING",
@@ -610,7 +592,7 @@ def create_order():
         order.grand_total = grand_total
         order.total = grand_total
         order.currency = currency
-        order.loyalty_coupon = data.get("loyalty_coupon")
+        order.loyalty_coupon = data.get("coupon_code") or data.get("promo_code") or data.get("loyalty_coupon")
  
         if use_loyalty:
             config = get_loyalty_config()
@@ -876,7 +858,7 @@ def accept_order(id):
     if payment_method == "CASH":
         payment_method = "COD"
  
-    allowed_methods = ALLOWED_PAYMENT_METHODS
+    allowed_methods = {"COD", "UPI", "CARD", "STRIPE", "KNET", "LINK"}
     if payment_method not in allowed_methods:
         return jsonify({
             "error": "Invalid payment method",
@@ -1042,59 +1024,21 @@ def mark_ready(order_id):
     if current_user.role == "KITCHEN_STAFF" and order.kitchen_staff_id != current_user.id:
         return jsonify({"error": "Order not assigned to you"}), 403
  
-    # Admin / shop manager may also skip preparation (ASSIGNED_TO_KITCHEN -> ready).
-    allowed_from = {"PREPARING"}
-    if current_user.role in ("ADMIN", "SHOP_MANAGER"):
-        allowed_from.add("ASSIGNED_TO_KITCHEN")
-    if order.status not in allowed_from:
+    if order.status != "PREPARING":
         return jsonify({"error": "Order must be PREPARING before it can be marked READY"}), 400
  
     old_status = order.status
  
     order.completed_by_kitchen_at = utc_now()
-    if not order.preparation_started_by:
-        order.preparation_started_by = current_user.id
-        order.preparation_started_at = order.preparation_started_at or utc_now()
-
-    # PICKUP orders never go to a delivery agent: they wait at the shop until
-    # the customer collects them (kitchen, owner or shop manager completes).
-    if str(order.delivery_method or "DELIVERY").upper() == "PICKUP":
-        order.status = "PICKUP_READY"
-        log_order_status(
-            order, old_status, "PICKUP_READY", current_user.id,
-            "Pickup order ready — waiting for customer collection",
-        )
-        db.session.commit()
-        notify_customer(
-            order,
-            "Ready for pickup",
-            f"Your order {order.order_number} is ready for pickup.",
-            "PICKUP_READY",
-        )
-        return jsonify({
-            "message": "Pickup order is ready for customer collection",
-            "order": order.to_dict(),
-        }), 200
  
 # Find available delivery agent
-    # Prefer an ONLINE delivery agent, then any active one.
-    delivery_agent = (
-        User.query.filter_by(role="DELIVERY_AGENT", availability_status="ONLINE", is_active=True)
-        .order_by(User.id.asc()).first()
-        or User.query.filter_by(role="DELIVERY_AGENT", is_active=True)
-        .order_by(User.id.asc()).first()
-    )
+    delivery_agent = User.query.filter_by(
+    role="DELIVERY_AGENT"
+    ).order_by(User.id.asc()).first()
     if not delivery_agent:
-        # No delivery agent: keep the order READY so the owner / shop manager
-        # can assign a driver directly from Order Management.
-        order.status = "READY"
-        log_order_status(
-            order, old_status, "READY", current_user.id,
-            "Order ready — no delivery agent available for auto-assignment",
-        )
-        db.session.commit()
-        notify_admins(f"Order {order.order_number} is READY for dispatch", order)
-        return jsonify({"message": "Order marked READY", "order": order.to_dict()}), 200
+      return jsonify({
+        "error": "No delivery agent available"
+      }), 400
  
     order.delivery_agent_id = delivery_agent.id
     order.delivery_agent_assigned_by = current_user.id
@@ -1236,22 +1180,16 @@ def assign_driver(order_id):
     order = Order.query.get_or_404(order_id)
     current_user = get_current_user()
  
-    # Owner / shop manager can dispatch a driver directly once the cake is
-    # ready (client report: shop manager only had "Cancel order"), and can
-    # re-assign while the driver has not accepted yet.
     role = str(current_user.role or "").upper()
-    if str(order.delivery_method or "DELIVERY").upper() == "PICKUP":
-        return jsonify({"error": "Pickup orders are collected at the shop — no driver needed"}), 400
-    if role in ("ADMIN", "SHOP_MANAGER"):
-        allowed_from = {"READY", "ASSIGNED_TO_AGENT", "ASSIGNED_TO_DRIVER"}
-    else:
-        allowed_from = {"ASSIGNED_TO_AGENT", "ASSIGNED_TO_DRIVER"}
-    if order.status not in allowed_from:
+    allowed = {"ASSIGNED_TO_AGENT"}
+    if role in {"ADMIN", "SHOP_MANAGER"}:
+        allowed.add("READY")
+    if order.status not in allowed or str(order.delivery_method or "DELIVERY").upper() == "PICKUP":
         return jsonify({
-            "error": "A driver can be assigned once the order is ready for dispatch"
+            "error": "Only ready delivery orders or orders assigned to a delivery agent can receive a driver"
         }), 400
  
-    data = request.get_json(silent=True) or {}
+    data = request.get_json()
     driver_id = data.get("driver_id")
  
     if not driver_id:
@@ -1267,7 +1205,7 @@ def assign_driver(order_id):
  
     old_status = order.status
  
-    # Record which delivery agent handled the order (only when one did it).
+    # Preserve the actual delivery agent; a Shop Manager/Owner is not a delivery agent.
     if role == "DELIVERY_AGENT":
         order.delivery_agent_id = current_user.id
  
@@ -1590,199 +1528,244 @@ def driver_reject(order_id):
     }), 200
  
  
-# ─── 7. DRIVER COMPLETES THE DELIVERY ────────────────────────────────────────
-#
-# Client report (13/10/2026): after "Accept Order" the app asked for a proof
-# photo, and even after sending one the order stayed "On the way" with no
-# "Mark Delivered". Causes:
-#   * the proof endpoint only read JSON, so a multipart photo upload failed;
-#   * "Mark Delivered" (confirm-delivery) only worked from DELIVERY_SUBMITTED,
-#     a status the proof step never produced.
-# Now both endpoints accept JSON or multipart, the photo is optional, and a
-# driver can finish their own order from DRIVER_ACCEPTED / OUT_FOR_DELIVERY /
-# DELIVERY_SUBMITTED in one step.
-
-DRIVER_FINISHABLE = {"DRIVER_ACCEPTED", "OUT_FOR_DELIVERY", "DELIVERY_SUBMITTED"}
-
-
-def _delivery_payload():
-    """Return (fields, uploaded_file) from a JSON or multipart request."""
-    data = request.get_json(silent=True)
-    if isinstance(data, dict):
-        return data, None
-    fields = request.form.to_dict() if request.form else {}
-    uploaded = None
-    for key in ("delivery_photo", "photo", "image", "file", "proof"):
-        candidate = request.files.get(key)
-        if candidate and candidate.filename:
-            uploaded = candidate
-            break
-    return fields, uploaded
-
-
-def _truthy(value):
-    return value is True or str(value).strip().lower() in {"1", "true", "yes", "on"}
-
-
-def _store_proof(order, fields, uploaded):
-    """Save photo/notes/confirmation details sent with the delivery."""
-    photo = _addr_clean(fields.get("delivery_photo") or fields.get("photo") or fields.get("image_url"))
-    if uploaded is not None:
-        try:
-            import cloudinary.uploader
-            result = cloudinary.uploader.upload(
-                uploaded, folder="cakentake/delivery-proof", resource_type="image",
-            )
-            photo = result.get("secure_url") or photo
-        except Exception as exc:
-            print("Delivery proof upload error:", exc)
-    if photo:
-        order.delivery_photo = photo
-    notes = _addr_clean(fields.get("delivery_notes") or fields.get("notes"))
-    if notes:
-        order.delivery_notes = notes
-    name = _addr_clean(fields.get("customer_confirmation_name") or fields.get("customer_name"))
-    phone = _addr_clean(fields.get("customer_confirmation_phone") or fields.get("customer_phone"))
-    if name:
-        order.customer_confirmation_name = name
-    if phone:
-        order.customer_confirmation_phone = phone
-
-
-def _finalize_delivery(order, current_user, fields, note):
-    """Mark an order DELIVERED with every side effect in one place."""
+# ─── 7. DRIVER SUBMITS DELIVERY PROOF (now finalizes delivery directly) ─────
+ 
+@order_bp.route("/orders/<int:order_id>/delivery-proof", methods=["POST"])
+@jwt_required()
+@role_required(["DRIVER"])
+def upload_delivery_proof(order_id):
+ 
+    order        = Order.query.get_or_404(order_id)
+    current_user = get_current_user()
+ 
+    if order.driver_id != current_user.id:
+        return jsonify({"error": "Order not assigned to you"}), 403
+ 
+    if order.status != "OUT_FOR_DELIVERY":
+        return jsonify({"error": "Order is not out for delivery"}), 400
+ 
+    data = request.get_json() or {}
+ 
+    order.delivery_photo               = data.get("delivery_photo")
+    order.delivery_notes               = data.get("delivery_notes") or data.get("notes")
+    order.customer_confirmation_name   = (
+        data.get("customer_confirmation_name") or data.get("customer_name")
+    )
+    order.customer_confirmation_phone  = (
+        data.get("customer_confirmation_phone") or data.get("customer_phone")
+    )
+ 
     old_status = order.status
-    now = utc_now()
-
-    if not order.driver_submitted_at:
-        order.driver_submitted_at = now
-    order.status = "DELIVERED"
-    order.delivered_at = now
+    now        = utc_now()
+ 
+    # Driver's proof upload IS the delivery confirmation now — no separate
+    # owner/shop-manager approval step.
+    order.driver_submitted_at   = now
+    order.status                = "DELIVERED"
+    order.delivered_at          = now
     order.delivery_confirmed_by = current_user.id
     order.delivery_confirmed_at = now
 
-    # COD is marked paid only when the driver confirms the cash was collected.
-    if str(order.payment_method or "").upper() in ("COD", "CASH"):
-        if _truthy(fields.get("cash_collected")) and order.payment_status != "PAID":
+    # Mark COD as paid only when cash collection is confirmed.
+    payment_method = str(order.payment_method or "").strip().upper()
+
+    if payment_method in ("COD", "CASH"):
+        cash_collected = data.get("cash_collected") is True
+
+        if cash_collected and order.payment_status != "PAID":
             order.payment_status = "PAID"
-
-    log_order_status(order, old_status, "DELIVERED", current_user.id, note)
-
-    if order.driver_id:
-        driver = User.query.get(order.driver_id)
-        if driver:
-            driver.availability_status = "ONLINE"
-
+ 
+    log_order_status(
+        order, old_status, "DELIVERED",
+        current_user.id, "Driver submitted delivery proof — order marked delivered"
+    )
+ 
+    # Driver is free again.
+    current_user.availability_status = "ONLINE"
+ 
+    # Driver settlement becomes eligible immediately.
     from models.delivery_charge import DeliveryCharge
-    if order.driver_id and not DeliveryCharge.query.filter_by(order_id=order.id).first():
+    existing_charge = DeliveryCharge.query.filter_by(order_id=order.id).first()
+    if not existing_charge and order.driver_id:
         db.session.add(DeliveryCharge(
             order_id=order.id,
             driver_id=order.driver_id,
             charge_amount=order.delivery_charge or 0,
             driver_share=0,
             is_paid=False,
-            notes="Delivered; waiting for settlement amount",
+            notes="Delivered by driver; waiting for settlement amount",
         ))
-
+ 
+    # Loyalty points (same logic previously only run in confirm_delivery)
     try:
         config = get_loyalty_config()
         subtotal = float(order.subtotal or 0)
+ 
         if subtotal >= float(config.min_order_amount):
             earned_points = (
                 int(subtotal // float(config.min_order_amount))
                 * config.points_per_min_order
             )
             existing = LoyaltyLedger.query.filter_by(
-                customer_id=order.user_id, order_id=order.id, transaction_type="EARN"
+                customer_id=order.user_id,
+                order_id=order.id,
+                transaction_type="EARN"
             ).first()
             if not existing and earned_points > 0:
                 add_loyalty_points(
                     customer_id=order.user_id,
                     points=earned_points,
                     order_id=order.id,
-                    description=f"Earned points for delivered Order {order.order_number}",
+                    description=f"Earned points for delivered Order {order.order_number}"
                 )
-    except Exception as exc:
-        print("Loyalty Error:", exc)
-
+    except Exception as e:
+        print("Loyalty Error:", e)
+ 
     db.session.commit()
-
+ 
     notify_customer(
         order,
         "Order delivered",
         f"Your order {order.order_number} has been delivered successfully. Thank you for ordering with CakeNTake!",
         "ORDER_DELIVERED",
     )
-    reviewer_ids = [
+ 
+    settlement_reviewer_ids = [
         u.id for u in User.query.filter(
-            User.role.in_(["ADMIN", "SHOP_MANAGER"]), User.is_active.is_(True),
+            User.role.in_(["ADMIN", "SHOP_MANAGER"]),
+            User.is_active.is_(True),
         ).all()
     ]
     notify_staff(
-        order, reviewer_ids, "Order delivered",
-        f"Order {order.order_number} was delivered and is ready for settlement review.",
+        order,
+        settlement_reviewer_ids,
+        "Order delivered",
+        f"Order {order.order_number} was delivered by the driver and is ready for settlement review.",
         "ORDER_READY_FOR_SETTLEMENT",
     )
+ 
     notify_admins(
-        f"Order {order.order_number} DELIVERED — {current_user.first_name} {current_user.last_name}",
+        f"Order {order.order_number} DELIVERED by driver "
+        f"{current_user.first_name} {current_user.last_name}",
         order,
     )
-
-
-@order_bp.route("/orders/<int:order_id>/delivery-proof", methods=["POST"])
-@jwt_required()
-@role_required(["DRIVER"])
-def upload_delivery_proof(order_id):
-    """Driver submits (optional) proof and the order is marked delivered."""
-    order = Order.query.get_or_404(order_id)
-    current_user = get_current_user()
-
-    if order.driver_id != current_user.id:
-        return jsonify({"error": "Order not assigned to you"}), 403
-    if order.status not in DRIVER_FINISHABLE:
-        return jsonify({"error": "Accept the order before marking it delivered"}), 400
-
-    fields, uploaded = _delivery_payload()
-    _store_proof(order, fields, uploaded)
-    _finalize_delivery(order, current_user, fields, "Driver marked the order delivered")
-
+ 
     return jsonify({
-        "message": "Order marked as delivered",
+        "message": "Delivery proof submitted — order marked as delivered",
         "order": order.to_dict(),
     }), 200
-
-
-# ─── 8. MARK DELIVERED (driver) / CONFIRM DELIVERY (owner, shop manager) ────
-
+ 
+# ─── 8. DELIVERY AGENT CONFIRMS FINAL DELIVERY ──────────────────────────────
+ 
 @order_bp.route("/orders/<int:order_id>/confirm-delivery", methods=["POST"])
 @jwt_required()
-@role_required(["ADMIN", "SHOP_MANAGER", "DRIVER", "DELIVERY_AGENT"])
+@role_required(["ADMIN", "SHOP_MANAGER","DRIVER"])
 def confirm_delivery(order_id):
-    order = Order.query.get_or_404(order_id)
+ 
+    order        = Order.query.get_or_404(order_id)
     current_user = get_current_user()
-    role = str(current_user.role or "").upper()
-
-    if role == "DRIVER" and order.driver_id != current_user.id:
-        return jsonify({"error": "Order not assigned to you"}), 403
-    if role == "DELIVERY_AGENT" and order.delivery_agent_id != current_user.id:
-        return jsonify({"error": "Order not assigned to you"}), 403
-    if order.status not in DRIVER_FINISHABLE:
-        return jsonify({"error": "Only orders that are out for delivery can be marked delivered"}), 400
-
-    fields, uploaded = _delivery_payload()
-    _store_proof(order, fields, uploaded)
-    note = (
-        "Driver marked the order delivered" if role == "DRIVER"
-        else f"Delivery confirmed by {role.replace('_', ' ').title()}"
+ 
+    if order.status != "DELIVERY_SUBMITTED":
+        return jsonify({"error": "Delivery proof not yet submitted by driver"}), 400
+ 
+    old_status = order.status
+    now        = utc_now()
+ 
+    order.status               = "DELIVERED"
+    order.delivered_at         = now
+    order.delivery_confirmed_by = current_user.id
+    order.delivery_confirmed_at = now
+ 
+    # ── FIX: driver is free — mark them ONLINE again ──────────────────────────
+    if order.driver_id:
+        driver = User.query.get(order.driver_id)
+        if driver:
+            driver.availability_status = "ONLINE"
+ 
+    log_order_status(
+        order, old_status, "DELIVERED",
+        current_user.id, "Delivery proof approved by owner/shop manager"
     )
-    _finalize_delivery(order, current_user, fields, note)
-
+ 
+    # A driver settlement becomes eligible only after owner/shop-manager proof approval.
+    from models.delivery_charge import DeliveryCharge
+    existing_charge = DeliveryCharge.query.filter_by(order_id=order.id).first()
+    if not existing_charge and order.driver_id:
+        db.session.add(DeliveryCharge(
+            order_id=order.id,
+            driver_id=order.driver_id,
+            charge_amount=order.delivery_charge or 0,
+            # Owner / Shop Manager decides the driver payment later per order.
+            driver_share=0,
+            is_paid=False,
+            notes="Proof approved; waiting for settlement amount",
+        ))
+ 
+    notify_customer(
+        order,
+        "Order delivered",
+        f"Your order {order.order_number} has been delivered successfully. Thank you for ordering with CakeNTake!",
+        "ORDER_DELIVERED",
+    )
+    settlement_reviewer_ids = [
+        user.id
+        for user in User.query.filter(
+            User.role.in_(["ADMIN", "SHOP_MANAGER"]),
+            User.is_active.is_(True),
+        ).all()
+    ]
+    notify_staff(
+        order,
+        settlement_reviewer_ids,
+        "Order delivered",
+        f"Order {order.order_number} is delivered and ready for driver settlement review.",
+        "ORDER_READY_FOR_SETTLEMENT",
+    )
+ 
+    try:
+     config = get_loyalty_config()
+ 
+     subtotal = float(order.subtotal or 0)
+ 
+     if subtotal >= float(config.min_order_amount):
+ 
+        earned_points = (
+            int(subtotal // float(config.min_order_amount))
+            * config.points_per_min_order
+        )
+ 
+        # Prevent duplicate loyalty points
+        existing = LoyaltyLedger.query.filter_by(
+            customer_id=order.user_id,
+            order_id=order.id,
+            transaction_type="EARN"
+        ).first()
+ 
+        if not existing and earned_points > 0:
+            add_loyalty_points(
+                customer_id=order.user_id,
+                points=earned_points,
+                order_id=order.id,
+                description=f"Earned points for delivered Order {order.order_number}"
+            )
+ 
+    except Exception as e:
+     print("Loyalty Error:", e)
+ 
+    db.session.commit()
+ 
+    notify_admins(
+        f"Order {order.order_number} DELIVERED — confirmed by "
+        f"{current_user.first_name} {current_user.last_name}",
+        order,
+    )
+ 
     return jsonify({
-        "message": "Order marked as delivered",
+        "message": "Delivery confirmed",
         "order": order.to_dict(),
     }), 200
-
-
+    
+ 
 @order_bp.route("/orders/sales-agent", methods=["POST"])
 @jwt_required()
 @role_required(["SALES_AGENT", "SHOP_MANAGER","ADMIN"])
@@ -1810,11 +1793,12 @@ def create_sales_agent_order():
         if delivery_method not in {"DELIVERY", "PICKUP"}:
             return jsonify({"error": "Invalid delivery method"}), 400
  
-        # "-" / blank means "not chosen yet" on the staff form -> collect later (COD).
-        payment_method = _addr_clean(data.get("payment_method")).upper() or "COD"
-        if payment_method == "CASH":
-            payment_method = "COD"
-        allowed_payment_methods = ALLOWED_PAYMENT_METHODS - {"CREDIT"}
+        payment_method = str(
+            data.get("payment_method") or "COD"
+        ).strip().upper()
+        allowed_payment_methods = {
+            "COD", "CARD", "STRIPE", "KNET", "UPI", "LINK"
+        }
         if payment_method not in allowed_payment_methods:
             return jsonify({
                 "error": "Invalid payment method",
@@ -1841,17 +1825,9 @@ def create_sales_agent_order():
                 if customer else ""
             )
         ).strip()
-        # ── Contact number validation (client report: incorrect numbers) ──
-        # A number typed on the form must be valid; a legacy number already
-        # stored on an existing customer is kept as-is when none is typed.
-        typed_phone = _addr_clean(data.get("customer_phone"))
-        if typed_phone:
-            try:
-                customer_phone = normalize_phone(typed_phone, field="Customer phone")
-            except PhoneError as exc:
-                return jsonify({"error": str(exc), "field": "customer_phone"}), 400
-        else:
-            customer_phone = str(customer.phone_no if customer else "").strip()
+        customer_phone = normalize_staff_customer_phone(
+            data.get("customer_phone") or (customer.phone_no if customer else "")
+        ) if not customer else str(data.get("customer_phone") or customer.phone_no or "").strip()
  
         incoming_email = str(data.get("customer_email") or "").strip().lower()
         customer_email = (
@@ -1859,13 +1835,7 @@ def create_sales_agent_order():
             if incoming_email not in ("", "-")
             else (customer.email if customer else None)
         )
-        customer_alt_phone = None
-        typed_alt = _addr_clean(data.get("customer_alt_phone"))
-        if typed_alt:
-            try:
-                customer_alt_phone = normalize_phone(typed_alt, field="Alternate phone")
-            except PhoneError as exc:
-                return jsonify({"error": str(exc), "field": "customer_alt_phone"}), 400
+        customer_alt_phone = str(data.get("customer_alt_phone") or "").strip() or None
  
         # if not customer:
         #     if not customer_name:
@@ -1904,40 +1874,44 @@ def create_sales_agent_order():
        
         if not customer:
             if not customer_name:
-               return jsonify({"error": "customer_name is required"}), 400
+                return jsonify({"error": "customer_name is required"}), 400
             if not customer_phone:
-               return jsonify({"error": "customer_phone is required"}), 400
-  
-            # Match the customer however their number was stored before
-            # (local 8 digits, 965..., +965...), so no duplicate is created.
-            lookup_filters = [User.phone_no.in_(phone_variants(customer_phone))]
-            if customer_email:
-              lookup_filters.append(User.email == customer_email)
- 
-            customer = User.query.filter(
-                db.func.upper(User.role) == "USER",
-                db.or_(*lookup_filters),
+                return jsonify({"error": "customer_phone is required"}), 400
+
+            # Check phone and email separately, so a phone belonging to one account
+            # and email belonging to another can never silently select a user.
+            phone_digits = "".join(c for c in customer_phone if c.isdigit())
+            by_phone = User.query.filter(
+                db.or_(User.phone_no == customer_phone,
+                       User.phone_no == phone_digits)
             ).first()
- 
-            if not customer:
-             name_parts = customer_name.split(None, 1)
-             first_name = name_parts[0]
-             last_name = name_parts[1] if len(name_parts) > 1 else "-"
-             customer = User(
-               first_name=first_name,
-               last_name=last_name,
-               email=customer_email,
-               phone_no=customer_phone,
-               password=generate_password_hash("Temp@12345"),
-               role="USER",
-               currency_code=currency,
-               loyalty_points=0,
-               availability_status="OFFLINE",
-               rating=0.0,
-        )
-             db.session.add(customer)
-             db.session.flush()
-       
+            by_email = User.query.filter_by(email=customer_email).first() if customer_email else None
+            if by_phone and by_email and by_phone.id != by_email.id:
+                return jsonify({"error": "Phone number and email are registered to different accounts"}), 409
+            customer = by_phone or by_email
+            if customer and str(customer.role or "").upper() != "USER":
+                return jsonify({"error": "This phone or email belongs to a staff account"}), 409
+            if customer and by_email and by_email.phone_no not in (customer_phone, phone_digits):
+                return jsonify({"error": "Email already belongs to a customer with a different phone number"}), 409
+            if customer:
+                customer_phone = customer.phone_no
+            else:
+                name_parts = customer_name.split(None, 1)
+                customer = User(
+                    first_name=name_parts[0],
+                    last_name=name_parts[1] if len(name_parts) > 1 else "-",
+                    email=customer_email,
+                    phone_no=customer_phone,
+                    password=generate_password_hash("Temp@12345"),
+                    role="USER",
+                    currency_code=currency,
+                    loyalty_points=0,
+                    availability_status="OFFLINE",
+                    rating=0.0,
+                )
+                db.session.add(customer)
+                db.session.flush()
+
         # ----------------------------------------------------------
         # ADDRESS / AREA
         # ----------------------------------------------------------
@@ -2024,11 +1998,10 @@ def create_sales_agent_order():
             customer_phone=customer_phone,
             customer_email=customer_email,
             customer_alt_phone=customer_alt_phone,
-            delivery_address_json=with_order_notes(
+            delivery_address_json=(
                 build_address_snapshot(fields, address, area, customer_origin, data)
                 if delivery_method == "DELIVERY"
-                else {"customer_origin": customer_origin},
-                extract_order_notes(data),
+                else {"customer_origin": customer_origin}
             ),
             address_id=address.id if address else None,
             delivery_area_id=area.id if area else None,
@@ -2037,16 +2010,10 @@ def create_sales_agent_order():
                 if raw_date else None
             ),
             delivery_time_slot=raw_slot,
-            # Keep the real pickup date on pickup orders as well, so kitchen /
-            # receipts / app screens that read pickup_date show it.
-            pickup_date=(
-                datetime.strptime(raw_date, "%Y-%m-%d").date()
-                if raw_date and delivery_method == "PICKUP" else None
-            ),
-            pickup_time_slot=raw_slot if delivery_method == "PICKUP" else None,
-            greeting_message=extract_cake_message(data) or None,
+            greeting_message=data.get("greeting_message") or None,
             greeting_from=data.get("greeting_from") or None,
             greeting_to=data.get("greeting_to") or None,
+            notes=str(data.get("notes") or "").strip() or None,
             status="PENDING",
             payment_method=payment_method,
             payment_status="PENDING",
@@ -2202,33 +2169,75 @@ def pickup_ready_orders():
  
 @order_bp.route("/orders/<int:order_id>/customer-received", methods=["POST"])
 @jwt_required()
-@role_required(["KITCHEN_STAFF", "ADMIN", "SHOP_MANAGER"])
+@role_required(["KITCHEN_STAFF"])
 def mark_pickup_customer_received(order_id):
-    order=Order.query.get_or_404(order_id); current_user=get_current_user()
-    if str(order.delivery_method or "DELIVERY").upper()!="PICKUP": return jsonify({"error":"This is not a pickup order"}),400
-    if order.status not in PICKUP_COLLECTABLE: return jsonify({"error":"Pickup order is not ready"}),400
-    old_status=order.status; now=utc_now(); order.status="DELIVERED"; order.delivered_at=now; order.delivery_confirmed_by=current_user.id; order.delivery_confirmed_at=now
-    log_order_status(order,old_status,"DELIVERED",current_user.id,"Customer received pickup order at shop")
-    db.session.commit(); notify_customer(order,"Order collected",f"Your pickup order {order.order_number} has been collected successfully.","PICKUP_COLLECTED")
-    return jsonify({"message":"Customer receipt confirmed","order":order.to_dict()}),200
- 
+    order = Order.query.get_or_404(order_id)
+    current_user = get_current_user()
+    data = request.get_json(silent=True) or {}
+
+    if str(order.delivery_method or "DELIVERY").upper() != "PICKUP":
+        return jsonify({"error": "This is not a pickup order"}), 400
+
+    if order.status != "PICKUP_READY":
+        return jsonify({"error": "Pickup order is not ready"}), 400
+
+    payment_method = str(order.payment_method or "").strip().upper()
+
+    # COD payment must be collected before marking it PAID.
+    if payment_method in ("COD", "CASH"):
+        if data.get("cash_collected") is not True:
+            return jsonify({
+                "error": "Confirm cash collection before completing pickup"
+            }), 400
+
+        order.payment_status = "PAID"
+
+    old_status = order.status
+    now = utc_now()
+
+    order.status = "DELIVERED"
+    order.delivered_at = now
+    order.delivery_confirmed_by = current_user.id
+    order.delivery_confirmed_at = now
+
+    log_order_status(
+        order,
+        old_status,
+        "DELIVERED",
+        current_user.id,
+        "Customer received pickup order at shop"
+    )
+
+    db.session.commit()
+
+    notify_customer(
+        order,
+        "Order collected",
+        f"Your pickup order {order.order_number} has been collected successfully.",
+        "PICKUP_COLLECTED"
+    )
+
+    return jsonify({
+        "message": "Customer receipt confirmed",
+        "order": order.to_dict()
+    }), 200 
  
 # ─── Merged compatibility endpoints ─────────────────────────────────────────
  
 @order_bp.route("/orders/<int:order_id>/pickup", methods=["POST"])
 @jwt_required()
-@role_required(["KITCHEN_STAFF", "ADMIN", "SHOP_MANAGER"])
+@role_required(["KITCHEN_STAFF"])
 def pickup_order(order_id):
  
     order = Order.query.get_or_404(order_id)
     current_user = get_current_user()
  
-    if str(order.delivery_method or "").upper() != "PICKUP":
+    if order.delivery_method != "PICKUP":
         return jsonify({
             "error": "This is not a pickup order"
         }), 400
  
-    if order.status not in PICKUP_COLLECTABLE:
+    if order.status != "PICKUP_READY":
         return jsonify({
             "error": "Order is not ready for pickup"
         }), 400
@@ -2284,7 +2293,7 @@ def mark_payment_paid(order_id):
  
     method = (data.get("payment_method") or order.payment_method or "COD").upper()
  
-    allowed = ALLOWED_PAYMENT_METHODS
+    allowed = {"COD", "UPI", "CARD", "STRIPE", "KNET", "LINK"}
     if method not in allowed:
         return jsonify({"error": "Invalid payment method"}), 400
  
@@ -2302,7 +2311,7 @@ def mark_payment_paid(order_id):
  
 @order_bp.route("/orders/<int:order_id>/pickup-complete", methods=["POST"])
 @jwt_required()
-@role_required(["KITCHEN_STAFF", "ADMIN", "SHOP_MANAGER"])
+@role_required(["KITCHEN_STAFF"])
 def pickup_complete(order_id):
     """
     One-shot action for PICKUP orders: kitchen staff confirms how the
@@ -2313,18 +2322,18 @@ def pickup_complete(order_id):
     current_user = get_current_user()
     data = request.get_json(silent=True) or {}
  
-    if str(order.delivery_method or "").upper() != "PICKUP":
+    if order.delivery_method != "PICKUP":
         return jsonify({
             "error": "This is not a pickup order"
         }), 400
  
-    if order.status not in PICKUP_COLLECTABLE:
+    if order.status != "PICKUP_READY":
         return jsonify({
             "error": "Order is not ready for pickup"
         }), 400
  
     method = (data.get("payment_method") or order.payment_method or "COD").upper()
-    allowed = ALLOWED_PAYMENT_METHODS
+    allowed = {"COD", "UPI", "CARD", "STRIPE", "KNET", "LINK"}
     if method not in allowed:
         return jsonify({"error": "Invalid payment method"}), 400
  

@@ -1116,6 +1116,7 @@ class Order(db.Model):
     greeting_message = db.Column(db.Text, nullable=True)
     greeting_from = db.Column(db.String(150), nullable=True)
     greeting_to = db.Column(db.String(150), nullable=True)
+    notes = db.Column(db.Text, nullable=True)
 
     # ==========================================
     # IMAGES & SOURCE
@@ -1233,7 +1234,7 @@ class Order(db.Model):
         return []
 
     def to_dict(self):
-        data = {
+        return {
             "id": self.id,
             "order_number": self.order_number,
             "order_type": self.order_type,
@@ -1258,6 +1259,7 @@ class Order(db.Model):
             "discount": float(self.discount or 0),
             "grand_total": float(self.grand_total or 0),
             "loyalty_coupon": self.loyalty_coupon,
+            "coupon_code": self.loyalty_coupon,
             "currency": self.currency,
 
             "order_addons": self.order_addons_json or [],
@@ -1318,6 +1320,7 @@ class Order(db.Model):
             ),
             "delivery_confirmed_at": _iso_utc(self.delivery_confirmed_at),
 
+           "address_id": self.address_id,
             "delivery_address": self.address.to_dict() if self.address else None,
             "delivery_method": self.delivery_method,
             "pickup_date": (
@@ -1348,6 +1351,7 @@ class Order(db.Model):
             "greeting_message": self.greeting_message,
             "greeting_from": self.greeting_from,
             "greeting_to": self.greeting_to,
+            "notes": self.notes,
             "delivery_images": self.delivery_images or [],
             "order_source_id": self.order_source_id,
             # custom_cakes = full list. custom_cake_json stays the FIRST cake
@@ -1365,66 +1369,3 @@ class Order(db.Model):
                 for item in self.items
             ]
         }
-        return self._present(data)
-
-    # ------------------------------------------
-    # Normalized views shared by every screen
-    # ------------------------------------------
-    def _present(self, data):
-        """Add normalized product lines, writing, address text and schedule.
-
-        Never raises — the raw fields above are always returned even if a
-        malformed custom_json / custom cake row cannot be described.
-        """
-        try:
-            from flask import has_request_context, request
-            from utils.order_presenter import (
-                enrich_item, ordered_products, custom_cake_as_item,
-                collect_cake_messages, address_text, clean,
-            )
-
-            cakes = self._custom_cakes_list()
-            data["items"] = [enrich_item(dict(i)) for i in data.get("items") or []]
-            lines = ordered_products(data["items"], cakes)
-            data["ordered_products"] = lines
-            data["has_custom_cake"] = bool(cakes)
-
-            # The mobile app only renders `items`; give it the custom cakes too.
-            # The web client sends X-Client-Platform: web and renders custom
-            # cakes from `custom_cakes` / `ordered_products` instead.
-            platform = ""
-            if has_request_context():
-                platform = str(request.headers.get("X-Client-Platform") or "").lower()
-            if cakes and platform != "web":
-                data["items"] = data["items"] + [
-                    custom_cake_as_item(self.id, cake, idx)
-                    for idx, cake in enumerate(cakes)
-                ]
-
-            snapshot = self.delivery_address_json if isinstance(self.delivery_address_json, dict) else {}
-            area_name = self.delivery_area.name if self.delivery_area else clean(snapshot.get("area"))
-            data["area_name"] = area_name or None
-            data["delivery_address_text"] = (
-                address_text(data.get("delivery_address"), snapshot, area_name) or None
-            )
-            data["address_delivery_notes"] = (
-                clean((data.get("delivery_address") or {}).get("delivery_notes"))
-                or clean(snapshot.get("delivery_notes"))
-                or None
-            )
-            data["order_notes"] = clean(snapshot.get("order_notes")) or None
-            data["cake_message"] = collect_cake_messages(lines, self.greeting_message) or None
-
-            is_pickup = str(self.delivery_method or "DELIVERY").upper() == "PICKUP"
-            sched_date = (self.pickup_date or self.delivery_date) if is_pickup else (self.delivery_date or self.pickup_date)
-            data["scheduled_date"] = sched_date.isoformat() if sched_date else None
-            data["scheduled_time_slot"] = (
-                (self.pickup_time_slot or self.delivery_time_slot) if is_pickup
-                else (self.delivery_time_slot or self.pickup_time_slot)
-            )
-            data["customer_display_phone"] = self.customer_phone or (
-                self.customer.phone_no if self.customer else None
-            )
-        except Exception as exc:  # pragma: no cover - defensive
-            print("Order presenter error:", exc)
-        return data
