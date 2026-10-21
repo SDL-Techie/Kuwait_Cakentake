@@ -53,13 +53,16 @@ ORDER_STATUS = {
 
     "DELIVERY_SUBMITTED",    # driver uploaded proof, waiting on agent confirmation
     "DELIVERED",             # delivery agent confirmed final delivery
+
+    "PICKUP_READY",          # pickup order finished by the kitchen, waiting at the shop
 }
 
 ALLOWED_TRANSITIONS = {
     "PENDING":              ["ACCEPTED", "REJECTED", "CANCELLED"],
     "ACCEPTED":             ["ASSIGNED_TO_KITCHEN", "CANCELLED"],
     "ASSIGNED_TO_KITCHEN":  ["PREPARING", "CANCELLED"],
-    "PREPARING":            ["READY"],
+    "PREPARING":            ["READY", "PICKUP_READY"],
+    "PICKUP_READY":         ["DELIVERED"],
     "READY":                ["ASSIGNED_TO_AGENT"],
     "ASSIGNED_TO_AGENT":    ["ASSIGNED_TO_DRIVER"],
     "ASSIGNED_TO_DRIVER":   ["DRIVER_ACCEPTED", "ASSIGNED_TO_DRIVER"],  # allow re-assign

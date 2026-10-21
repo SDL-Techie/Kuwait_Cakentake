@@ -4040,11 +4040,30 @@ export const OrderManagement: React.FC = () => {
                   </div>
                 ),
               },
+              // {
+              //   header: 'Items',
+              //   accessor: (row: Order) =>
+              //     `${row.items.reduce((acc, i) => acc + i.quantity, 0)} item(s)`,
+              // },
+
               {
-                header: 'Items',
-                accessor: (row: Order) =>
-                  `${row.items.reduce((acc, i) => acc + i.quantity, 0)} item(s)`,
-              },
+  header: 'Items',
+  accessor: (row: Order) => {
+    const regularCount = row.items.reduce((acc, i) => acc + i.quantity, 0);
+    const cakeCount = row.customCakes?.length ?? 0;
+    const total = regularCount + cakeCount;
+    return (
+      <div className="tbl-cust-cell">
+        <span className="cust-name">{total} item(s)</span>
+        {cakeCount > 0 && (
+          <span className="cust-sub">
+            {cakeCount} custom cake{cakeCount > 1 ? 's' : ''}
+          </span>
+        )}
+      </div>
+    );
+  },
+},
               {
                 header: 'Total',
                 accessor: (row: Order) => (

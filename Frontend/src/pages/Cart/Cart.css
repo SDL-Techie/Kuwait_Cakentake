@@ -841,3 +841,114 @@ a:focus-visible {
     background: white;
   }
 }
+/* ==========================================================================
+   Cake message per cart line + quantity stepper (matches the mobile app)
+   ========================================================================== */
+.cart-eyebrow {
+  display: block;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #6f8e57;
+}
+.cart-sub {
+  margin: 2px 0 0;
+  font-size: 13px;
+  color: #6b7a63;
+}
+.cart-message-box {
+  margin: 10px 0;
+  padding: 10px 12px;
+  border-radius: 14px;
+  background: #f7faf2;
+  border: 1px solid #d8e4c7;
+}
+.cart-message-head {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 6px;
+}
+.cart-message-head span {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 12px;
+  font-weight: 800;
+  color: #2f4626;
+}
+.cart-message-head small {
+  font-size: 11px;
+  color: #6b7a63;
+}
+.cart-message-box textarea {
+  width: 100%;
+  resize: vertical;
+  min-height: 52px;
+  padding: 8px 10px;
+  border-radius: 10px;
+  border: 1px solid #d8e4c7;
+  background: #fff;
+  font: inherit;
+  font-size: 14px;
+  color: #22361d;
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+.cart-message-box textarea:focus {
+  border-color: #6f8e57;
+  box-shadow: 0 0 0 3px rgba(143, 175, 110, 0.25);
+}
+.cart-message-foot {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 4px;
+  font-size: 11px;
+  color: #8a9683;
+}
+.cart-message-state {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.cart-message-state.is-saved {
+  color: #2f4626;
+  font-weight: 700;
+}
+.cart-qty {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 3px;
+  border-radius: 12px;
+  border: 1px solid #d8e4c7;
+  background: #fff;
+}
+.cart-qty button {
+  /* width: 30px; */
+  height: 30px;
+  border: 0;
+  border-radius: 9px;
+  background: #edf3e4;
+  color: #2f4626;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+}
+.cart-qty button:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+.cart-qty > span {
+  min-width: 22px;
+  text-align: center;
+  font-weight: 800;
+  display: grid;
+  place-items: center;
+}
+.summary-muted span:last-child {
+  font-size: 12px;
+  color: #6b7a63;
+}

@@ -36,7 +36,8 @@ api.interceptors.request.use((config) => {
     config.headers.Authorization = `Bearer ${token}`;
   }
 
-  config.headers["X-Currency"] = currency;
+  // config.headers["X-Currency"] = currency;
+  config.headers["X-Currency"] = config.headers["X-Currency"] || currency;
   // Tells the backend this is the web app: custom cakes are rendered from
   // `custom_cakes` / `ordered_products`, so they are not duplicated in `items`.
   config.headers["X-Client-Platform"] = "web";

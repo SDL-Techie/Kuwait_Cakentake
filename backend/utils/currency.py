@@ -1,8 +1,17 @@
-"""Presentation-only currency conversion from stored KWD amounts.
+# RATES = {
+#     "KWD": 1.0,
+#     "AED": 11.99,
+#     "USD": 3.27,
+#     "INR": 311.36,
+# }
 
-Rates are configured display estimates, NOT a settlement/payment exchange rate.
-Payments must always use the server-side authoritative order amount.
-"""
+# def convert(amount_inr, currency="INR"):
+#     if amount_inr is None:
+#         return None
+#     rate = RATES.get(currency, 1)
+#     return round(float(amount_inr) * rate, 2)
+
+
 from decimal import Decimal, InvalidOperation, ROUND_HALF_UP
 
 RATES = {"KWD": Decimal("1"), "AED": Decimal("11.99"),

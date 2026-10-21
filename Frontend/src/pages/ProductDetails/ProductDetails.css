@@ -40,10 +40,20 @@
   display: grid;
   grid-template-columns: 1.1fr 0.9fr;
   gap: 60px;
+  /* start = each column is only as tall as its own content,
+     which is required for the sticky image column to work */
   align-items: start;
 }
 
-/* Visual Column */
+/* Visual Column — STAYS IN PLACE while the right-hand content scrolls */
+.bakery-pd-visuals {
+  position: sticky;
+  /* Distance from the top of the screen. Increase this if you have a
+     fixed header/navbar taller than ~80px so the image doesn't hide under it. */
+  top: 100px;
+  align-self: start;
+}
+
 .bakery-pd-main-frame {
   position: relative;
   padding: 10px;
@@ -180,6 +190,26 @@
   font-size: 0.8rem;
 }
 
+/* "Total for N cakes" row (was unstyled) */
+.bakery-cakes-total {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-top: 16px;
+  padding: 12px 16px;
+  background: #fff;
+  border: 1px solid var(--color-tan);
+  border-radius: 10px;
+  font-size: 0.95rem;
+  color: var(--color-brown);
+}
+
+.bakery-cakes-total strong {
+  font-size: 1.1rem;
+  color: #6F8E57;
+}
+
 /* Action Buttons */
 .bakery-pd-actions {
   display: flex;
@@ -243,7 +273,13 @@
     grid-template-columns: 1fr;
     gap: 40px;
   }
-  
+
+  /* Single column on mobile: the image sits above the content,
+     so it must scroll normally instead of sticking. */
+  .bakery-pd-visuals {
+    position: static;
+  }
+
   .bakery-pd-title {
     font-size: 2.2rem;
   }

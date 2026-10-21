@@ -131,7 +131,7 @@ class OrderItem(db.Model):
                 else float(self.price) * self.quantity
             ),
 
-            "custom_json": self.custom_json,
+                        "custom_json": self.custom_json,
             "variant_id": variant.id if variant else variant_id,
             "variant_name": variant.name if variant else custom.get("variant_name"),
             "flavor_id": flavor.id if flavor else flavor_id,
